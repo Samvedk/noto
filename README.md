@@ -33,7 +33,10 @@ The goal is to reduce clutter while maintaining control.
 
 ## 📸 Preview
 
-![Preview](grade-screen.png)
+## 📸 Preview
+
+![Screenshot](public/screenshot.png)
+![Grade Screen](public/grade-screen.png)
 
 ---
 
