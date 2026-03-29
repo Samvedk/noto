@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/Samvedk/Noto-#readme",
   "devDependencies": {
+    "@tauri-apps/cli": "^2.10.1",
     "electron": "^41.0.3"
   }
 }

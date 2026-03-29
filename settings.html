@@ -1,0 +1,376 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Noto — Settings</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600&display=swap" rel="stylesheet"/>
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+    :root{
+      --black:#0a0a0a;--white:#fafafa;--g50:#f9f9f9;--g100:#f4f4f4;--g200:#e8e8e8;
+      --g300:#d0d0d0;--g400:#b0b0b0;--g500:#888;--g700:#444;--danger:#c0392b;
+      --accent:#0a0a0a;
+      --ff:'DM Sans',system-ui,sans-serif;--fd:'DM Serif Display',Georgia,serif;
+      --r4:4px;--r8:8px;--r12:12px;--r16:16px;--r99:9999px;
+      --sh:0 1px 3px rgba(0,0,0,0.06),0 4px 16px rgba(0,0,0,0.06);
+    }
+    [data-theme="dark"] {--black:#f0f0f0;--white:#111;--g50:#1a1a1a;--g100:#1f1f1f;--g200:#2a2a2a;--g300:#3a3a3a;--g400:#555;--g500:#888;--g700:#bbb;}
+    [data-theme="sepia"]{--white:#f6f0e6;--g50:#ede8df;--g100:#e5dfd6;--g200:#d5cfc6;}
+
+    html,body{width:100%;background:var(--g100);color:var(--black);font-family:var(--ff);-webkit-font-smoothing:antialiased;}
+
+    /* TOPBAR */
+    .topbar{position:sticky;top:0;z-index:100;height:56px;background:var(--white);border-bottom:1px solid var(--g200);display:flex;align-items:center;padding:0 20px;gap:14px;box-shadow:var(--sh);}
+    .back-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border:1.5px solid var(--g200);border-radius:var(--r99);background:transparent;font-family:var(--ff);font-size:12px;font-weight:500;color:var(--g500);cursor:pointer;transition:all 0.2s;}
+    .back-btn:hover{border-color:var(--black);color:var(--black);}
+    .back-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+    .topbar-title{font-family:var(--fd);font-size:20px;font-weight:400;color:var(--black);}
+
+    /* LAYOUT */
+    .wrap{max-width:700px;margin:0 auto;padding:28px 20px 60px;}
+
+    /* SECTION CARD */
+    .card{background:var(--white);border-radius:var(--r16);border:1px solid var(--g200);margin-bottom:16px;overflow:hidden;box-shadow:var(--sh);}
+    .card-head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--g200);}
+    .card-icon{width:32px;height:32px;border-radius:var(--r8);background:var(--g100);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .card-icon svg{width:15px;height:15px;stroke:var(--g500);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+    .card-title{font-family:var(--fd);font-size:15px;font-weight:400;color:var(--black);}
+
+    /* ROW */
+    .row{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--g100);gap:20px;}
+    .row:last-child{border-bottom:none;}
+    .row-l{flex:1;min-width:0;}
+    .row-label{font-size:13px;font-weight:400;color:var(--black);margin-bottom:2px;}
+    .row-desc{font-size:11px;color:var(--g400);line-height:1.5;font-weight:300;}
+    .row-r{flex-shrink:0;}
+
+    /* TOGGLE */
+    .tog{width:46px;height:26px;background:var(--g300);border-radius:var(--r99);position:relative;cursor:pointer;border:none;transition:background 0.25s;}
+    .tog.on{background:var(--black);}
+    .tog::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:var(--white);border-radius:50%;transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 1px 4px rgba(0,0,0,0.22);}
+    .tog.on::after{transform:translateX(20px);}
+
+    /* CHIP SELECTOR */
+    .chips{display:flex;gap:6px;flex-wrap:wrap;}
+    .chip{padding:6px 14px;border-radius:var(--r99);border:1.5px solid var(--g200);background:var(--g50);font-family:var(--ff);font-size:11px;font-weight:500;color:var(--g500);cursor:pointer;transition:all 0.18s;}
+    .chip:hover{border-color:var(--g400);color:var(--black);}
+    .chip.on{border-color:var(--black);background:var(--black);color:var(--white);}
+
+    /* COLOR DOTS */
+    .dots{display:flex;gap:8px;flex-wrap:wrap;}
+    .dot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.15s,border-color 0.15s;}
+    .dot:hover{transform:scale(1.18);}
+    .dot.on{border-color:var(--black);}
+
+    /* SLIDER */
+    .slider-row{display:flex;align-items:center;gap:12px;}
+    .slider{-webkit-appearance:none;width:148px;height:4px;border-radius:2px;background:var(--g200);outline:none;cursor:pointer;}
+    .slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--black);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.2);}
+    .slider-v{font-size:12px;font-weight:600;color:var(--black);min-width:26px;}
+
+    /* STORAGE BAR */
+    .stor-bar{height:5px;background:var(--g200);border-radius:3px;margin:10px 0 5px;}
+    .stor-fill{height:100%;background:var(--black);border-radius:3px;transition:width 0.5s;}
+    .stor-label{font-size:11px;color:var(--g400);}
+
+    /* INPUT */
+    .ifield{padding:9px 12px;border:1.5px solid var(--g200);border-radius:var(--r8);font-family:var(--ff);font-size:13px;color:var(--black);background:var(--g50);outline:none;transition:border-color 0.2s;width:100%;}
+    .ifield:focus{border-color:var(--black);background:var(--white);}
+
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r99);border:none;font-family:var(--ff);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
+    .btn-dark{background:var(--black);color:var(--white);}
+    .btn-dark:hover{background:var(--g700);}
+    .btn-outline{background:transparent;border:1.5px solid var(--g200);color:var(--g700);}
+    .btn-outline:hover{border-color:var(--g400);color:var(--black);}
+    .btn-danger{background:var(--danger);color:var(--white);}
+    .btn-danger:hover{background:#a93226;}
+    .btn-danger:disabled{opacity:0.4;cursor:not-allowed;}
+
+    /* ABOUT CARD */
+    .about-inner{padding:32px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;}
+    .about-logo{width:64px;height:64px;background:var(--black);border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;box-shadow:0 6px 24px rgba(0,0,0,0.18);}
+    .about-logo svg{width:30px;height:30px;stroke:var(--white);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+    .about-name{font-family:var(--fd);font-size:30px;color:var(--black);}
+    .about-ver{font-size:11px;color:var(--g400);letter-spacing:0.08em;}
+    .about-by{font-size:10px;color:var(--g300);letter-spacing:0.15em;text-transform:uppercase;margin-top:4px;}
+    .about-tag{font-size:12px;color:var(--g400);line-height:1.7;max-width:260px;margin-top:6px;}
+
+    /* MODAL */
+    .backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:800;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    .backdrop.show{display:flex;}
+    .modal{background:var(--white);border-radius:var(--r16);padding:28px;width:380px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,0.2);animation:mIn 0.22s cubic-bezier(0.4,0,0.2,1);}
+    @keyframes mIn{from{opacity:0;transform:scale(0.96) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
+    .modal h2{font-family:var(--fd);font-size:20px;margin-bottom:6px;}
+    .modal p{font-size:12px;color:var(--g500);margin-bottom:16px;line-height:1.7;}
+    .modal .warn{font-size:12px;color:var(--danger);margin-bottom:10px;}
+    .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+
+    /* TOAST */
+    .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--black);color:var(--white);font-size:12px;font-weight:500;padding:10px 20px;border-radius:var(--r99);z-index:9999;opacity:0;transition:all 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;white-space:nowrap;}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+    /* TRANSITION */
+    .transition-overlay{position:fixed;inset:0;background:var(--black);z-index:99998;transform:translateY(-200%);transition:transform 0.44s cubic-bezier(0.7,0,0.3,1);pointer-events:none;}
+    .transition-overlay.active{transform:translateY(0);pointer-events:all;}
+  </style>
+</head>
+<body>
+  <div class="transition-overlay" id="transitionOverlay"></div>
+  <div class="toast" id="toast"></div>
+
+  <!-- RESET MODAL -->
+  <div class="backdrop" id="resetModal">
+    <div class="modal">
+      <h2>Factory Reset</h2>
+      <p>This permanently deletes all grades, subjects, notebooks, pages, and settings. There is no undo.</p>
+      <p class="warn">Type <strong>reset noto</strong> to confirm.</p>
+      <input class="ifield" id="resetInput" type="text" placeholder="Type reset noto..." autocomplete="off"/>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeReset()">Cancel</button>
+        <button class="btn btn-danger" id="resetBtn" onclick="doReset()" disabled>Reset Everything</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <button class="back-btn" onclick="notoNavigate('grade.html')">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>Back
+    </button>
+    <span class="topbar-title">Settings</span>
+  </div>
+
+  <div class="wrap">
+
+    <!-- DISPLAY -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
+        <span class="card-title">Display</span>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Theme</div><div class="row-desc">Visual style of the interface</div></div>
+        <div class="row-r"><div class="chips" id="themeChips"></div></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Interface Size</div><div class="row-desc">Size of buttons and labels</div></div>
+        <div class="row-r"><div class="chips" id="uiSizeChips"></div></div>
+      </div>
+    </div>
+
+    <!-- STYLUS -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></div>
+        <span class="card-title">Stylus</span>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Pressure Sensitivity</div><div class="row-desc">Vary line weight based on stylus pressure</div></div>
+        <div class="row-r"><button class="tog" id="togPressure" onclick="togSet('pressureSensitivity','togPressure')"></button></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Palm Rejection</div><div class="row-desc">Ignore accidental palm contact while writing</div></div>
+        <div class="row-r"><button class="tog" id="togPalm" onclick="togSet('palmRejection','togPalm')"></button></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Handedness</div><div class="row-desc">Optimises toolbar position for your writing hand</div></div>
+        <div class="row-r"><div class="chips" id="handChips"></div></div>
+      </div>
+    </div>
+
+    <!-- WRITING DEFAULTS -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+        <span class="card-title">Writing Defaults</span>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Default Page Type</div><div class="row-desc">Page layout when opening a new notebook</div></div>
+        <div class="row-r"><div class="chips" id="pageTypeChips"></div></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Auto Date Stamp</div><div class="row-desc">Automatically add today's date on new pages</div></div>
+        <div class="row-r"><button class="tog" id="togDate" onclick="togSet('autoDateStamp','togDate')"></button></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Default Pen Size</div><div class="row-desc">Starting line thickness</div></div>
+        <div class="row-r">
+          <div class="slider-row">
+            <input type="range" class="slider" id="penSlider" min="1" max="12" step="1" oninput="sliderSet('defaultPenSize','penSlider','penSliderVal',true)"/>
+            <span class="slider-v" id="penSliderVal">3</span>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Default Pen Colour</div><div class="row-desc">Starting ink colour</div></div>
+        <div class="row-r"><div class="dots" id="penColorDots"></div></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Default Text Size</div><div class="row-desc">Starting font size for the text box tool</div></div>
+        <div class="row-r"><div class="chips" id="textSizeChips"></div></div>
+      </div>
+    </div>
+
+    <!-- STORAGE -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
+        <span class="card-title">Storage</span>
+      </div>
+      <div class="row">
+        <div class="row-l">
+          <div class="row-label">Storage Used</div>
+          <div class="stor-bar"><div class="stor-fill" id="storFill" style="width:0%"></div></div>
+          <div class="stor-label" id="storLabel">Calculating...</div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Export All Data</div><div class="row-desc">Download a full JSON backup of all notebooks</div></div>
+        <div class="row-r"><button class="btn btn-outline" onclick="doExport()">Export JSON</button></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Factory Reset</div><div class="row-desc">Delete all data and restore default settings</div></div>
+        <div class="row-r"><button class="btn btn-danger" onclick="openReset()">Reset</button></div>
+      </div>
+    </div>
+
+    <!-- DEVICE -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
+        <span class="card-title">Device</span>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Device Name</div><div class="row-desc">Shown when sharing over Bluetooth</div></div>
+        <div class="row-r" style="width:180px"><input class="ifield" id="devName" type="text" maxlength="30" autocomplete="off"/></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Screen Timeout</div><div class="row-desc">Minutes before screen dims automatically</div></div>
+        <div class="row-r"><div class="chips" id="timeoutChips"></div></div>
+      </div>
+    </div>
+
+    <!-- ACCESSIBILITY -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <span class="card-title">Accessibility</span>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">High Contrast</div><div class="row-desc">Increase contrast for better legibility</div></div>
+        <div class="row-r"><button class="tog" id="togContrast" onclick="togSet('highContrast','togContrast')"></button></div>
+      </div>
+      <div class="row">
+        <div class="row-l"><div class="row-label">Reduced Motion</div><div class="row-desc">Minimise animations and transitions</div></div>
+        <div class="row-r"><button class="tog" id="togMotion" onclick="togSet('reducedMotion','togMotion')"></button></div>
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="card">
+      <div class="about-inner">
+        <div class="about-logo"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+        <div class="about-name">Noto</div>
+        <div class="about-ver">Version 1.0.0</div>
+        <div class="about-by">by Sam.K</div>
+        <div class="about-tag">Your complete digital notebook. Distraction-free, always offline.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="renderer.js"></script>
+  <script>
+    let S = notoLoadSettings();
+
+    const COLORS = ['#000000','#1a1aff','#e74c3c','#e67e22','#f1c40f','#27ae60','#8e44ad','#555555','#ffffff'];
+
+    function save(k,v){ notoUpdateSetting(k,v); S=notoLoadSettings(); notoToast('Saved'); }
+
+    function chips(id, opts, cur, cb){
+      const el=document.getElementById(id); if(!el)return; el.innerHTML='';
+      opts.forEach(o=>{
+        const b=document.createElement('button');
+        b.className='chip'+(String(o.v)===String(cur)?' on':'');
+        b.textContent=o.l;
+        b.onclick=()=>{ el.querySelectorAll('.chip').forEach(x=>x.classList.remove('on')); b.classList.add('on'); cb(o.v); };
+        el.appendChild(b);
+      });
+    }
+
+    function colorDots(id, cur, cb){
+      const el=document.getElementById(id); if(!el)return; el.innerHTML='';
+      COLORS.forEach(c=>{
+        const d=document.createElement('div');
+        d.className='dot'+(c===cur?' on':'');
+        d.style.background=c;
+        if(c==='#ffffff') d.style.border='2px solid #ccc';
+        d.onclick=()=>{ el.querySelectorAll('.dot').forEach(x=>x.classList.remove('on')); d.classList.add('on'); cb(c); };
+        el.appendChild(d);
+      });
+    }
+
+    function setTog(id,val){ const el=document.getElementById(id); if(el) el.classList.toggle('on',!!val); }
+    function togSet(key,id){ const v=!S[key]; save(key,v); setTog(id,v); }
+
+    function sliderSet(key,sliderId,valId,isInt){
+      const sl=document.getElementById(sliderId), vl=document.getElementById(valId);
+      if(!sl)return;
+      const v=isInt?parseInt(sl.value):parseFloat(sl.value);
+      if(vl)vl.textContent=v;
+      save(key,v);
+    }
+
+    function buildAll(){
+      S=notoLoadSettings();
+
+      chips('themeChips',    [{v:'light',l:'Light'},{v:'dark',l:'Dark'},{v:'sepia',l:'Sepia'}], S.theme,    v=>save('theme',v));
+      chips('uiSizeChips',   [{v:'small',l:'Small'},{v:'medium',l:'Medium'},{v:'large',l:'Large'}], S.uiFontSize, v=>save('uiFontSize',v));
+      chips('handChips',     [{v:'left',l:'Left'},{v:'right',l:'Right'}], S.handedness, v=>save('handedness',v));
+      chips('pageTypeChips', [{v:'lined',l:'Lined'},{v:'graph',l:'Graph'},{v:'blank',l:'Blank'},{v:'dotted',l:'Dotted'}], S.defaultPageType, v=>save('defaultPageType',v));
+      chips('textSizeChips', [{v:'small',l:'S'},{v:'medium',l:'M'},{v:'large',l:'L'}], S.defaultTextSize, v=>save('defaultTextSize',v));
+      chips('timeoutChips',  [{v:2,l:'2 min'},{v:5,l:'5 min'},{v:10,l:'10 min'},{v:0,l:'Never'}], S.screenTimeout, v=>save('screenTimeout',parseInt(v)));
+
+      colorDots('penColorDots', S.defaultPenColor, v=>save('defaultPenColor',v));
+
+      setTog('togPressure', S.pressureSensitivity);
+      setTog('togPalm',     S.palmRejection);
+      setTog('togDate',     S.autoDateStamp);
+      setTog('togContrast', S.highContrast);
+      setTog('togMotion',   S.reducedMotion);
+
+      const ps=document.getElementById('penSlider'); if(ps){ ps.value=S.defaultPenSize; document.getElementById('penSliderVal').textContent=S.defaultPenSize; }
+
+      const dn=document.getElementById('devName');
+      if(dn){ dn.value=S.deviceName||'Noto Device'; dn.onchange=()=>save('deviceName',dn.value.trim()||'Noto Device'); }
+
+      // storage bar
+      const used=notoStorageUsage(), max=5*1024*1024;
+      const pct=Math.min(100,(used/max)*100).toFixed(1);
+      const sf=document.getElementById('storFill'), sl=document.getElementById('storLabel');
+      if(sf)sf.style.width=pct+'%';
+      if(sl)sl.textContent=notoFormatBytes(used)+' used of ~5 MB';
+    }
+
+    function doExport(){
+      const data={};
+      Object.keys(localStorage).filter(k=>k.startsWith('noto_')).forEach(k=>data[k]=localStorage.getItem(k));
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
+      a.download='noto-backup-'+notoTodayISO()+'.json'; a.click();
+      notoToast('Export downloaded');
+    }
+
+    function openReset(){ document.getElementById('resetInput').value=''; document.getElementById('resetBtn').disabled=true; document.getElementById('resetModal').classList.add('show'); }
+    function closeReset(){ document.getElementById('resetModal').classList.remove('show'); }
+    function doReset(){ notoFactoryReset(); closeReset(); notoToast('All data deleted — restarting...'); setTimeout(()=>window.location.href='welcome.html',1500); }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      buildAll();
+      document.getElementById('resetInput').addEventListener('input',function(){ document.getElementById('resetBtn').disabled=this.value.trim().toLowerCase()!=='reset noto'; });
+    });
+  </script>
+</body>
+</html>
