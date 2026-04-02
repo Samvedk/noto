@@ -48,12 +48,12 @@ Noto runs as a native desktop application using the **Tauri Framework**:
 
 ---
 
-## 🎭 Interactive Presentation
-Explore the full vision and engineering philosophy through our built-in pitch deck:
+## 🎭 Presentation & Pitch Deck
+Explore the full vision and engineering philosophy through the built-in pitch deck:
 
-👉 **[View Interactive Live Presentation](https://htmlpreview.github.io/?https://github.com/Samvedk/noto/blob/main/Noto-sam.k-tauri/src/presentation.html)**
-
-*(Note: To view locally, clone the repo and open `Noto-sam.k-tauri/src/presentation.html` in your browser.)*
+1. Clone the repository.
+2. Open `Noto-sam.k-tauri/src/presentation.html` in any modern browser.
+3. Use the arrow keys to navigate the slides.
 
 ---
 
