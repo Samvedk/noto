@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "noto-samk-tauri",
+  "productName": "Noto",
   "version": "0.1.0",
-  "identifier": "com.samved.noto-samk-tauri",
+  "identifier": "com.samved.noto",
   "build": {
     "frontendDist": "../src"
   },
@@ -10,7 +10,7 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "noto-samk-tauri",
+        "title": "Noto",
         "width": 800,
         "height": 600
       }

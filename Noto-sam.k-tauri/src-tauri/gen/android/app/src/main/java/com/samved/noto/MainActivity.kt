@@ -1,4 +1,4 @@
-package com.samved.noto_samk_tauri
+package com.samved.noto
 
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge

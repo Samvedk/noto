@@ -1,4 +1,3 @@
-cat > /mnt/user-data/outputs/page.html << 'EOF'
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -83,7 +82,8 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     .pptb-grip{position:absolute;bottom:0;right:0;width:14px;height:14px;cursor:se-resize;background:linear-gradient(135deg,transparent 50%,var(--accent) 50%);border-radius:0 0 2px 0;}
 
     /* ── DRAWING TOOLBAR ── */
-    .dtb{position:absolute;left:8px;top:50%;transform:translateY(-50%);z-index:150;background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r16);padding:6px 5px;display:flex;flex-direction:column;gap:2px;box-shadow:var(--sh);}
+    .dtb{position:absolute;left:8px;top:50%;transform:translateY(-50%);z-index:150;background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r16);padding:6px 5px;display:flex;flex-direction:column;gap:2px;box-shadow:var(--sh);transition:left .3s, right .3s;}
+    .dtb.to-right{left:auto;right:8px;}
     .t-btn{width:36px;height:36px;border-radius:var(--r8);border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--ease);position:relative;}
     .t-btn:hover{background:var(--g100);}
     .t-btn.on{background:var(--black);}
@@ -92,7 +92,36 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     .t-btn.on svg{stroke:var(--white);}
     .t-sep{width:20px;height:1px;background:var(--g200);margin:2px auto;}
     .t-btn::after{content:attr(data-tip);position:absolute;left:calc(100% + 8px);top:50%;transform:translateY(-50%);background:var(--black);color:var(--white);font-size:10px;padding:3px 8px;border-radius:var(--r8);white-space:nowrap;pointer-events:none;opacity:0;transition:opacity .15s;z-index:999;}
+    .dtb.to-right .t-btn::after{left:auto;right:calc(100% + 8px);}
     .t-btn:hover::after{opacity:1;}
+
+    /* ── LASSO SELECTION ── */
+    .lasso-box{position:absolute;border:2px dashed var(--accent);background:rgba(41,128,185,0.06);z-index:10;pointer-events:all;cursor:move;border-radius:3px;}
+    .lasso-box .lb-bar{position:absolute;top:-32px;left:50%;transform:translateX(-50%);display:flex;gap:3px;background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r8);padding:3px;box-shadow:0 4px 16px rgba(0,0,0,.12);white-space:nowrap;}
+    .lasso-box .lb-btn{padding:4px 8px;border:none;border-radius:6px;background:transparent;font-family:var(--ff);font-size:10px;font-weight:600;cursor:pointer;color:var(--g500);transition:var(--ease);display:flex;align-items:center;gap:3px;}
+    .lasso-box .lb-btn:hover{background:var(--g100);color:var(--black);}
+    .lasso-box .lb-btn.red:hover{color:var(--danger);}
+    .lasso-box .lb-btn svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .lasso-box .lb-grip{position:absolute;bottom:-5px;right:-5px;width:12px;height:12px;background:var(--accent);border-radius:50%;cursor:se-resize;border:2px solid var(--white);box-shadow:0 1px 4px rgba(0,0,0,.2);}
+
+    /* ── PAGE THUMBNAILS ── */
+    .thumb-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;display:none;align-items:flex-start;justify-content:center;backdrop-filter:blur(6px);overflow-y:auto;padding:40px 20px;}
+    .thumb-overlay.show{display:flex;}
+    .thumb-wrap{background:var(--white);border-radius:var(--r16);padding:24px;width:640px;max-width:96vw;box-shadow:0 24px 64px rgba(0,0,0,.18);animation:mIn .22s cubic-bezier(0.4,0,0.2,1);}
+    .thumb-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .thumb-head-t{font-family:var(--fd);font-size:18px;}
+    .thumb-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:12px;}
+    .thumb-card{border:2px solid var(--g200);border-radius:var(--r8);overflow:hidden;cursor:pointer;transition:var(--ease);position:relative;}
+    .thumb-card:hover{border-color:var(--black);transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.1);}
+    .thumb-card.active{border-color:var(--accent);border-width:2.5px;}
+    .thumb-card canvas{width:100%;display:block;background:var(--page-bg);}
+    .thumb-num{position:absolute;bottom:4px;right:6px;font-size:9px;font-weight:700;color:var(--g400);background:rgba(255,255,255,.85);padding:1px 6px;border-radius:10px;}
+
+    /* ── SWIPE INDICATORS ── */
+    .swipe-hint{position:fixed;top:50%;transform:translateY(-50%);z-index:300;background:rgba(0,0,0,.5);color:#fff;font-size:11px;font-weight:600;padding:10px 16px;border-radius:var(--r12);opacity:0;transition:opacity .2s;pointer-events:none;}
+    .swipe-hint.left{left:12px;}
+    .swipe-hint.right{right:12px;}
+    .swipe-hint.show{opacity:1;}
 
     /* ── SIDE PANELS ── */
     .sp{position:absolute;left:58px;top:50%;transform:translateY(-50%);z-index:140;background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r16);padding:13px;box-shadow:var(--sh);width:170px;display:none;}
@@ -137,7 +166,7 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     .sv-dot.saved{background:#27ae60;}
 
     /* Page type menu */
-    .ptm{position:absolute;bottom:calc(var(--bbh)+6px);left:14px;background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r12);box-shadow:var(--sh);padding:5px;z-index:300;min-width:160px;display:none;}
+    .ptm{position:fixed;bottom:calc(var(--bbh)+6px);left:14px;background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r12);box-shadow:var(--sh);padding:5px;z-index:300;min-width:160px;display:none;}
     .ptm.show{display:block;animation:mUp .18s ease;}
     @keyframes mUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
     .pt-opt{display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r8);font-size:12px;font-weight:400;color:var(--black);cursor:pointer;transition:background .15s;}
@@ -197,6 +226,36 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
     .transition-overlay{position:fixed;inset:0;background:var(--black);z-index:99998;transform:translateY(-200%);transition:transform .44s cubic-bezier(0.7,0,0.3,1);pointer-events:none;}
     .transition-overlay.active{transform:translateY(0);pointer-events:all;}
+
+    /* ── SHARE MODAL ── */
+    .share-opts{display:flex;gap:12px;margin-bottom:6px;}
+    .share-card{flex:1;border:1.5px solid var(--g200);border-radius:var(--r12);padding:20px 14px;display:flex;flex-direction:column;align-items:center;gap:10px;cursor:pointer;transition:var(--ease);background:var(--white);}
+    .share-card:hover{border-color:var(--black);background:var(--g50);transform:translateY(-2px);box-shadow:0 6px 24px rgba(0,0,0,0.08);}
+    .share-card.active{border-color:var(--black);background:var(--black);color:var(--white);}
+    .share-card.active .share-ic{background:rgba(255,255,255,0.15);}
+    .share-card.active .share-ic svg{stroke:var(--white);}
+    .share-card.active .share-lbl{color:var(--white);}
+    .share-card.active .share-sub{color:rgba(255,255,255,0.6);}
+    .share-ic{width:46px;height:46px;border-radius:50%;background:var(--g100);display:flex;align-items:center;justify-content:center;transition:var(--ease);}
+    .share-ic svg{width:20px;height:20px;stroke:var(--g500);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s;}
+    .share-card:hover .share-ic svg{stroke:var(--black);}
+    .share-lbl{font-size:13px;font-weight:600;color:var(--black);transition:color .2s;}
+    .share-sub{font-size:10px;color:var(--g400);text-align:center;line-height:1.5;transition:color .2s;}
+    .share-info{font-size:10px;color:var(--g400);text-align:center;line-height:1.6;padding:8px 0 4px;border-top:1px solid var(--g200);margin-top:6px;}
+    .share-info svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2;vertical-align:-1px;margin-right:2px;}
+    /* Transfer progress */
+    .share-progress{display:none;flex-direction:column;align-items:center;gap:14px;padding:16px 0 8px;}
+    .share-progress.show{display:flex;}
+    .sp-ring{width:64px;height:64px;position:relative;}
+    .sp-ring svg{width:64px;height:64px;transform:rotate(-90deg);}
+    .sp-ring-bg{fill:none;stroke:var(--g200);stroke-width:5;}
+    .sp-ring-fg{fill:none;stroke:var(--black);stroke-width:5;stroke-linecap:round;stroke-dasharray:176;stroke-dashoffset:176;transition:stroke-dashoffset 0.4s ease;}
+    .sp-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:var(--black);}
+    .sp-status{font-size:12px;color:var(--g500);text-align:center;line-height:1.6;}
+    .sp-status strong{color:var(--black);font-weight:600;}
+    .sp-done-ic{width:52px;height:52px;border-radius:50%;background:#27ae60;display:flex;align-items:center;justify-content:center;animation:popIn .3s cubic-bezier(.4,0,.2,1);}
+    .sp-done-ic svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
+    @keyframes popIn{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
   </style>
 </head>
 <body>
@@ -248,6 +307,41 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     </div>
   </div>
 
+  <!-- SHARE MODAL -->
+  <div class="back" id="shareBack">
+    <div class="mod" style="width:400px">
+      <div id="shareChoose">
+        <div class="mod-t">Share This Page</div>
+        <p class="mod-s">Send page <strong id="sharePgNum"></strong> to another Noto device or to your mobile.</p>
+        <div class="share-opts">
+          <div class="share-card" id="shareBtCard" onclick="startShare('bluetooth')">
+            <div class="share-ic"><svg viewBox="0 0 24 24"><path d="M6.5 6.5l11 11L12 23V1l5.5 5.5-11 11"/></svg></div>
+            <span class="share-lbl">Bluetooth</span>
+            <span class="share-sub">Send wirelessly to nearby devices</span>
+          </div>
+          <div class="share-card" id="shareUsbCard" onclick="startShare('usb')">
+            <div class="share-ic"><svg viewBox="0 0 24 24"><rect x="4" y="2" width="16" height="20" rx="2"/><line x1="8" y1="6" x2="16" y2="6"/><circle cx="12" cy="14" r="3"/></svg></div>
+            <span class="share-lbl">USB</span>
+            <span class="share-sub">Transfer via cable to connected device</span>
+          </div>
+        </div>
+        <div class="share-info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg> Noto can only send files — receiving is disabled for focus.</div>
+        <div class="mod-acts"><button class="btn-sec" onclick="closeShareM()">Cancel</button></div>
+      </div>
+      <div id="shareTransfer" style="display:none">
+        <div class="mod-t" id="shareTransTitle">Sending...</div>
+        <div class="share-progress show">
+          <div class="sp-ring" id="shareRing">
+            <svg viewBox="0 0 64 64"><circle class="sp-ring-bg" cx="32" cy="32" r="28"/><circle class="sp-ring-fg" id="shareRingFg" cx="32" cy="32" r="28"/></svg>
+            <div class="sp-pct" id="sharePct">0%</div>
+          </div>
+          <div class="sp-status" id="shareStatus">Preparing page data...</div>
+        </div>
+        <div class="mod-acts"><button class="btn-sec" id="shareDoneBtn" onclick="closeShareM()" style="display:none">Done</button></div>
+      </div>
+    </div>
+  </div>
+
   <!-- BOOKMARKS PANEL -->
   <div class="bmp" id="bmpanel">
     <div class="bmp-head"><span class="bmp-title">Bookmarks</span><button class="bmp-close" onclick="closeBmP()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
@@ -255,6 +349,19 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
   </div>
 
   <div class="toast" id="toast"></div>
+  <div class="swipe-hint left" id="swipeL">◀ Prev</div>
+  <div class="swipe-hint right" id="swipeR">Next ▶</div>
+
+  <!-- PAGE THUMBNAIL GALLERY -->
+  <div class="thumb-overlay" id="thumbOverlay" onclick="if(event.target===this)closeThumbGrid()">
+    <div class="thumb-wrap">
+      <div class="thumb-head">
+        <span class="thumb-head-t">Page Gallery</span>
+        <button class="bmp-close" onclick="closeThumbGrid()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="thumb-grid" id="thumbGrid"></div>
+    </div>
+  </div>
 
   <div class="app">
     <header class="tb">
@@ -273,6 +380,7 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
         <button class="ib" onclick="doUndo()" title="Undo"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg></button>
         <button class="ib" onclick="doRedo()" title="Redo"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.5"/></svg></button>
         <button class="ib" onclick="resetZoom()" title="Reset Zoom"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
+        <button class="ib" onclick="openThumbGrid()" title="Page Gallery"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg></button>
         <button class="ib" onclick="openDateM()" title="Date Stamp"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></button>
         <button class="ib" id="bmBtn" onclick="openBmM()" title="Bookmark"><svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg><span class="bm-dot"></span></button>
         <button class="ib" onclick="toggleBmP()" title="All Bookmarks"><svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg></button>
@@ -294,6 +402,8 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
         <button class="t-btn"     id="tText"    data-tip="Text Box"     onclick="activateText()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
         <div class="t-sep"></div>
         <button class="t-btn"     id="tEraser"  data-tip="Eraser"       onclick="toggleEraserP()"><svg viewBox="0 0 24 24"><path d="m20 20-8.5-8.5M4 20h16M7 17 3 13l9-9 7 7"/></svg></button>
+        <div class="t-sep"></div>
+        <button class="t-btn"     id="tLasso"   data-tip="Lasso Select" onclick="setTool('lasso')"><svg viewBox="0 0 24 24"><path d="M7 22a5 5 0 0 1-2-4c0-3 2-5 7-5s7 2 7 5-1 4-1 4"/><circle cx="12" cy="8" r="5"/></svg></button>
       </div>
 
       <!-- PEN OPTIONS PANEL -->
@@ -338,8 +448,9 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
 
     <footer class="bb">
       <div class="bb-l">
-        <button class="bb-btn" onclick="togglePtm()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><span id="ptLabel">Lined</span></button>
+        <button class="bb-btn" onclick="togglePtm(event)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><span id="ptLabel">Lined</span></button>
         <button class="bb-btn" onclick="addPage()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Add Page</button>
+        <button class="bb-btn" onclick="openShareM()"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>
       </div>
       <div class="sv"><span class="sv-dot" id="saveDot"></span><span id="saveLabel">Saved</span></div>
       <div class="bb-r">
@@ -347,17 +458,19 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
         <button class="bb-btn red" onclick="openDelPageM()"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>Delete</button>
       </div>
     </footer>
+
+    <!-- PAGE TYPE MENU (inside .app for proper z-index stacking) -->
+    <div class="ptm" id="ptMenu">
+      <div class="pt-opt on" data-t="lined"   onclick="setPgType('lined')">Lined</div>
+      <div class="pt-opt"    data-t="graph"   onclick="setPgType('graph')">Graph</div>
+      <div class="pt-opt"    data-t="blank"   onclick="setPgType('blank')">Blank</div>
+      <div class="pt-opt"    data-t="dotted"  onclick="setPgType('dotted')">Dotted</div>
+      <div class="pt-opt"    data-t="cornell" onclick="setPgType('cornell')">Cornell</div>
+      <div class="pt-opt"    data-t="title"   onclick="setPgType('title')">Title Page</div>
+    </div>
   </div>
 
-  <!-- PAGE TYPE MENU -->
-  <div class="ptm" id="ptMenu">
-    <div class="pt-opt on" data-t="lined"   onclick="setPgType('lined')">Lined</div>
-    <div class="pt-opt"    data-t="graph"   onclick="setPgType('graph')">Graph</div>
-    <div class="pt-opt"    data-t="blank"   onclick="setPgType('blank')">Blank</div>
-    <div class="pt-opt"    data-t="dotted"  onclick="setPgType('dotted')">Dotted</div>
-    <div class="pt-opt"    data-t="cornell" onclick="setPgType('cornell')">Cornell</div>
-    <div class="pt-opt"    data-t="title"   onclick="setPgType('title')">Title Page</div>
-  </div>
+
 
   <script src="renderer.js"></script>
   <script src="keyboard.js"></script>
@@ -367,15 +480,28 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     const curGradeId   = notoGetCurrentGrade();
     const curSubjectId = notoGetCurrentSubject();
     const curNbId      = notoGetCurrentNb();
-    const _nbs  = notoLoadNotebooks(curSubjectId);
-    const _meta = _nbs.find(n=>n.id===curNbId)||{name:'Notebook',pageCount:1};
-    document.getElementById('nbTitle').textContent = _meta.name;
+
+    let _nbs  = [];
+    let _meta = {name:'Notebook',pageCount:1};
+    let pgData = {};
     const MAX_PG = 700;
-    let curPage=1, totPages=_meta.pageCount||1;
-    let pgData=notoLoadPages(curNbId), curPgType='lined';
+    let curPage=1, totPages=1, curPgType='lined';
+
+    async function initStorage(){
+      _nbs  = await notoLoadNotebooks(curSubjectId);
+      _meta = _nbs.find(n=>n.id===curNbId)||{name:'Notebook',pageCount:1};
+      document.getElementById('nbTitle').textContent = _meta.name;
+      totPages = _meta.pageCount||1;
+      pgData = await notoLoadPages(curNbId);
+      curPgType = getPg(curPage).type || 'lined';
+      document.getElementById('ptLabel').textContent = PT[curPgType];
+      updCounter();
+      initCanvas();
+    }
+
     function getPg(n){const k=String(n);if(!pgData[k])pgData[k]={strokes:[],type:curPgType,stamps:[],bmLabel:null};return pgData[k];}
     function updCounter(){document.getElementById('pgNum').textContent=curPage+' / '+totPages;document.getElementById('prevBtn').disabled=curPage<=1;document.getElementById('nextBtn').disabled=curPage>=totPages;}
-    function syncMeta(){const l=notoLoadNotebooks(curSubjectId);const i=l.findIndex(n=>n.id===curNbId);if(i!==-1){l[i].pageCount=totPages;l[i].lastEdited=notoToday();notoSaveNotebooks(curSubjectId,l);}}
+    async function syncMeta(){const l=await notoLoadNotebooks(curSubjectId);const i=l.findIndex(n=>n.id===curNbId);if(i!==-1){l[i].pageCount=totPages;l[i].lastEdited=notoToday();await notoSaveNotebooks(curSubjectId,l);}}
   </script>
 
   <!-- ── CANVAS ── -->
@@ -394,8 +520,11 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
       const r=ca.getBoundingClientRect();
       const sc=Math.min(r.width*.94/PAGE_W, r.height*.94/PAGE_H, 2.0);
       const dW=Math.round(PAGE_W*sc), dH=Math.round(PAGE_H*sc);
+      const dpr = window.devicePixelRatio || 1;
       ps.style.width=dW+'px'; ps.style.height=dH+'px';
-      [dwC,bgC].forEach(c=>{c.width=dW;c.height=dH;c.style.width=dW+'px';c.style.height=dH+'px';});
+      dwC.width=dW*dpr; dwC.height=dH*dpr; bgC.width=dW*dpr; bgC.height=dH*dpr;
+      [dwC,bgC].forEach(c=>{c.style.width=dW+'px';c.style.height=dH+'px';});
+      ctx.setTransform(dpr,0,0,dpr,0,0); bgCtx.setTransform(dpr,0,0,dpr,0,0);
       cScale=sc;
       baseX=(r.width-dW)/2; baseY=(r.height-dH)/2;
       zc.style.position='absolute'; zc.style.left=baseX+'px'; zc.style.top=baseY+'px';
@@ -436,7 +565,8 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     ca.addEventListener('pointerdown',e=>{
       tch.set(e.pointerId,{clientX:e.clientX,clientY:e.clientY});
       if(tch.size===2){
-        pinching=true; isDrawing=false; currentPath=[];
+        pinching=true; isDrawing=false; isShDraw=false; currentPath=[];
+        if(typeof redraw==='function') redraw(); // Wipe accidental strokes instantly before pinch
         const pts=[...tch.values()];
         lastPD=pd(pts[0],pts[1]); lastPM=pm(pts[0],pts[1]);
       }
@@ -470,8 +600,25 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     ca.addEventListener('pointercancel',endTch,{passive:true});
 
     // Trackpad/mouse wheel zoom toward cursor
+    let _wheelTmr=null;
     ca.addEventListener('wheel',e=>{
       e.preventDefault();
+      
+      // Detect horizontal swipe for page navigation (Mac Trackpad)
+      if(Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 40){
+        if(!_wheelTmr){
+          if(e.deltaX>0 && curPage<totPages){
+            const r=document.getElementById('swipeR'); r.classList.add('show'); setTimeout(()=>r.classList.remove('show'),300);
+            nextPg();
+          }else if(e.deltaX<0 && curPage>1){
+            const l=document.getElementById('swipeL'); l.classList.add('show'); setTimeout(()=>l.classList.remove('show'),300);
+            prevPg();
+          }
+          _wheelTmr=setTimeout(()=>{_wheelTmr=null;}, 600); // 600ms debounce
+        }
+        return;
+      }
+
       const ar=ca.getBoundingClientRect();
       const mx=e.clientX-ar.left, my=e.clientY-ar.top;
       const nZ=Math.min(ZMAX,Math.max(ZMIN,Z*(e.deltaY>0?0.92:1.08)));
@@ -495,7 +642,7 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
       else if(t==='title'){bgCtx.strokeStyle='rgba(0,0,0,0.05)';bgCtx.lineWidth=2;bgCtx.strokeRect(28,28,w-56,h-56);const my=Math.round(h*0.36);bgCtx.strokeStyle='rgba(0,0,0,0.04)';bgCtx.lineWidth=1;bgCtx.beginPath();bgCtx.moveTo(56,my);bgCtx.lineTo(w-56,my);bgCtx.stroke();bgCtx.fillStyle='rgba(0,0,0,0.06)';bgCtx.font='italic '+Math.round(11*cScale)+'px DM Serif Display,serif';bgCtx.textAlign='center';bgCtx.fillText('Title',w/2,my-10);bgCtx.textAlign='left';}
     }
     function setPgType(t){getPg(curPage).type=t;curPgType=t;drawBg();document.getElementById('ptLabel').textContent=PT[t];document.querySelectorAll('.pt-opt').forEach(o=>o.classList.toggle('on',o.dataset.t===t));closePtm();trigSave();}
-    function togglePtm(){const m=document.getElementById('ptMenu');m.classList.toggle('show');if(m.classList.contains('show'))setTimeout(()=>document.addEventListener('click',closePtm,{once:true}),50);}
+    function togglePtm(e){if(e)e.stopPropagation();const m=document.getElementById('ptMenu');const isOpen=m.classList.contains('show');if(isOpen){closePtm();return;}m.classList.add('show');function outsideClick(ev){if(m.contains(ev.target))return;closePtm();document.removeEventListener('pointerdown',outsideClick);}setTimeout(()=>document.addEventListener('pointerdown',outsideClick),80);}
     function closePtm(){document.getElementById('ptMenu').classList.remove('show');}
   </script>
 
@@ -509,15 +656,16 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     const SHAPES=[{id:'rect',l:'Rect',svg:'<rect x="3" y="5" width="18" height="14" rx="1"/>'},{id:'square',l:'Square',svg:'<rect x="4" y="4" width="16" height="16" rx="1"/>'},{id:'circle',l:'Circle',svg:'<circle cx="12" cy="12" r="9"/>'},{id:'triangle',l:'Tri',svg:'<polygon points="12,3 22,21 2,21"/>'},{id:'line',l:'Line',svg:'<line x1="4" y1="20" x2="20" y2="4"/>'},{id:'arrow',l:'Arrow',svg:'<line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>'}];
 
     function setTool(t){
+      if(typeof clearLasso === 'function' && tool==='lasso' && t!=='lasso') clearLasso();
       tool=t;
-      ['Pen','Pencil','HL','FP','Eraser','Text'].forEach(x=>{const b=document.getElementById('t'+x);if(b)b.classList.remove('on');});
-      const ids={pen:'tPen',pencil:'tPencil',highlight:'tHL',fountain:'tFP',eraser:'tEraser',text:'tText'};
+      ['Pen','Pencil','HL','FP','Eraser','Text', 'Lasso'].forEach(x=>{const b=document.getElementById('t'+x);if(b)b.classList.remove('on');});
+      const ids={pen:'tPen',pencil:'tPencil',highlight:'tHL',fountain:'tFP',eraser:'tEraser',text:'tText',lasso:'tLasso'};
       if(ids[t]){const b=document.getElementById(ids[t]);if(b)b.classList.add('on');}
       document.getElementById('tShape').classList.remove('on');
       ['penPanel','textPanel','eraserPanel','shapePanel'].forEach(id=>document.getElementById(id).classList.remove('show'));
       const ec=document.getElementById('erCur');
       if(t==='eraser'){dwC.classList.add('er-mode');ec.style.display='block';updErCur();}
-      else{dwC.classList.remove('er-mode');ec.style.display='none';dwC.style.cursor='crosshair';}
+      else{dwC.classList.remove('er-mode');ec.style.display='none';dwC.style.cursor=t==='lasso'?'default':'crosshair';}
     }
     function updErCur(){const d=Math.round(erSz*cScale*2);const c=document.getElementById('erCur');c.style.width=d+'px';c.style.height=d+'px';}
 
@@ -586,18 +734,38 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
   <script>
     let isDrawing=false, currentPath=[], undoSt=[], redoSt=[];
     let shStart=null, isShDraw=false, preShSnap=null;
+    // Palm Rejection & Handedness state
+    let _lastPenTime=0, _lastPenX=0, _lastPenY=0, _lastPenP=0;
 
     // Convert screen coord → canvas pixel (correct at ALL zoom levels)
     function getPos(e){ return sc2cv(e.clientX, e.clientY); }
 
     dwC.addEventListener('pointerdown',e=>{
       if(pinching)return;
+      const tNow = Date.now();
+      if(e.pointerType==='pen') { _lastPenTime = tNow; _lastPenX = e.clientX; _lastPenY = e.clientY; }
+      
+      // Palm Rejection Logic:
+      // 1. Block massive touch areas (fat fingers / palms) - some OS expose radius/width
+      if(e.pointerType==='touch' && (e.width > 25 || e.height > 25)) return;
+      // 2. Block touches if a stylus was recently active (standard palm rejection)
+      if(e.pointerType==='touch' && (tNow - _lastPenTime < 1500)) return;
+      // 3. Handedness spatial rejection
+      if(e.pointerType==='touch' && tNow - _lastPenTime < 8000) {
+          const S = (typeof notoLoadSettings === 'function') ? notoLoadSettings() : {};
+          if(S.handedness === 'right' && e.clientX > _lastPenX + 40) return; // Right-handed palm is generally to the right
+          if(S.handedness === 'left' && e.clientX < _lastPenX - 40) return; // Left-handed palm is generally to the left
+      }
+
       if(e.pointerType==='touch'&&!e.isPrimary)return;
+      if(e.pointerType==='pen'&&e.pressure===0)return; // Block stylus hover from starting strokes
+      
       e.preventDefault(); e.stopPropagation();
       dwC.setPointerCapture(e.pointerId);
       if(tool==='text'){placeTxBox(e);return;}
       if(tool==='eraser'){isDrawing=true;eraseAt(getPos(e));return;}
       if(tool==='shape'){isShDraw=true;shStart=getPos(e);preShSnap=ctx.getImageData(0,0,dwC.width,dwC.height);redoSt=[];return;}
+      if(tool==='lasso'){isDrawing=true;currentPath=[getPos(e)];return;}
       isDrawing=true;redoSt=[];
       const p=getPos(e),s=stStyle();
       currentPath=[{x:p.x,y:p.y,pressure:e.pressure||0.5}];currentPath._s=s;
@@ -605,10 +773,27 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
 
     dwC.addEventListener('pointermove',e=>{
       if(pinching)return;
+      const tNow = Date.now();
+      if(e.pointerType==='pen') { _lastPenTime = tNow; _lastPenX = e.clientX; _lastPenY = e.clientY; _lastPenP = e.pressure||0.5; }
+      
+      // Live palm rejection
+      if(e.pointerType==='touch' && (e.width > 25 || e.height > 25)) return;
+      if(e.pointerType==='touch' && (tNow - _lastPenTime < 1500)) return;
+      
       if(e.pointerType==='touch'&&!e.isPrimary)return;
+      if(e.pointerType==='pen'&&e.pressure===0)return; // Block ghost strokes on stylus hover
+      if(isDrawing&&e.buttons===0&&e.pointerType!=='touch'){finalise(e);return;} // Ensure pointerup isn't missed
       e.preventDefault();
       if(tool==='eraser'&&isDrawing){eraseAt(getPos(e));return;}
       if(tool==='shape'&&isShDraw&&shStart){ctx.putImageData(preShSnap,0,0);drawShPrev(shStart,getPos(e));return;}
+      if(tool==='lasso'&&isDrawing){
+        const p=getPos(e); currentPath.push(p); redraw();
+        ctx.strokeStyle='rgba(41,128,185,0.8)'; ctx.setLineDash([5,5]); ctx.lineWidth=2;
+        ctx.beginPath(); ctx.moveTo(currentPath[0].x,currentPath[0].y);
+        for(let i=1;i<currentPath.length;i++) ctx.lineTo(currentPath[i].x,currentPath[i].y);
+        ctx.stroke(); ctx.setLineDash([]);
+        return;
+      }
       if(!isDrawing)return;
       const p=getPos(e);currentPath.push({x:p.x,y:p.y,pressure:e.pressure||0.5});renderLive();
     },{passive:false});
@@ -616,20 +801,89 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     dwC.addEventListener('pointerup',finalise);
     dwC.addEventListener('pointercancel',finalise);
 
+    function triggerLineAlignPrompt(sStroke) {
+       let btn = document.getElementById('snapLineBtn');
+       if(!btn) { 
+          btn = document.createElement('button');
+          btn.id = 'snapLineBtn';
+          btn.className = 'pptb-btn';
+          btn.style.position = 'fixed';
+          btn.style.zIndex = '1000';
+          btn.style.background = '#0a84ff';
+          btn.style.color = 'white';
+          btn.style.padding = '10px 24px';
+          btn.style.borderRadius = '30px';
+          btn.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)';
+          btn.style.border = '1px solid rgba(255,255,255,0.2)';
+          btn.style.fontWeight = '600';
+          btn.style.letterSpacing = '0.5px';
+          btn.style.transition = 'opacity 0.2s';
+          btn.innerHTML = '📏 Snap to Grid?';
+          document.body.appendChild(btn);
+       }
+       // Positioning strictly on screen
+       btn.style.left = '50%';
+       btn.style.bottom = '80px';
+       btn.style.transform = 'translateX(-50%)';
+       btn.style.display = 'block';
+       btn.style.opacity = '1';
+       
+       btn.onclick = (e) => {
+          e.stopPropagation(); e.preventDefault();
+          const pg = getPg(curPage);
+          const t = pg.type || 'lined';
+          let spacing = (t==='graph'||t==='dotted') ? 24 : 30;
+          spacing *= cScale; 
+          
+          if(Math.abs(sStroke.y2 - sStroke.y1) < Math.abs(sStroke.x2 - sStroke.x1)) {
+             let gridY = Math.round(sStroke.y1 / spacing) * spacing;
+             if(t==='lined') {
+                const startY = 58 * cScale;
+                gridY = startY + Math.round((sStroke.y1 - startY) / spacing) * spacing;
+             }
+             sStroke.y1 = gridY; sStroke.y2 = gridY;
+          } else {
+             let gridX = Math.round(sStroke.x1 / spacing) * spacing;
+             sStroke.x1 = gridX; sStroke.x2 = gridX;
+          }
+          redraw(); trigSave();
+          btn.style.opacity = '0';
+          setTimeout(() => btn.style.display = 'none', 300);
+       };
+       setTimeout(()=> { if(btn){ btn.style.opacity='0'; setTimeout(()=>btn.style.display='none',300); } }, 4500);
+    }
+
     function finalise(e){
       if(tool==='eraser'){isDrawing=false;return;}
       if(tool==='shape'&&isShDraw){
         isShDraw=false;if(!shStart)return;
         const p=getPos(e);ctx.putImageData(preShSnap,0,0);
         const s=drawShPrev(shStart,p);
-        if(s){getPg(curPage).strokes.push(s);undoSt.push({pg:curPage});trigSave();}
+        if(s){
+           getPg(curPage).strokes.push(s);undoSt.push({pg:curPage});trigSave();
+           const pt = getPg(curPage).type || 'lined';
+           if (s.shape === 'line' && (pt === 'lined' || pt === 'graph' || pt === 'dotted')) {
+              // Trigger alignment ONLY if it's somewhat pure horizontal or vertical
+              const slope = Math.abs((s.y2-s.y1)/(s.x2-s.x1));
+              if(slope < 0.25 || slope > 4) {
+                triggerLineAlignPrompt(s);
+              }
+           }
+        }
         shStart=null;preShSnap=null;return;
+      }
+      if(tool==='lasso'){
+        isDrawing=false;
+        if(typeof finishLasso==='function') finishLasso();
+        return;
       }
       if(!isDrawing)return;isDrawing=false;
       if(currentPath.length<2){currentPath=[];return;}
       const s=currentPath._s||stStyle();
-      getPg(curPage).strokes.push({path:currentPath.map(p=>({x:p.x,y:p.y,pressure:p.pressure})),tool,color:s.color,size:s.size,alpha:s.alpha,composite:s.comp});
+      const stPath = currentPath.map(p=>({x:p.x,y:p.y,pressure:p.pressure}));
+      getPg(curPage).strokes.push({path:stPath,tool,color:s.color,size:s.size,alpha:s.alpha,composite:s.comp});
       undoSt.push({pg:curPage});currentPath=[];trigSave();
+      redraw();
     }
 
     function renderLive(){redraw();if(currentPath.length<2)return;drawPath(currentPath,currentPath._s||stStyle());}
@@ -665,6 +919,20 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
       else if(shType==='arrow'){const hl=Math.min(22,Math.sqrt(w*w+h*h)*.3),a=Math.atan2(h,w);ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a-Math.PI/6),y2-hl*Math.sin(a-Math.PI/6));ctx.moveTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a+Math.PI/6),y2-hl*Math.sin(a+Math.PI/6));}
       if(shFill&&shType!=='line'&&shType!=='arrow')ctx.fill();
       ctx.stroke();
+
+      // Feature: Show Shape Dimensions in real-time
+      ctx.font = '500 13px -apple-system, BlinkMacSystemFont, sans-serif';
+      ctx.fillStyle = penCol === '#000000' || penCol === '#1a1a2e' ? '#444' : penCol;
+      const dimX = Math.round(Math.abs(w));
+      const dimY = Math.round(Math.abs(h));
+      if(shType!=='line' && shType!=='arrow') {
+          ctx.fillText(`${dimX} × ${dimY} px`, Math.max(x1, x2) + 12, y2);
+      } else {
+          // Length for lines/arrows
+          const length = Math.round(Math.hypot(w, h));
+          ctx.fillText(`${length} px`, x2 + 12, y2 + 12);
+      }
+
       return{type:'shape',shape:shType,x1,y1,x2,y2,color:penCol,size:penSz,filled:shFill};
     }
     function drawShFromSt(s){
@@ -706,9 +974,126 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
   <!-- ── AUTOSAVE ── -->
   <script>
     let _saveTmr=null;
-    function trigSave(){notoSaveStart();clearTimeout(_saveTmr);_saveTmr=setTimeout(()=>{notoSavePages(curNbId,pgData);syncMeta();notoSaveDone();},800);}
+    function trigSave(){
+      notoSaveStart();
+      clearTimeout(_saveTmr);
+      _saveTmr=setTimeout(async()=>{
+        await notoSavePages(curNbId,pgData);
+        await syncMeta();
+        notoSaveDone();
+      },800);
+    }
     setInterval(trigSave,30000);
-    function saveExit(){discardTxBox();clearTimeout(_saveTmr);notoSavePages(curNbId,pgData);syncMeta();notoNavigate('notebook.html');}
+    async function saveExit(){
+      discardTxBox();
+      clearTimeout(_saveTmr);
+      await notoSavePages(curNbId,pgData);
+      await syncMeta();
+      notoNavigate('notebook.html');
+    }
+
+    /* ── SHARE SYSTEM ── */
+    function openShareM(){
+      document.getElementById('sharePgNum').textContent=(_meta.name||'Notebook')+' — Page '+curPage;
+      document.getElementById('shareChoose').style.display='block';
+      document.getElementById('shareTransfer').style.display='none';
+      document.getElementById('shareBtCard').classList.remove('active');
+      document.getElementById('shareUsbCard').classList.remove('active');
+      document.getElementById('shareBack').classList.add('show');
+    }
+    function closeShareM(){
+      document.getElementById('shareBack').classList.remove('show');
+    }
+
+    function startShare(method){
+      // Highlight selected card
+      document.getElementById('shareBtCard').classList.toggle('active', method==='bluetooth');
+      document.getElementById('shareUsbCard').classList.toggle('active', method==='usb');
+
+      // Prepare the page image data (same as old export)
+      const expC=document.createElement('canvas');
+      expC.width=bgC.width; expC.height=bgC.height;
+      const expCtx=expC.getContext('2d');
+      expCtx.drawImage(bgC,0,0);
+      expCtx.drawImage(dwC,0,0);
+      const pg=getPg(curPage);
+      if(pg.stamps){pg.stamps.forEach(s=>{
+        expCtx.font='11px DM Sans,sans-serif';
+        expCtx.fillStyle='rgba(0,0,0,0.38)';
+        expCtx.fillText(s.label?s.date+' — '+s.label:s.date,s.x+3,s.y+14);
+      });}
+      const imgData=expC.toDataURL('image/png');
+      const sizeKB=Math.round(imgData.length*0.75/1024);
+
+      // Switch to transfer view
+      setTimeout(()=>{
+        document.getElementById('shareChoose').style.display='none';
+        document.getElementById('shareTransfer').style.display='block';
+        const isBt=method==='bluetooth';
+        document.getElementById('shareTransTitle').textContent=isBt?'Sending via Bluetooth':'Sending via USB';
+        runTransferAnim(method, sizeKB, imgData);
+      },300);
+    }
+
+    function runTransferAnim(method, sizeKB, imgData){
+      const ring=document.getElementById('shareRingFg');
+      const pct=document.getElementById('sharePct');
+      const status=document.getElementById('shareStatus');
+      const doneBtn=document.getElementById('shareDoneBtn');
+      const isBt=method==='bluetooth';
+      const circumference=2*Math.PI*28; // r=28
+      ring.style.strokeDasharray=circumference;
+      ring.style.strokeDashoffset=circumference;
+      doneBtn.style.display='none';
+
+      const steps=isBt?[
+        {p:0,  msg:'Scanning for nearby Noto devices...', delay:800},
+        {p:10, msg:'Device found — pairing...', delay:600},
+        {p:20, msg:'Paired. Preparing page image ('+sizeKB+' KB)...', delay:500},
+        {p:40, msg:'Sending data via Bluetooth...', delay:900},
+        {p:60, msg:'Transferring... '+Math.round(sizeKB*0.6)+' / '+sizeKB+' KB', delay:700},
+        {p:80, msg:'Almost there... '+Math.round(sizeKB*0.8)+' / '+sizeKB+' KB', delay:600},
+        {p:95, msg:'Finalising transfer...', delay:400},
+        {p:100,msg:'done', delay:0}
+      ]:[
+        {p:0,  msg:'Detecting USB connection...', delay:600},
+        {p:15, msg:'USB device connected — verifying Noto protocol...', delay:500},
+        {p:30, msg:'Authorised. Preparing page image ('+sizeKB+' KB)...', delay:400},
+        {p:55, msg:'Sending data via USB...', delay:500},
+        {p:75, msg:'Transferring... '+Math.round(sizeKB*0.75)+' / '+sizeKB+' KB', delay:400},
+        {p:90, msg:'Verifying integrity...', delay:350},
+        {p:100,msg:'done', delay:0}
+      ];
+
+      let i=0;
+      function next(){
+        if(i>=steps.length)return;
+        const s=steps[i];
+        const offset=circumference-(s.p/100)*circumference;
+        ring.style.strokeDashoffset=offset;
+        pct.textContent=s.p+'%';
+        if(s.msg==='done'){
+          // Show completion state
+          document.getElementById('shareTransTitle').textContent='Sent Successfully';
+          document.querySelector('.sp-ring').outerHTML='<div class="sp-done-ic"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></div>';
+          pct.style.display='none';
+          status.innerHTML='<strong>Page '+curPage+'</strong> was shared via '+(isBt?'Bluetooth':'USB')+'.<br>'+sizeKB+' KB transferred successfully.';
+          doneBtn.style.display='inline-flex';
+
+          // Also trigger a real download as backup
+          const a=document.createElement('a');
+          const nbName=(_meta.name||'Notebook').replace(/[^a-zA-Z0-9]/g,'_');
+          a.download='Noto_'+nbName+'_Page'+curPage+'_'+notoTodayISO()+'.png';
+          a.href=imgData;
+          a.click();
+          return;
+        }
+        status.textContent=s.msg;
+        i++;
+        setTimeout(next, steps[i-1].delay);
+      }
+      next();
+    }
   </script>
 
   <!-- ── DATE STAMP ── -->
@@ -833,7 +1218,20 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     function openDelPageM(){if(totPages<=1){notoToast('Cannot delete the only page');return;}document.getElementById('delPageIn').value='';document.getElementById('delPageBtn').disabled=true;document.getElementById('delPageBack').classList.add('show');}
     function closeDelPageM(){document.getElementById('delPageBack').classList.remove('show');}
     function confirmClear(){const pg=getPg(curPage);pg.strokes=[];pg.stamps=[];redraw();refreshStamps();trigSave();closeClearM();notoToast('Page cleared');}
-    function confirmDelPage(){delete pgData[String(curPage)];for(let i=curPage;i<totPages;i++){pgData[String(i)]=pgData[String(i+1)];delete pgData[String(i+1)];}totPages--;if(curPage>totPages)curPage=totPages;syncMeta();notoSavePages(curNbId,pgData);onPgChange();closeDelPageM();notoToast('Page deleted');}
+    async function confirmDelPage(){
+      delete pgData[String(curPage)];
+      for(let i=curPage;i<totPages;i++){
+        pgData[String(i)]=pgData[String(i+1)];
+        delete pgData[String(i+1)];
+      }
+      totPages--;
+      if(curPage>totPages)curPage=totPages;
+      await syncMeta();
+      await notoSavePages(curNbId,pgData);
+      onPgChange();
+      closeDelPageM();
+      notoToast('Page deleted');
+    }
     document.addEventListener('DOMContentLoaded',()=>{
       document.getElementById('clearIn').addEventListener('input',function(){document.getElementById('clearBtn').disabled=this.value.trim().toLowerCase()!=='delete';});
       document.getElementById('delPageIn').addEventListener('input',function(){document.getElementById('delPageBtn').disabled=this.value.trim().toLowerCase()!=='delete';});
@@ -848,24 +1246,277 @@ cat > /mnt/user-data/outputs/page.html << 'EOF'
     });
   </script>
 
+  <!-- ── SWIPE NAVIGATION ── -->
+  <script>
+    // Two-finger swipe navigation for tablets (prevents accidental 1-finger drawing logic conflict)
+    let _stX2=0, _stY2=0, _is2Swipe=false;
+    ca.addEventListener('touchstart',e=>{
+      if(e.touches.length===2){
+        _is2Swipe=true;
+        _stX2=(e.touches[0].clientX+e.touches[1].clientX)/2;
+        _stY2=(e.touches[0].clientY+e.touches[1].clientY)/2;
+      } else {
+        _is2Swipe=false;
+      }
+    },{passive:true});
+    ca.addEventListener('touchend',e=>{
+      if(!_is2Swipe)return;
+      // Evaluate swipe when fingers lift
+      if(e.touches.length===0 && e.changedTouches.length>0){
+        let cx = e.changedTouches[0].clientX;
+        let cy = e.changedTouches[0].clientY;
+        if(e.changedTouches.length>1) {
+          cx = (e.changedTouches[0].clientX + e.changedTouches[1].clientX)/2;
+          cy = (e.changedTouches[0].clientY + e.changedTouches[1].clientY)/2;
+        }
+
+        const dx=cx-_stX2, dy=cy-_stY2;
+        // Disable page turning IF zoomed in! (so you can 2-finger pan freely)
+        if(Z > 1.05) { _is2Swipe=false; return; }
+        
+        if(Math.abs(dx)>120 && Math.abs(dy)<80){ // Horizontal swipe detected
+          if(dx>0 && curPage>1) {
+            const l=document.getElementById('swipeL'); l.classList.add('show'); setTimeout(()=>l.classList.remove('show'),300);
+            prevPg();
+          } else if(dx<0 && curPage<totPages) {
+            const r=document.getElementById('swipeR'); r.classList.add('show'); setTimeout(()=>r.classList.remove('show'),300);
+            nextPg();
+          }
+        }
+        _is2Swipe=false;
+      }
+    },{passive:true});
+  </script>
+
+  <!-- ── PAGE THUMBNAILS ── -->
+  <script>
+    function openThumbGrid(){
+      const grid = document.getElementById('thumbGrid');
+      grid.innerHTML = '';
+      for(let i=1; i<=totPages; i++){
+        const card = document.createElement('div');
+        card.className = 'thumb-card' + (i===curPage?' active':'');
+        card.onclick = () => { curPage=i; onPgChange(); closeThumbGrid(); };
+        
+        const cc = document.createElement('canvas'); // We draw a miniature thumbnail
+        const dpr = window.devicePixelRatio || 1;
+        const thW = 120, thH = 120 * (PAGE_H/PAGE_W);
+        cc.width = thW * dpr; cc.height = thH * dpr;
+        cc.style.width = thW+'px'; cc.style.height = thH+'px';
+        const cx = cc.getContext('2d');
+        cx.scale(cc.width/PAGE_W, cc.height/PAGE_H);
+        
+        cx.fillStyle='#fff'; cx.fillRect(0,0,PAGE_W,PAGE_H);
+        const pg = getPg(i);
+        if(pg.strokes) {
+          pg.strokes.forEach(s => {
+             if(s.type==='shape' || s.type==='text') return; // Simplified render (ink only)
+             if(s.path && s.path.length>1) {
+                cx.strokeStyle=s.color; cx.lineWidth=s.size*3; 
+                cx.globalAlpha=s.alpha||1; cx.lineCap='round'; cx.lineJoin='round';
+                cx.beginPath(); cx.moveTo(s.path[0].x,s.path[0].y);
+                for(let k=1;k<s.path.length;k++) cx.lineTo(s.path[k].x,s.path[k].y);
+                cx.stroke();
+             }
+          });
+        }
+        
+        card.appendChild(cc);
+        card.innerHTML += `<div class="thumb-num">${i}</div>`;
+        grid.appendChild(card);
+      }
+      document.getElementById('thumbOverlay').classList.add('show');
+    }
+    function closeThumbGrid(){
+      document.getElementById('thumbOverlay').classList.remove('show');
+    }
+  </script>
+
+  <!-- ── LASSO SELECT LOGIC ── -->
+  <script>
+    let lassoGroup = null, lassoUI = null;
+    function finishLasso(){
+      if(currentPath.length<3){ redraw(); currentPath=[]; return; }
+      
+      let minx=99999,miny=99999,maxx=-99999,maxy=-99999;
+      currentPath.forEach(p=>{if(p.x<minx)minx=p.x;if(p.x>maxx)maxx=p.x;if(p.y<miny)miny=p.y;if(p.y>maxy)maxy=p.y;});
+      
+      const pg = getPg(curPage);
+      const selIdx = [];
+      const notSel = [];
+      
+      function pointInPoly(pt, poly) {
+        let inside = false;
+        for (let i=0,j=poly.length-1; i<poly.length; j=i++) {
+          if (((poly[i].y > pt.y) !== (poly[j].y > pt.y)) && 
+              (pt.x < (poly[j].x-poly[i].x)*(pt.y-poly[i].y)/(poly[j].y-poly[i].y)+poly[i].x)) inside = !inside;
+        }
+        return inside;
+      }
+
+      pg.strokes.forEach((s)=>{
+        if(s.type==='shape' || s.type==='text') {
+          const cx=s.type==='shape'?(s.x1+s.x2)/2:s.x;
+          const cy=s.type==='shape'?(s.y1+s.y2)/2:s.y;
+          if(cx>=minx&&cx<=maxx&&cy>=miny&&cy<=maxy && pointInPoly({x:cx,y:cy}, currentPath)) selIdx.push(s);
+          else notSel.push(s);
+          return;
+        }
+        if(!s.path) { notSel.push(s); return; }
+        let inC = 0;
+        for(let k=0;k<s.path.length;k+=3) { 
+          const pt = s.path[k];
+          if(pt.x>=minx&&pt.x<=maxx&&pt.y>=miny&&pt.y<=maxy && pointInPoly(pt, currentPath)) inC++;
+        }
+        if(inC > s.path.length/10) selIdx.push(s);
+        else notSel.push(s);
+      });
+
+      redraw();
+      currentPath=[];
+      if(!selIdx.length) { notoToast('No strokes selected'); return; }
+      
+      let bx1=99999,by1=99999,bx2=-99999,by2=-99999;
+      selIdx.forEach(s=>{
+         if(s.type==='text') { bx1=Math.min(bx1,s.x); by1=Math.min(by1,s.y-s.fontSize); bx2=Math.max(bx2,s.x+(s.text.length*s.fontSize*0.6)); by2=Math.max(by2,s.y+5); return; }
+         if(s.type==='shape') { bx1=Math.min(bx1,s.x1,s.x2); by1=Math.min(by1,s.y1,s.y2); bx2=Math.max(bx2,s.x1,s.x2); by2=Math.max(by2,s.y1,s.y2); return; }
+         if(s.path) s.path.forEach(pt=>{ bx1=Math.min(bx1,pt.x-s.size); by1=Math.min(by1,pt.y-s.size); bx2=Math.max(bx2,pt.x+s.size); by2=Math.max(by2,pt.y+s.size); });
+      });
+      bx1-=10; by1-=10; bx2+=10; by2+=10;
+      
+      lassoGroup = { strokes: JSON.parse(JSON.stringify(selIdx)), bx1, by1, bx2, by2 };
+      pg.strokes = notSel;
+      redraw();
+      
+      createLassoUI();
+    }
+    
+    function createLassoUI() {
+      if(lassoUI) { lassoUI.remove(); lassoUI=null; }
+      const g = lassoGroup;
+      const bw = g.bx2 - g.bx1, bh = g.by2 - g.by1;
+      
+      const div = document.createElement('div');
+      div.className = 'lasso-box';
+      div.style.left = g.bx1 + 'px';
+      div.style.top = g.by1 + 'px';
+      div.style.width = bw + 'px';
+      div.style.height = bh + 'px';
+      
+      const c = document.createElement('canvas');
+      c.width = bw; c.height = bh;
+      c.style.width='100%'; c.style.height='100%';
+      const lx = c.getContext('2d');
+      lx.translate(-g.bx1, -g.by1);
+      
+      g.strokes.forEach(s=>{
+         if(s.type==='shape'){
+            lx.globalAlpha=1;lx.strokeStyle=s.color;lx.lineWidth=s.size;lx.lineCap='round';lx.lineJoin='round';
+            if(s.filled)lx.fillStyle=s.color;
+            lx.beginPath();
+            if(s.shape==='rect')lx.rect(s.x1,s.y1,s.x2-s.x1,s.y2-s.y1);
+            else if(s.shape==='circle')lx.ellipse(s.x1+(s.x2-s.x1)/2,s.y1+(s.y2-s.y1)/2,Math.abs(s.x2-s.x1)/2,Math.abs(s.y2-s.y1)/2,0,0,Math.PI*2);
+            else if(s.shape==='line'){lx.moveTo(s.x1,s.y1);lx.lineTo(s.x2,s.y2);}
+            else { lx.moveTo(s.x1,s.y1);lx.lineTo(s.x2,s.y2); }
+            if(s.filled&&s.shape!=='line')lx.fill();lx.stroke();
+         } else if(s.type==='text') {
+            lx.font=s.fontSize+'px DM Sans,sans-serif';lx.fillStyle=s.color;lx.globalAlpha=1;
+            s.text.split('\n').forEach((l,i)=>lx.fillText(l,s.x,s.y+i*(s.fontSize*1.5)));
+         } else if(s.path && s.path.length) {
+            lx.globalAlpha=s.alpha||1;lx.globalCompositeOperation=s.composite||'source-over';
+            lx.strokeStyle=s.color;lx.lineCap='round';lx.lineJoin='round';
+            lx.beginPath();lx.moveTo(s.path[0].x,s.path[0].y);
+            for(let i=1;i<s.path.length-1;i++){lx.lineWidth=s.size*(0.5+(s.path[i].pressure||0.5)*0.8);lx.quadraticCurveTo(s.path[i].x,s.path[i].y,(s.path[i].x+s.path[i+1].x)/2,(s.path[i].y+s.path[i+1].y)/2);}
+            lx.lineTo(s.path[s.path.length-1].x,s.path[s.path.length-1].y);lx.stroke();lx.globalAlpha=1;lx.globalCompositeOperation='source-over';
+         }
+      });
+      div.appendChild(c);
+      
+      const bar = document.createElement('div'); bar.className='lb-bar';
+      bar.innerHTML = '<button class="lb-btn" onclick="commitLasso(true)">Copy</button><button class="lb-btn red" onclick="deleteLasso()">Delete</button>';
+      div.appendChild(bar);
+      
+      const tz = document.getElementById('ps');
+      tz.appendChild(div);
+      lassoUI = div;
+      
+      let drag=false,dx=0,dy=0;
+      div.addEventListener('pointerdown', e=>{if(e.target.tagName==='BUTTON')return; e.stopPropagation();drag=true;dx=e.clientX;dy=e.clientY;div.setPointerCapture(e.pointerId);});
+      div.addEventListener('pointermove', e=>{if(!drag)return; e.stopPropagation();
+         div.style.left = (parseFloat(div.style.left) + (e.clientX-dx)/Z) + 'px';
+         div.style.top = (parseFloat(div.style.top) + (e.clientY-dy)/Z) + 'px';
+         dx=e.clientX; dy=e.clientY;
+      });
+      div.addEventListener('pointerup', e=>{drag=false;});
+      
+      setTimeout(() => document.addEventListener('pointerdown', outLasso), 50);
+    }
+    
+    function outLasso(e){
+      if(lassoUI && lassoUI.contains(e.target)) return;
+      if(e.target.closest('.t-btn') || e.target.closest('.dtb')) return; // let tool changes happen
+      commitLasso(false);
+    }
+    
+    function commitLasso(keepCopy){
+      if(!lassoUI || !lassoGroup) return;
+      const pg = getPg(curPage);
+      
+      const nx = parseFloat(lassoUI.style.left);
+      const ny = parseFloat(lassoUI.style.top);
+      const dX = nx - lassoGroup.bx1;
+      const dY = ny - lassoGroup.by1;
+      
+      const newStrokes = JSON.parse(JSON.stringify(lassoGroup.strokes));
+      newStrokes.forEach(s=>{
+         if(s.type==='shape'){s.x1+=dX; s.x2+=dX; s.y1+=dY; s.y2+=dY;}
+         else if(s.type==='text'){s.x+=dX; s.y+=dY;}
+         else if(s.path) s.path.forEach(pt=>{pt.x+=dX; pt.y+=dY;});
+      });
+      
+      pg.strokes.push(...newStrokes);
+      undoSt.push({pg:curPage});
+      trigSave(); redraw();
+      
+      if(keepCopy) {
+         lassoGroup.bx1 += 40; lassoGroup.by1 += 40; lassoGroup.bx2 += 40; lassoGroup.by2 += 40;
+         lassoGroup.strokes = newStrokes;
+         createLassoUI(); 
+         return; 
+      }
+      clearLasso();
+    }
+    
+    function deleteLasso(){
+      undoSt.push({pg:curPage}); trigSave(); redraw(); clearLasso();
+      notoToast('Deleted');
+    }
+    
+    function clearLasso(){
+      if(lassoUI) { lassoUI.remove(); lassoUI=null; }
+      lassoGroup=null;
+      document.removeEventListener('pointerdown', outLasso);
+    }
+  </script>
+
   <!-- ── INIT ── -->
   <script>
-    document.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      await notoWaitInit();
       if(!curNbId){notoNavigate('notebook.html');return;}
-      const S=notoLoadSettings();
+      await initStorage();
+      const S = await notoLoadSettings();
       curPgType   = S.defaultPageType||'lined';
       txSize      = S.defaultTextSize||'medium';
       txCol       = S.defaultPenColor||'#000000';
       penCol      = S.defaultPenColor||'#000000';
       penSz       = S.defaultPenSize||3;
-      initCanvas();
       buildPenP(); buildTextP(); buildShP(); buildErP();
-      updCounter(); refreshStamps(); updBmBtn();
+      updBmBtn();
       document.getElementById('bmpanel').classList.remove('open');
+      if(S.handedness === 'left') { document.querySelector('.dtb').classList.add('to-right'); }
       if(S.autoDateStamp){const pg=getPg(curPage);if(!pg.stamps||!pg.stamps.length){const st={id:'ds_'+Date.now(),date:notoFormatDate(notoTodayISO()),label:'',x:40,y:40};pg.stamps=[st];renderStamp(st);}}
     });
   </script>
 </body>
 </html>
-EOF
-echo "page.html: $(wc -l < /mnt/user-data/outputs/page.html) lines"

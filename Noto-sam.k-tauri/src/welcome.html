@@ -4,23 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Noto — Welcome</title>
-
-  <!-- ============================================================
-       WELCOME.HTML > FONTS
-       ============================================================ -->
   <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-
   <style>
-
-    /* ============================================================
-       WELCOME.HTML > CSS RESET & ROOT VARIABLES
-       ============================================================ */
-    *, *::before, *::after {
-      margin: 0; padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
-
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
     :root {
       --black:        #0a0a0a;
       --white:        #fafafa;
@@ -35,505 +21,95 @@
       --radius-md:    16px;
       --transition:   all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
     }
+    [data-theme="dark"] { --black: #f0f0f0; --white: #141414; --gray-100: #222; --gray-200: #2e2e2e; --gray-300: #444; --gray-400: #666; --gray-500: #999; }
+    [data-theme="sepia"] { --white: #f5f0e8; --gray-100: #e5dfd6; --gray-200: #d5cfc6; }
 
     html, body {
-      width: 100%; height: 100%;
-      overflow: hidden;
-      background: var(--white);
-      color: var(--black);
-      font-family: var(--font-body);
-      -webkit-font-smoothing: antialiased;
+      width: 100%; height: 100%; overflow: hidden;
+      background: var(--white); color: var(--black);
+      font-family: var(--font-body); -webkit-font-smoothing: antialiased;
     }
-
-    /* ============================================================
-       WELCOME.HTML > FULL SCREEN LAYOUT
-       ============================================================ */
-    .screen {
-      width: 100%; height: 100%;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      position: relative; overflow: hidden;
-    }
-
-    /* ============================================================
-       WELCOME.HTML > PAPER TEXTURE BACKGROUND
-       ============================================================ */
-    .screen::after {
-      content: '';
-      position: absolute; inset: 0;
-      background-image: repeating-linear-gradient(
-        180deg,
-        transparent, transparent 39px,
-        rgba(0,0,0,0.025) 39px, rgba(0,0,0,0.025) 40px
-      );
-      pointer-events: none; opacity: 0.6;
-    }
-
-    /* ============================================================
-       WELCOME.HTML > CORNER MARKS
-       ============================================================ */
-    .corner { position: absolute; width: 28px; height: 28px; opacity: 0.12; }
-    .corner--tl { top:28px; left:28px;  border-top:2px solid var(--black); border-left:2px solid var(--black); }
-    .corner--tr { top:28px; right:28px; border-top:2px solid var(--black); border-right:2px solid var(--black); }
-    .corner--bl { bottom:28px; left:28px;  border-bottom:2px solid var(--black); border-left:2px solid var(--black); }
-    .corner--br { bottom:28px; right:28px; border-bottom:2px solid var(--black); border-right:2px solid var(--black); }
-
-    /* ============================================================
-       WELCOME.HTML > VERSION BADGE & SETTINGS BUTTON
-       ============================================================ */
-    .version-badge {
-      position: absolute; top: 28px; left: 32px; z-index: 20;
-      font-size: 10px; font-weight: 400; letter-spacing: 0.12em;
-      text-transform: uppercase; color: var(--gray-300);
-    }
-
-    .settings-btn {
-      position: absolute; top: 24px; right: 28px; z-index: 20;
-      width: 40px; height: 40px; border-radius: var(--radius-full);
-      border: 1px solid var(--gray-200); background: var(--white);
-      display: flex; align-items: center; justify-content: center;
-      cursor: pointer; transition: var(--transition);
-      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
-    }
-
-    .settings-btn:hover { border-color: var(--gray-300); box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-    .settings-btn svg   { width: 18px; height: 18px; stroke: var(--gray-500); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
-    .settings-btn:hover svg { stroke: var(--black); }
-
-    /* ============================================================
-       WELCOME.HTML > HERO CONTENT BLOCK
-       ============================================================ -->
-    */
-    .hero {
-      position: relative; z-index: 10;
-      display: flex; flex-direction: column;
-      align-items: center; text-align: center; gap: 0;
-      animation: heroReveal 1.0s cubic-bezier(0.4,0,0.2,1) forwards;
-      opacity: 0; transform: translateY(22px);
-    }
-
-    @keyframes heroReveal {
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ============================================================
-       WELCOME.HTML > LOGO MARK
-       ============================================================ */
-    .logo-mark {
-      width: 70px; height: 70px;
-      background: var(--black); border-radius: var(--radius-md);
-      display: flex; align-items: center; justify-content: center;
-      margin-bottom: 26px;
-      box-shadow: 0 8px 28px rgba(0,0,0,0.18);
-      position: relative; overflow: hidden;
-    }
-
-    .logo-mark::after {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
-    }
-
-    .logo-mark svg {
-      width: 34px; height: 34px; fill: none;
-      stroke: var(--white); stroke-width: 1.8;
-      stroke-linecap: round; stroke-linejoin: round;
-      position: relative; z-index: 1;
-    }
-
-    /* ============================================================
-       WELCOME.HTML > TITLE & BYLINE
-       ============================================================ */
-    .title {
-      font-family: var(--font-display);
-      font-size: clamp(72px, 12vw, 116px);
-      font-weight: 400; letter-spacing: -0.03em;
-      line-height: 1; color: var(--black); margin-bottom: 6px;
-    }
-
-    .byline {
-      font-size: 12px; font-weight: 300;
-      letter-spacing: 0.18em; text-transform: uppercase;
-      color: var(--gray-500); margin-bottom: 28px;
-    }
-
-    /* ============================================================
-       WELCOME.HTML > DIVIDER
-       ============================================================ */
-    .divider {
-      width: 44px; height: 1px;
-      background: var(--gray-300); margin: 0 auto 28px;
-    }
-
-    /* ============================================================
-       WELCOME.HTML > TAGLINE
-       ============================================================ */
-    .tagline {
-      font-size: 14px; font-weight: 300; color: var(--gray-500);
-      letter-spacing: 0.02em; margin-bottom: 0;
-      max-width: 280px; line-height: 1.7;
-    }
-
-    /* ============================================================
-       WELCOME.HTML > QUOTE BLOCK
-       New section displayed between tagline and CTA button.
-       Fades in after the hero animation completes.
-       ============================================================ */
-    .quote-block {
-      margin-top: 28px; margin-bottom: 0;
-      max-width: 360px; text-align: center;
-      animation: quoteFade 1.4s cubic-bezier(0.4,0,0.2,1) forwards;
-      opacity: 0;
-    }
-
-    @keyframes quoteFade {
-      0%   { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .quote-text {
-      font-family: var(--font-display);
-      font-style: italic;
-      font-size: clamp(13px, 1.8vw, 16px);
-      font-weight: 400; color: var(--black);
-      line-height: 1.65; letter-spacing: 0.01em;
-      margin-bottom: 8px;
-    }
-
-    /* Tony Stark quote gets a slightly bolder treatment — it appears most */
-    .quote-text.stark {
-      font-size: clamp(14px, 2vw, 17px);
-      color: var(--black);
-    }
-
-    .quote-author {
-      font-size: 11px; font-weight: 400;
-      letter-spacing: 0.13em; text-transform: uppercase;
-      color: var(--gray-400);
-    }
-
-    /* Thin decorative quote lines */
-    .quote-block::before,
-    .quote-block::after {
-      content: '';
-      display: block; width: 32px; height: 1px;
-      background: var(--gray-300); margin: 0 auto;
-    }
-
-    .quote-block::before { margin-bottom: 16px; }
-    .quote-block::after  { margin-top: 16px; }
-
-    /* ============================================================
-       WELCOME.HTML > GET STARTED BUTTON
-       ============================================================ */
-    .btn-wrap {
-      margin-top: 36px;
-      animation: btnFade 1.6s cubic-bezier(0.4,0,0.2,1) forwards;
-      opacity: 0;
-    }
-
-    @keyframes btnFade {
-      0%   { opacity: 0; transform: translateY(8px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .btn-primary {
-      display: inline-flex; align-items: center; gap: 10px;
-      padding: 16px 40px;
-      background: var(--black); color: var(--white);
-      font-family: var(--font-body); font-size: 13px;
-      font-weight: 500; letter-spacing: 0.07em;
-      text-transform: uppercase; border: none;
-      border-radius: var(--radius-full);
-      cursor: pointer; transition: var(--transition);
-      box-shadow: 0 4px 24px rgba(0,0,0,0.18);
-      position: relative; overflow: hidden;
-    }
-
-    .btn-primary::before {
-      content: ''; position: absolute; inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 60%);
-      opacity: 0; transition: opacity 0.3s;
-    }
-
-    .btn-primary:hover::before { opacity: 1; }
+    .screen { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .screen::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(180deg, transparent, transparent 39px, rgba(0,0,0,0.025) 39px, rgba(0,0,0,0.025) 40px); pointer-events: none; opacity: 0.6; }
+    .version-badge { position: absolute; top: 28px; left: 32px; z-index: 20; font-size: 10px; color: var(--gray-300); text-transform: uppercase; letter-spacing: 0.12em; }
+    .hero { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; text-align: center; animation: heroReveal 1.0s cubic-bezier(0.4,0,0.2,1) forwards; opacity: 0; transform: translateY(22px); }
+    @keyframes heroReveal { to { opacity: 1; transform: translateY(0); } }
+    .logo-mark { width: 70px; height: 70px; background: var(--black); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: 26px; box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
+    .logo-mark svg { width: 34px; height: 34px; fill: none; stroke: var(--white); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .title { font-family: var(--font-display); font-size: clamp(72px, 12vw, 116px); font-weight: 400; letter-spacing: -0.03em; line-height: 1; color: var(--black); margin-bottom: 6px; }
+    .byline { font-size: 12px; font-weight: 300; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 28px; }
+    .quote-block { margin-top: 28px; max-width: 380px; text-align: center; animation: quoteFade 1.4s cubic-bezier(0.4,0,0.2,1) forwards; opacity: 0; }
+    @keyframes quoteFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .quote-text { font-family: var(--font-display); font-style: italic; font-size: clamp(14px, 2vw, 18px); color: var(--black); line-height: 1.6; margin-bottom: 8px; }
+    .quote-author { font-size: 11px; font-weight: 400; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gray-400); }
+    .btn-wrap { margin-top: 36px; animation: btnFade 1.6s cubic-bezier(0.4,0,0.2,1) forwards; opacity: 0; }
+    @keyframes btnFade { to { opacity: 1; transform: translateY(0); } }
+    .btn-primary { display: inline-flex; align-items: center; gap: 10px; padding: 16px 40px; background: var(--black); color: var(--white); border: none; border-radius: var(--radius-full); cursor: pointer; transition: var(--transition); box-shadow: 0 4px 24px rgba(0,0,0,0.18); font-size:13px; font-weight:500; text-transform:uppercase; letter-spacing:0.07em; }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.22); }
-    .btn-primary:active { transform: translateY(0); box-shadow: 0 2px 12px rgba(0,0,0,0.18); }
-
-    .btn-arrow { width: 15px; height: 15px; transition: transform 0.3s; }
-    .btn-primary:hover .btn-arrow { transform: translateX(3px); }
-
-    /* ============================================================
-       WELCOME.HTML > BOTTOM FOOTER
-       ============================================================ */
-    .footer {
-      position: absolute; bottom: 24px; left: 0; right: 0;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 36px; z-index: 10;
-      animation: fadeUp 1.6s cubic-bezier(0.4,0,0.2,1) forwards;
-      opacity: 0;
-    }
-
-    @keyframes fadeUp {
-      0%   { opacity: 0; transform: translateY(10px); }
-      100% { opacity: 1; transform: translateY(0); }
-    }
-
-    .footer-text { font-size: 10px; font-weight: 300; color: var(--gray-300); letter-spacing: 0.1em; text-transform: uppercase; }
-
-    .footer-dots { display: flex; gap: 5px; }
-    .footer-dot  { width: 5px; height: 5px; border-radius: 50%; background: var(--gray-300); }
-    .footer-dot.active { background: var(--black); }
-
-    /* ============================================================
-       WELCOME.HTML > PAGE TRANSITION OVERLAY
-       ============================================================ */
-    .transition-overlay {
-      position: fixed; inset: 0; background: var(--black);
-      z-index: 9999; transform: translateY(100%);
-      transition: transform 0.5s cubic-bezier(0.7,0,0.3,1);
-      pointer-events: none;
-    }
-
+    .footer { position: absolute; bottom: 24px; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 36px; z-index: 10; opacity: 0; animation: fadeUp 1.6s forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .footer-text { font-size: 10px; color: var(--gray-300); text-transform: uppercase; letter-spacing: 0.1em; }
+    .transition-overlay { position: fixed; inset: 0; background: var(--black); z-index: 9999; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.7,0,0.3,1); pointer-events: none; }
     .transition-overlay.active { transform: translateY(0%); pointer-events: all; }
-
-    /* ============================================================
-       WELCOME.HTML > STYLUS RIPPLE
-       ============================================================ */
-    .ripple {
-      position: fixed; border-radius: 50%;
-      background: rgba(0,0,0,0.06);
-      transform: scale(0);
-      animation: rippleAnim 0.6s linear forwards;
-      pointer-events: none; z-index: 50;
-    }
-
-    @keyframes rippleAnim { to { transform: scale(4); opacity: 0; } }
-
   </style>
 </head>
 <body>
-
-  <!-- ============================================================
-       WELCOME.HTML > PAGE TRANSITION OVERLAY
-       ============================================================ -->
   <div class="transition-overlay" id="transitionOverlay"></div>
-
-  <!-- ============================================================
-       WELCOME.HTML > MAIN SCREEN
-       ============================================================ -->
-  <main class="screen" id="welcomeScreen">
-
-    <div class="corner corner--tl"></div>
-    <div class="corner corner--tr"></div>
-    <div class="corner corner--bl"></div>
-    <div class="corner corner--br"></div>
-
+  <main class="screen">
     <span class="version-badge">Noto v1.0</span>
-
-    <button class="settings-btn" onclick="goToSettings()" title="Settings">
-      <svg viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-      </svg>
-    </button>
-
-    <!-- ============================================================
-         WELCOME.HTML > HERO BLOCK
-         ============================================================ -->
     <div class="hero">
-
-      <div class="logo-mark">
-        <svg viewBox="0 0 24 24">
-          <path d="M12 20h9"/>
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
-        </svg>
-      </div>
-
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
       <h1 class="title">Noto</h1>
-      <p  class="byline">by sam.k</p>
-
-      <div class="divider"></div>
-
-      <p class="tagline">Your complete digital notebook.<br>Distraction-free, always offline.</p>
-
-      <!-- ============================================================
-           WELCOME.HTML > MOTIVATIONAL QUOTE BLOCK
-           Injected by the quote system below.
-           ============================================================ -->
+      <p class="byline">by sam.k</p>
       <div class="quote-block" id="quoteBlock">
-        <p  class="quote-text"  id="quoteText"></p>
-        <p  class="quote-author" id="quoteAuthor"></p>
+        <p class="quote-text" id="quoteText"></p>
+        <p class="quote-author" id="quoteAuthor"></p>
       </div>
-
-      <!-- CTA Button -->
       <div class="btn-wrap">
-        <button class="btn-primary" onclick="handleGetStarted()">
-          Get Started
-          <svg class="btn-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="5" y1="12" x2="19" y2="12"/>
-            <polyline points="12 5 19 12 12 19"/>
-          </svg>
+        <button class="btn-primary" onclick="notoNavigate('grade.html')">Get Started 
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
         </button>
       </div>
-
     </div>
-
-    <!-- ============================================================
-         WELCOME.HTML > FOOTER
-         ============================================================ -->
     <footer class="footer">
       <span class="footer-text">Offline Device</span>
-      <div class="footer-dots">
-        <div class="footer-dot active"></div>
-        <div class="footer-dot"></div>
-        <div class="footer-dot"></div>
-        <div class="footer-dot"></div>
-      </div>
       <span class="footer-text" id="currentTime">--:--</span>
     </footer>
-
   </main>
 
-  <!-- ============================================================
-       WELCOME.HTML > JAVASCRIPT — QUOTE SYSTEM
-       Tony Stark quote appears 4× more frequently than others,
-       matching the "most repeated" requirement. The selected
-       quote is stored in sessionStorage so it does not repeat
-       on the same session but changes on every fresh open.
-       ============================================================ -->
+  <script src="renderer.js"></script>
   <script>
     const QUOTES = [
-      // Tony Stark — weight 4 (appears ~4x more than others)
-      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark", stark: true },
-      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark", stark: true },
-      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark", stark: true },
-      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark", stark: true },
-
-      // Steve Jobs
-      { text: "The people who are crazy enough to think they can change the world are the ones who do.", author: "Steve Jobs", stark: false },
-      { text: "Innovation distinguishes between a leader and a follower.", author: "Steve Jobs", stark: false },
-
-      // Elon Musk
-      { text: "I think it is possible for ordinary people to choose to be extraordinary.", author: "Elon Musk", stark: false },
-
-      // Alan Kay
-      { text: "The best way to predict the future is to invent it.", author: "Alan Kay", stark: false },
-
-      // Narayana Murthy
-      { text: "Progress is often equal to the difference between mind and mindset.", author: "Narayana Murthy", stark: false },
-
-      // Mark Zuckerberg
-      { text: "The biggest risk is not taking any risk.", author: "Mark Zuckerberg", stark: false },
-
-      // Robert Downey Jr.
-      { text: "I think that we all do heroic things, but hero is not a noun, it's a verb.", author: "Robert Downey Jr.", stark: false },
-
-      // APJ Abdul Kalam
-      { text: "Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.", author: "APJ Abdul Kalam", stark: false },
-
-      // Virat Kohli
-      { text: "Self-belief and hard work will always earn you success.", author: "Virat Kohli", stark: false },
-
-      // MS Dhoni — two quotes
-      { text: "You don't play for the crowd. You play for the country.", author: "MS Dhoni", stark: false },
-      { text: "Till the full stop doesn't come, the sentence is not complete.", author: "MS Dhoni", stark: false },
+      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark" },
+      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark" },
+      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark" },
+      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark" },
+      { text: "The secret to doing it all is knowing that you can't. You have to prioritize what you want to achieve, and then just go for it.", author: "Robert Downey Jr." },
+      { text: "The people who are crazy enough to think they can change the world are the ones who do.", author: "Steve Jobs" },
+      { text: "I think it is possible for ordinary people to choose to be extraordinary.", author: "Elon Musk" },
+      { text: "The best way to predict the future is to invent it.", author: "Alan Kay" },
+      { text: "Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.", author: "APJ Abdul Kalam" }
     ];
 
-    function pickQuote() {
-      // Use a different quote each time the page is opened,
-      // stored per-session so refresh gives a new one.
-      const sessionKey = 'noto_quote_index';
-      const lastIndex  = parseInt(sessionStorage.getItem(sessionKey) ?? '-1');
-
-      // Pick a random index that is not the same as last time
-      let idx;
-      do {
-        idx = Math.floor(Math.random() * QUOTES.length);
-      } while (idx === lastIndex && QUOTES.length > 1);
-
-      sessionStorage.setItem(sessionKey, idx);
-      return QUOTES[idx];
-    }
-
     function renderQuote() {
-      const q          = pickQuote();
-      const textEl     = document.getElementById('quoteText');
-      const authorEl   = document.getElementById('quoteAuthor');
-
-      textEl.textContent   = '\u201C' + q.text + '\u201D';
-      authorEl.textContent = '— ' + q.author;
-
-      if (q.stark) {
-        textEl.classList.add('stark');
-      } else {
-        textEl.classList.remove('stark');
-      }
+      const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+      document.getElementById('quoteText').textContent = '\u201C' + q.text + '\u201D';
+      document.getElementById('quoteAuthor').textContent = '— ' + q.author;
     }
 
-    // Render quote immediately so it is ready when the animation plays
-    renderQuote();
-  </script>
-
-  <!-- ============================================================
-       WELCOME.HTML > JAVASCRIPT — CLOCK SYSTEM
-       ============================================================ -->
-  <script>
     function updateClock() {
-      const now = new Date();
-      const h   = String(now.getHours()).padStart(2, '0');
-      const m   = String(now.getMinutes()).padStart(2, '0');
-      document.getElementById('currentTime').textContent = h + ':' + m;
+      const n = new Date();
+      document.getElementById('currentTime').textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
     }
-    updateClock();
-    setInterval(updateClock, 1000);
-  </script>
 
-  <!-- ============================================================
-       WELCOME.HTML > JAVASCRIPT — STYLUS RIPPLE EFFECT
-       ============================================================ -->
-  <script>
-    document.addEventListener('pointerdown', function (e) {
-      if (e.pointerType === 'pen' || e.pointerType === 'touch') {
-        const ripple = document.createElement('div');
-        ripple.classList.add('ripple');
-        const size = 60;
-        ripple.style.width  = size + 'px';
-        ripple.style.height = size + 'px';
-        ripple.style.left   = (e.clientX - size / 2) + 'px';
-        ripple.style.top    = (e.clientY - size / 2) + 'px';
-        document.body.appendChild(ripple);
-        setTimeout(() => ripple.remove(), 700);
-      }
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderQuote();
+      updateClock();
+      setInterval(updateClock, 1000);
+      
+      // Complete storage engine init (Migration + Settings)
+      await notoWaitInit();
     });
   </script>
-
-  <!-- ============================================================
-       WELCOME.HTML > JAVASCRIPT — NAVIGATION SYSTEM
-       ============================================================ -->
-  <script>
-    function handleGetStarted() {
-      const overlay = document.getElementById('transitionOverlay');
-      overlay.classList.add('active');
-      setTimeout(() => { window.location.href = 'grade.html'; }, 480);
-    }
-
-    function goToSettings() {
-      const overlay = document.getElementById('transitionOverlay');
-      overlay.classList.add('active');
-      setTimeout(() => { window.location.href = 'settings.html'; }, 480);
-    }
-
-    // Entrance slide-in animation on load
-    window.addEventListener('load', () => {
-      const overlay = document.getElementById('transitionOverlay');
-      overlay.style.transform  = 'translateY(-100%)';
-      overlay.style.transition = 'none';
-      setTimeout(() => {
-        overlay.style.transition = 'transform 0.5s cubic-bezier(0.7,0,0.3,1)';
-        overlay.style.transform  = 'translateY(-200%)';
-      }, 50);
-    });
-  </script>
-
 </body>
 </html>
