@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -21,24 +20,20 @@
 
     html,body{width:100%;background:var(--g100);color:var(--black);font-family:var(--ff);-webkit-font-smoothing:antialiased;}
 
-    /* TOPBAR */
     .topbar{position:sticky;top:0;z-index:100;height:56px;background:var(--white);border-bottom:1px solid var(--g200);display:flex;align-items:center;padding:0 20px;gap:14px;box-shadow:var(--sh);}
     .back-btn{display:flex;align-items:center;gap:5px;padding:7px 14px;border:1.5px solid var(--g200);border-radius:var(--r99);background:transparent;font-family:var(--ff);font-size:12px;font-weight:500;color:var(--g500);cursor:pointer;transition:all 0.2s;}
     .back-btn:hover{border-color:var(--black);color:var(--black);}
     .back-btn svg{width:11px;height:11px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
     .topbar-title{font-family:var(--fd);font-size:20px;font-weight:400;color:var(--black);}
 
-    /* LAYOUT */
     .wrap{max-width:700px;margin:0 auto;padding:28px 20px 60px;}
 
-    /* SECTION CARD */
     .card{background:var(--white);border-radius:var(--r16);border:1px solid var(--g200);margin-bottom:16px;overflow:hidden;box-shadow:var(--sh);}
     .card-head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--g200);}
     .card-icon{width:32px;height:32px;border-radius:var(--r8);background:var(--g100);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
     .card-icon svg{width:15px;height:15px;stroke:var(--g500);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
     .card-title{font-family:var(--fd);font-size:15px;font-weight:400;color:var(--black);}
 
-    /* ROW */
     .row{display:flex;align-items:center;justify-content:space-between;padding:15px 20px;border-bottom:1px solid var(--g100);gap:20px;}
     .row:last-child{border-bottom:none;}
     .row-l{flex:1;min-width:0;}
@@ -46,40 +41,33 @@
     .row-desc{font-size:11px;color:var(--g400);line-height:1.5;font-weight:300;}
     .row-r{flex-shrink:0;}
 
-    /* TOGGLE */
     .tog{width:46px;height:26px;background:var(--g300);border-radius:var(--r99);position:relative;cursor:pointer;border:none;transition:background 0.25s;}
     .tog.on{background:var(--black);}
     .tog::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;background:var(--white);border-radius:50%;transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);box-shadow:0 1px 4px rgba(0,0,0,0.22);}
     .tog.on::after{transform:translateX(20px);}
 
-    /* CHIP SELECTOR */
     .chips{display:flex;gap:6px;flex-wrap:wrap;}
     .chip{padding:6px 14px;border-radius:var(--r99);border:1.5px solid var(--g200);background:var(--g50);font-family:var(--ff);font-size:11px;font-weight:500;color:var(--g500);cursor:pointer;transition:all 0.18s;}
     .chip:hover{border-color:var(--g400);color:var(--black);}
     .chip.on{border-color:var(--black);background:var(--black);color:var(--white);}
 
-    /* COLOR DOTS */
     .dots{display:flex;gap:8px;flex-wrap:wrap;}
     .dot{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform 0.15s,border-color 0.15s;}
     .dot:hover{transform:scale(1.18);}
     .dot.on{border-color:var(--black);}
 
-    /* SLIDER */
     .slider-row{display:flex;align-items:center;gap:12px;}
     .slider{-webkit-appearance:none;width:148px;height:4px;border-radius:2px;background:var(--g200);outline:none;cursor:pointer;}
     .slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--black);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,0.2);}
     .slider-v{font-size:12px;font-weight:600;color:var(--black);min-width:26px;}
 
-    /* STORAGE BAR */
     .stor-bar{height:5px;background:var(--g200);border-radius:3px;margin:10px 0 5px;}
     .stor-fill{height:100%;background:var(--black);border-radius:3px;transition:width 0.5s;}
     .stor-label{font-size:11px;color:var(--g400);}
 
-    /* INPUT */
     .ifield{padding:9px 12px;border:1.5px solid var(--g200);border-radius:var(--r8);font-family:var(--ff);font-size:13px;color:var(--black);background:var(--g50);outline:none;transition:border-color 0.2s;width:100%;}
     .ifield:focus{border-color:var(--black);background:var(--white);}
 
-    /* BUTTONS */
     .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r99);border:none;font-family:var(--ff);font-size:12px;font-weight:600;cursor:pointer;transition:all 0.2s;}
     .btn-dark{background:var(--black);color:var(--white);}
     .btn-dark:hover{background:var(--g700);}
@@ -89,7 +77,6 @@
     .btn-danger:hover{background:#a93226;}
     .btn-danger:disabled{opacity:0.4;cursor:not-allowed;}
 
-    /* ABOUT CARD */
     .about-inner{padding:32px 20px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;}
     .about-logo{width:64px;height:64px;background:var(--black);border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;box-shadow:0 6px 24px rgba(0,0,0,0.18);}
     .about-logo svg{width:30px;height:30px;stroke:var(--white);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
@@ -98,7 +85,6 @@
     .about-by{font-size:10px;color:var(--g300);letter-spacing:0.15em;text-transform:uppercase;margin-top:4px;}
     .about-tag{font-size:12px;color:var(--g400);line-height:1.7;max-width:260px;margin-top:6px;}
 
-    /* MODAL */
     .backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:800;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
     .backdrop.show{display:flex;}
     .modal{background:var(--white);border-radius:var(--r16);padding:28px;width:380px;max-width:92vw;box-shadow:0 24px 64px rgba(0,0,0,0.2);animation:mIn 0.22s cubic-bezier(0.4,0,0.2,1);}
@@ -108,11 +94,9 @@
     .modal .warn{font-size:12px;color:var(--danger);margin-bottom:10px;}
     .modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
 
-    /* TOAST */
     .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(16px);background:var(--black);color:var(--white);font-size:12px;font-weight:500;padding:10px 20px;border-radius:var(--r99);z-index:9999;opacity:0;transition:all 0.28s cubic-bezier(0.4,0,0.2,1);pointer-events:none;white-space:nowrap;}
     .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    /* TRANSITION */
     .transition-overlay{position:fixed;inset:0;background:var(--black);z-index:99998;transform:translateY(-200%);transition:transform 0.44s cubic-bezier(0.7,0,0.3,1);pointer-events:none;}
     .transition-overlay.active{transform:translateY(0);pointer-events:all;}
   </style>
@@ -121,7 +105,6 @@
   <div class="transition-overlay" id="transitionOverlay"></div>
   <div class="toast" id="toast"></div>
 
-  <!-- RESET MODAL -->
   <div class="backdrop" id="resetModal">
     <div class="modal">
       <h2>Factory Reset</h2>
@@ -143,8 +126,6 @@
   </div>
 
   <div class="wrap">
-
-    <!-- DISPLAY -->
     <div class="card">
       <div class="card-head">
         <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg></div>
@@ -160,7 +141,6 @@
       </div>
     </div>
 
-    <!-- STYLUS -->
     <div class="card">
       <div class="card-head">
         <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg></div>
@@ -180,7 +160,6 @@
       </div>
     </div>
 
-    <!-- WRITING DEFAULTS -->
     <div class="card">
       <div class="card-head">
         <div class="card-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
@@ -213,7 +192,6 @@
       </div>
     </div>
 
-    <!-- STORAGE -->
     <div class="card">
       <div class="card-head">
         <div class="card-icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg></div>
@@ -236,7 +214,6 @@
       </div>
     </div>
 
-    <!-- DEVICE -->
     <div class="card">
       <div class="card-head">
         <div class="card-icon"><svg viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg></div>
@@ -252,7 +229,6 @@
       </div>
     </div>
 
-    <!-- ACCESSIBILITY -->
     <div class="card">
       <div class="card-head">
         <div class="card-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
@@ -268,26 +244,27 @@
       </div>
     </div>
 
-    <!-- ABOUT -->
     <div class="card">
       <div class="about-inner">
         <div class="about-logo"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
         <div class="about-name">Noto</div>
         <div class="about-ver">Version 1.0.0</div>
         <div class="about-by">by Sam.K</div>
-        <div class="about-tag">Your complete digital notebook. Distraction-free, always offline.</div>
+        <div class="about-tag">Your complete digital notebook. High-capacity IndexedDB storage enabled.</div>
       </div>
     </div>
-
   </div>
 
   <script src="renderer.js"></script>
   <script>
-    let S = notoLoadSettings();
-
+    let S = {};
     const COLORS = ['#000000','#1a1aff','#e74c3c','#e67e22','#f1c40f','#27ae60','#8e44ad','#555555','#ffffff'];
 
-    function save(k,v){ notoUpdateSetting(k,v); S=notoLoadSettings(); notoToast('Saved'); }
+    async function save(k,v){ 
+      await notoUpdateSetting(k,v); 
+      S = await notoLoadSettings(); 
+      notoToast('Saved'); 
+    }
 
     function chips(id, opts, cur, cb){
       const el=document.getElementById(id); if(!el)return; el.innerHTML='';
@@ -313,18 +290,18 @@
     }
 
     function setTog(id,val){ const el=document.getElementById(id); if(el) el.classList.toggle('on',!!val); }
-    function togSet(key,id){ const v=!S[key]; save(key,v); setTog(id,v); }
+    async function togSet(key,id){ const v=!S[key]; await save(key,v); setTog(id,v); }
 
-    function sliderSet(key,sliderId,valId,isInt){
+    async function sliderSet(key,sliderId,valId,isInt){
       const sl=document.getElementById(sliderId), vl=document.getElementById(valId);
       if(!sl)return;
       const v=isInt?parseInt(sl.value):parseFloat(sl.value);
       if(vl)vl.textContent=v;
-      save(key,v);
+      await save(key,v);
     }
 
-    function buildAll(){
-      S=notoLoadSettings();
+    async function buildAll(){
+      S = await notoLoadSettings();
 
       chips('themeChips',    [{v:'light',l:'Light'},{v:'dark',l:'Dark'},{v:'sepia',l:'Sepia'}], S.theme,    v=>save('theme',v));
       chips('uiSizeChips',   [{v:'small',l:'Small'},{v:'medium',l:'Medium'},{v:'large',l:'Large'}], S.uiFontSize, v=>save('uiFontSize',v));
@@ -346,26 +323,26 @@
       const dn=document.getElementById('devName');
       if(dn){ dn.value=S.deviceName||'Noto Device'; dn.onchange=()=>save('deviceName',dn.value.trim()||'Noto Device'); }
 
-      // storage bar
-      const used=notoStorageUsage(), max=5*1024*1024;
-      const pct=Math.min(100,(used/max)*100).toFixed(1);
-      const sf=document.getElementById('storFill'), sl=document.getElementById('storLabel');
-      if(sf)sf.style.width=pct+'%';
-      if(sl)sl.textContent=notoFormatBytes(used)+' used of ~5 MB';
+      // Storage Usage calculation (Async)
+      const used = await notoStorageUsage();
+      const pct  = Math.min(100, (used / (1024 * 1024 * 500)) * 100).toFixed(2); // Based on 500MB target
+      const sf   = document.getElementById('storFill'), sl = document.getElementById('storLabel');
+      if(sf) sf.style.width = pct+'%';
+      if(sl) sl.textContent = notoFormatBytes(used) + ' used (IndexedDB High-Capacity)';
     }
 
-    function doExport(){
-      const data={};
-      Object.keys(localStorage).filter(k=>k.startsWith('noto_')).forEach(k=>data[k]=localStorage.getItem(k));
-      const a=document.createElement('a');
-      a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));
-      a.download='noto-backup-'+notoTodayISO()+'.json'; a.click();
+    async function doExport(){
+      notoToast('Gathering data...');
+      const data = await notoExportAllData();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], {type:'application/json'}));
+      a.download = 'noto-full-backup-'+notoTodayISO()+'.json'; a.click();
       notoToast('Export downloaded');
     }
 
     function openReset(){ document.getElementById('resetInput').value=''; document.getElementById('resetBtn').disabled=true; document.getElementById('resetModal').classList.add('show'); }
     function closeReset(){ document.getElementById('resetModal').classList.remove('show'); }
-    function doReset(){ notoFactoryReset(); closeReset(); notoToast('All data deleted — restarting...'); setTimeout(()=>window.location.href='welcome.html',1500); }
+    async function doReset(){ await notoFactoryReset(); closeReset(); notoToast('All data deleted — restarting...'); setTimeout(()=>window.location.href='welcome.html',1500); }
 
     document.addEventListener('DOMContentLoaded',()=>{
       buildAll();

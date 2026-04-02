@@ -380,8 +380,8 @@
        Uses notoLoadGrades() from renderer.js
        ============================================================ -->
   <script>
-    function render() {
-      const grades = notoLoadGrades();
+    async function render() {
+      const grades = await notoLoadGrades();
       const grid   = document.getElementById('gradesGrid');
       const count  = document.getElementById('gradeCount');
 
@@ -542,9 +542,9 @@
       NotoKeyboard.hide();
     }
 
-    function openRenameModal() {
+    async function openRenameModal() {
       if (!contextTarget) return;
-      const grades = notoLoadGrades();
+      const grades = await notoLoadGrades();
       const g      = grades.find(x => x.id === contextTarget);
       if (!g) return;
       editMode = true; selectedEmoji = g.emoji; isExtra = g.extra;
@@ -563,25 +563,25 @@
       document.getElementById('extraSwitch').className = 'toggle-switch' + (isExtra ? ' on' : '');
     }
 
-    function toggleExtraFromMenu() {
+    async function toggleExtraFromMenu() {
       if (!contextTarget) return;
-      const grades = notoLoadGrades();
+      const grades = await notoLoadGrades();
       const g      = grades.find(x => x.id === contextTarget);
       if (!g) return;
-      notoUpdateGrade(contextTarget, { extra: !g.extra });
+      await notoUpdateGrade(contextTarget, { extra: !g.extra });
       render();
       notoToast(!g.extra ? 'Marked as extracurricular 📌' : 'Extracurricular tag removed');
     }
 
-    function confirmGrade() {
+    async function confirmGrade() {
       const name = document.getElementById('gradeNameInput').value.trim();
       if (!name) { notoToast('Please enter a grade name ✏️'); return; }
 
       if (editMode && contextTarget) {
-        notoUpdateGrade(contextTarget, { name, emoji: selectedEmoji, extra: isExtra });
+        await notoUpdateGrade(contextTarget, { name, emoji: selectedEmoji, extra: isExtra });
         notoToast('Grade renamed ✅');
       } else {
-        notoAddGrade(name, selectedEmoji, isExtra);
+        await notoAddGrade(name, selectedEmoji, isExtra);
         notoToast('Grade created 🎓');
       }
       render(); closeAddModal();
@@ -612,9 +612,9 @@
       });
     });
 
-    function confirmDelete() {
+    async function confirmDelete() {
       if (!contextTarget) return;
-      notoDeleteGrade(contextTarget);
+      await notoDeleteGrade(contextTarget);
       render(); closeDeleteModal();
       notoToast('Grade deleted 🗑️');
       contextTarget = null;

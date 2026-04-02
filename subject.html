@@ -462,8 +462,8 @@
        Uses notoLoadSubjects() from renderer.js
        ============================================================ -->
   <script>
-    function render() {
-      const subjects  = notoLoadSubjects(currentGradeId);
+    async function render() {
+      const subjects  = await notoLoadSubjects(currentGradeId);
       const container = document.getElementById('subjectsList');
       const count     = document.getElementById('subjectCount');
 
@@ -650,9 +650,9 @@
       NotoKeyboard.hide();
     }
 
-    function openRenameModal() {
+    async function openRenameModal() {
       if (!contextTarget) return;
-      const subjects = notoLoadSubjects(currentGradeId);
+      const subjects = await notoLoadSubjects(currentGradeId);
       const s        = subjects.find(x => x.id === contextTarget);
       if (!s) return;
       editMode = true; selectedEmoji = s.emoji;
@@ -665,15 +665,15 @@
       setTimeout(() => NotoKeyboard.show(document.getElementById('subjectNameInput')), 300);
     }
 
-    function confirmSubject() {
-      const name = document.getElementById('subjectNameInput').value.trim();
+    async function confirmSubject() {
+      const name = document.getElementById('notebookNameInput').value.trim();
       if (!name) { notoToast('Please enter a subject name ✏️'); return; }
 
       if (editMode && contextTarget) {
-        notoUpdateSubject(currentGradeId, contextTarget, { name, emoji: selectedEmoji });
+        await notoUpdateSubject(currentGradeId, contextTarget, { name, emoji: selectedEmoji });
         notoToast('Subject renamed ✅');
       } else {
-        notoAddSubject(currentGradeId, name, selectedEmoji);
+        await notoAddSubject(currentGradeId, name, selectedEmoji);
         notoToast('Subject created 📚');
       }
       render(); closeAddModal();
@@ -704,9 +704,9 @@
       });
     });
 
-    function confirmDelete() {
+    async function confirmDelete() {
       if (!contextTarget) return;
-      notoDeleteSubject(currentGradeId, contextTarget);
+      await notoDeleteSubject(currentGradeId, contextTarget);
       render(); closeDeleteModal();
       notoToast('Subject deleted 🗑️');
       contextTarget = null;

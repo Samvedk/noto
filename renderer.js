@@ -16,6 +16,79 @@ const NOTO_KEYS = {
   }
 };
 
+// ── IndexedDB Engine (The "1GB+ Capacity" Upgrade) ────────────
+const _DB_NAME = 'NotoDB';
+const _DB_STORE = 'notebooks';
+const _DB_VER = 1;
+
+const notoDb = {
+  _db: null,
+  async open() {
+    if (this._db) return this._db;
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open(_DB_NAME, _DB_VER);
+      req.onupgradeneeded = e => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains(_DB_STORE)) {
+          db.createObjectStore(_DB_STORE);
+        }
+      };
+      req.onsuccess = e => { this._db = e.target.result; resolve(this._db); };
+      req.onerror = e => reject(e.target.error);
+    });
+  },
+  async get(key, def) {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(_DB_STORE, 'readonly');
+      const req = tx.objectStore(_DB_STORE).get(key);
+      req.onsuccess = () => resolve(req.result !== undefined ? req.result : def);
+      req.onerror = () => reject(req.error);
+    });
+  },
+  async set(key, val) {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(_DB_STORE, 'readwrite');
+      tx.objectStore(_DB_STORE).put(val, key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  },
+  async remove(key) {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(_DB_STORE, 'readwrite');
+      tx.objectStore(_DB_STORE).delete(key);
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  },
+  async clear() {
+    const db = await this.open();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(_DB_STORE, 'readwrite');
+      tx.objectStore(_DB_STORE).clear();
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+};
+
+// ── Migration Utility (localStorage -> IndexedDB) ─────────────
+async function notoMigrateIfNeeded() {
+  const keys = Object.keys(localStorage).filter(k => k.startsWith('noto_'));
+  if (!keys.length) return;
+  for (const k of keys) {
+    try {
+      const valText = localStorage.getItem(k);
+      const val = JSON.parse(valText);
+      await notoDb.set(k, val);
+      localStorage.removeItem(k);
+    } catch(e) { console.error('Migration failed for key:', k, e); }
+  }
+}
+
 // ── Session ──────────────────────────────────────────────────
 function notoGetCurrentGrade()     { return sessionStorage.getItem(NOTO_KEYS.session.grade)    || ''; }
 function notoGetCurrentSubject()   { return sessionStorage.getItem(NOTO_KEYS.session.subject)  || ''; }
@@ -25,11 +98,11 @@ function notoSetCurrentSubject(id) { sessionStorage.setItem(NOTO_KEYS.session.su
 function notoSetCurrentNb(id)      { sessionStorage.setItem(NOTO_KEYS.session.notebook, id); }
 
 // ── Grades ────────────────────────────────────────────────────
-function notoLoadGrades()         { try { return JSON.parse(localStorage.getItem(NOTO_KEYS.grades) || '[]'); } catch(e) { return []; } }
-function notoSaveGrades(g)        { localStorage.setItem(NOTO_KEYS.grades, JSON.stringify(g)); }
+async function notoLoadGrades()         { return await notoDb.get(NOTO_KEYS.grades, []); }
+async function notoSaveGrades(g)        { await notoDb.set(NOTO_KEYS.grades, g); }
 
-function notoAddGrade(name, emoji, extra) {
-  const grades = notoLoadGrades();
+async function notoAddGrade(name, emoji, extra) {
+  const grades = await notoLoadGrades();
   const grade = {
     id:         notoId(),
     name:       name,
@@ -40,41 +113,40 @@ function notoAddGrade(name, emoji, extra) {
     created:    notoTodayISO()
   };
   grades.push(grade);
-  notoSaveGrades(grades);
+  await notoSaveGrades(grades);
   return grade;
 }
 
-function notoUpdateGrade(gradeId, updates) {
-  const grades = notoLoadGrades();
+async function notoUpdateGrade(gradeId, updates) {
+  const grades = await notoLoadGrades();
   const idx = grades.findIndex(g => g.id === gradeId);
   if (idx === -1) return null;
   Object.assign(grades[idx], updates, { lastEdited: notoToday() });
-  notoSaveGrades(grades);
+  await notoSaveGrades(grades);
   return grades[idx];
 }
 
-function notoDeleteGrade(gradeId) {
-  let grades = notoLoadGrades();
-  // Delete all subjects, notebooks, pages under this grade
-  const subjects = notoLoadSubjects(gradeId);
-  subjects.forEach(s => {
-    const notebooks = notoLoadNotebooks(s.id);
-    notebooks.forEach(nb => {
-      localStorage.removeItem(NOTO_KEYS.pages(nb.id));
-    });
-    localStorage.removeItem(NOTO_KEYS.notebooks(s.id));
-  });
-  localStorage.removeItem(NOTO_KEYS.subjects(gradeId));
+async function notoDeleteGrade(gradeId) {
+  let grades = await notoLoadGrades();
+  const subjects = await notoLoadSubjects(gradeId);
+  for (const s of subjects) {
+    const notebooks = await notoLoadNotebooks(s.id);
+    for (const nb of notebooks) {
+      await notoDb.remove(NOTO_KEYS.pages(nb.id));
+    }
+    await notoDb.remove(NOTO_KEYS.notebooks(s.id));
+  }
+  await notoDb.remove(NOTO_KEYS.subjects(gradeId));
   grades = grades.filter(g => g.id !== gradeId);
-  notoSaveGrades(grades);
+  await notoSaveGrades(grades);
 }
 
 // ── Subjects ──────────────────────────────────────────────────
-function notoLoadSubjects(gid)    { try { return JSON.parse(localStorage.getItem(NOTO_KEYS.subjects(gid))  || '[]'); } catch(e) { return []; } }
-function notoSaveSubjects(gid, s) { localStorage.setItem(NOTO_KEYS.subjects(gid), JSON.stringify(s)); }
+async function notoLoadSubjects(gid)    { return await notoDb.get(NOTO_KEYS.subjects(gid), []); }
+async function notoSaveSubjects(gid, s) { await notoDb.set(NOTO_KEYS.subjects(gid), s); }
 
-function notoAddSubject(gradeId, name, emoji) {
-  const subjects = notoLoadSubjects(gradeId);
+async function notoAddSubject(gradeId, name, emoji) {
+  const subjects = await notoLoadSubjects(gradeId);
   const subject = {
     id:         notoId(),
     name:       name,
@@ -84,53 +156,50 @@ function notoAddSubject(gradeId, name, emoji) {
     created:    notoTodayISO()
   };
   subjects.push(subject);
-  notoSaveSubjects(gradeId, subjects);
-  // Update grade subject count
-  const grades = notoLoadGrades();
+  await notoSaveSubjects(gradeId, subjects);
+  const grades = await notoLoadGrades();
   const gIdx = grades.findIndex(g => g.id === gradeId);
   if (gIdx !== -1) {
     grades[gIdx].subjects = subjects.length;
     grades[gIdx].lastEdited = notoToday();
-    notoSaveGrades(grades);
+    await notoSaveGrades(grades);
   }
   return subject;
 }
 
-function notoUpdateSubject(gradeId, subjectId, updates) {
-  const subjects = notoLoadSubjects(gradeId);
+async function notoUpdateSubject(gradeId, subjectId, updates) {
+  const subjects = await notoLoadSubjects(gradeId);
   const idx = subjects.findIndex(s => s.id === subjectId);
   if (idx === -1) return null;
   Object.assign(subjects[idx], updates, { lastEdited: notoToday() });
-  notoSaveSubjects(gradeId, subjects);
+  await notoSaveSubjects(gradeId, subjects);
   return subjects[idx];
 }
 
-function notoDeleteSubject(gradeId, subjectId) {
-  let subjects = notoLoadSubjects(gradeId);
-  // Delete all notebooks and pages under this subject
-  const notebooks = notoLoadNotebooks(subjectId);
-  notebooks.forEach(nb => {
-    localStorage.removeItem(NOTO_KEYS.pages(nb.id));
-  });
-  localStorage.removeItem(NOTO_KEYS.notebooks(subjectId));
+async function notoDeleteSubject(gradeId, subjectId) {
+  let subjects = await notoLoadSubjects(gradeId);
+  const notebooks = await notoLoadNotebooks(subjectId);
+  for (const nb of notebooks) {
+    await notoDb.remove(NOTO_KEYS.pages(nb.id));
+  }
+  await notoDb.remove(NOTO_KEYS.notebooks(subjectId));
   subjects = subjects.filter(s => s.id !== subjectId);
-  notoSaveSubjects(gradeId, subjects);
-  // Update grade subject count
-  const grades = notoLoadGrades();
+  await notoSaveSubjects(gradeId, subjects);
+  const grades = await notoLoadGrades();
   const gIdx = grades.findIndex(g => g.id === gradeId);
   if (gIdx !== -1) {
     grades[gIdx].subjects = subjects.length;
     grades[gIdx].lastEdited = notoToday();
-    notoSaveGrades(grades);
+    await notoSaveGrades(grades);
   }
 }
 
 // ── Notebooks ─────────────────────────────────────────────────
-function notoLoadNotebooks(sid)   { try { return JSON.parse(localStorage.getItem(NOTO_KEYS.notebooks(sid)) || '[]'); } catch(e) { return []; } }
-function notoSaveNotebooks(sid,n) { localStorage.setItem(NOTO_KEYS.notebooks(sid), JSON.stringify(n)); }
+async function notoLoadNotebooks(sid)   { return await notoDb.get(NOTO_KEYS.notebooks(sid), []); }
+async function notoSaveNotebooks(sid,n) { await notoDb.set(NOTO_KEYS.notebooks(sid), n); }
 
-function notoAddNotebook(subjectId, gradeId, name, emoji, type) {
-  const notebooks = notoLoadNotebooks(subjectId);
+async function notoAddNotebook(subjectId, gradeId, name, emoji, type) {
+  const notebooks = await notoLoadNotebooks(subjectId);
   const notebook = {
     id:         notoId(),
     name:       name,
@@ -141,46 +210,43 @@ function notoAddNotebook(subjectId, gradeId, name, emoji, type) {
     created:    notoTodayISO()
   };
   notebooks.push(notebook);
-  notoSaveNotebooks(subjectId, notebooks);
-  // Update subject notebook count
-  const subjects = notoLoadSubjects(gradeId);
+  await notoSaveNotebooks(subjectId, notebooks);
+  const subjects = await notoLoadSubjects(gradeId);
   const sIdx = subjects.findIndex(s => s.id === subjectId);
   if (sIdx !== -1) {
     subjects[sIdx].notebooks = notebooks.length;
     subjects[sIdx].lastEdited = notoToday();
-    notoSaveSubjects(gradeId, subjects);
+    await notoSaveSubjects(gradeId, subjects);
   }
   return notebook;
 }
 
-function notoUpdateNotebook(subjectId, notebookId, updates) {
-  const notebooks = notoLoadNotebooks(subjectId);
+async function notoUpdateNotebook(subjectId, notebookId, updates) {
+  const notebooks = await notoLoadNotebooks(subjectId);
   const idx = notebooks.findIndex(n => n.id === notebookId);
   if (idx === -1) return null;
   Object.assign(notebooks[idx], updates, { lastEdited: notoToday() });
-  notoSaveNotebooks(subjectId, notebooks);
+  await notoSaveNotebooks(subjectId, notebooks);
   return notebooks[idx];
 }
 
-function notoDeleteNotebook(subjectId, gradeId, notebookId) {
-  let notebooks = notoLoadNotebooks(subjectId);
-  // Delete pages for this notebook
-  localStorage.removeItem(NOTO_KEYS.pages(notebookId));
+async function notoDeleteNotebook(subjectId, gradeId, notebookId) {
+  let notebooks = await notoLoadNotebooks(subjectId);
+  await notoDb.remove(NOTO_KEYS.pages(notebookId));
   notebooks = notebooks.filter(n => n.id !== notebookId);
-  notoSaveNotebooks(subjectId, notebooks);
-  // Update subject notebook count
-  const subjects = notoLoadSubjects(gradeId);
+  await notoSaveNotebooks(subjectId, notebooks);
+  const subjects = await notoLoadSubjects(gradeId);
   const sIdx = subjects.findIndex(s => s.id === subjectId);
   if (sIdx !== -1) {
     subjects[sIdx].notebooks = notebooks.length;
     subjects[sIdx].lastEdited = notoToday();
-    notoSaveSubjects(gradeId, subjects);
+    await notoSaveSubjects(gradeId, subjects);
   }
 }
 
 // ── Pages ─────────────────────────────────────────────────────
-function notoLoadPages(nid)       { try { return JSON.parse(localStorage.getItem(NOTO_KEYS.pages(nid)) || '{}'); } catch(e) { return {}; } }
-function notoSavePages(nid, p)    { localStorage.setItem(NOTO_KEYS.pages(nid), JSON.stringify(p)); }
+async function notoLoadPages(nid)       { return await notoDb.get(NOTO_KEYS.pages(nid), {}); }
+async function notoSavePages(nid, p)    { await notoDb.set(NOTO_KEYS.pages(nid), p); }
 
 // ── Settings ──────────────────────────────────────────────────
 const NOTO_DEFAULTS = {
@@ -201,17 +267,63 @@ const NOTO_DEFAULTS = {
   reducedMotion:       false,
 };
 
-function notoLoadSettings() {
+async function notoLoadSettings() {
   try {
-    return Object.assign({}, NOTO_DEFAULTS, JSON.parse(localStorage.getItem(NOTO_KEYS.settings) || '{}'));
+    const s = await notoDb.get(NOTO_KEYS.settings, {});
+    return Object.assign({}, NOTO_DEFAULTS, s);
   } catch(e) { return Object.assign({}, NOTO_DEFAULTS); }
 }
-function notoSaveSettings(s)       { localStorage.setItem(NOTO_KEYS.settings, JSON.stringify(s)); }
-function notoUpdateSetting(k, v)   { const s = notoLoadSettings(); s[k] = v; notoSaveSettings(s); notoApplyTheme(s.theme); }
+async function notoSaveSettings(s)       { await notoDb.set(NOTO_KEYS.settings, s); }
+async function notoUpdateSetting(k, v)   { const s = await notoLoadSettings(); s[k] = v; await notoSaveSettings(s); notoApplyTheme(s.theme); }
 function notoApplyTheme(theme)     { document.documentElement.removeAttribute('data-theme'); if (theme && theme !== 'light') document.documentElement.setAttribute('data-theme', theme); }
 
-// Apply theme on load
-(function(){ notoApplyTheme(notoLoadSettings().theme); })();
+// ── Diagnostics & Utility ───────────────────────────────────────
+async function notoStorageUsage() { 
+  if (!window.navigator || !window.navigator.storage || !window.navigator.storage.estimate) return 0;
+  const est = await window.navigator.storage.estimate();
+  return est.usage || 0;
+}
+
+function notoFormatBytes(b) {
+  if (b<1024) return b+' B';
+  if (b<1048576) return (b/1024).toFixed(1)+' KB';
+  return (b/1048576).toFixed(2)+' MB';
+}
+
+async function notoExportAllData() {
+  const db = await notoDb.open();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(_DB_STORE, 'readonly');
+    const store = tx.objectStore(_DB_STORE);
+    const req = store.getAll();
+    const keysReq = store.getAllKeys();
+    req.onsuccess = () => {
+      const data = {};
+      const items = req.result;
+      keysReq.onsuccess = () => {
+        const keys = keysReq.result;
+        keys.forEach((k, i) => data[k] = items[i]);
+        resolve(data);
+      };
+    };
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function notoFactoryReset() {
+  await notoDb.clear();
+  sessionStorage.clear();
+  localStorage.clear();
+}
+
+// Apply theme & run migration on startup
+(async function startup() { 
+  try {
+    await notoMigrateIfNeeded();
+    const s = await notoLoadSettings();
+    notoApplyTheme(s.theme);
+  } catch(e) { console.error('Startup failed:', e); }
+})();
 
 // ── Navigation ────────────────────────────────────────────────
 function notoNavigate(page) {
@@ -240,14 +352,14 @@ function notoToast(msg, ms) {
 // ── Autosave indicator ────────────────────────────────────────
 function notoSaveStart() {
   const d = document.getElementById('saveDot'), l = document.getElementById('saveLabel');
-  if (d) d.className = 'save-dot saving';
+  if (d) d.className = 'sv-dot saving';
   if (l) l.textContent = 'Saving...';
 }
 function notoSaveDone() {
   const d = document.getElementById('saveDot'), l = document.getElementById('saveLabel');
-  if (d) d.className = 'save-dot saved';
+  if (d) d.className = 'sv-dot saved';
   if (l) l.textContent = 'Saved';
-  setTimeout(() => { if (d) d.className = 'save-dot'; }, 2200);
+  setTimeout(() => { if (d) d.className = 'sv-dot'; }, 2200);
 }
 
 // ── Clock ─────────────────────────────────────────────────────
@@ -264,8 +376,5 @@ function notoTodayISO()  { const n = new Date(); return n.getFullYear()+'-'+Stri
 function notoFormatDate(iso) { if (!iso) return ''; const [y,m,d] = iso.split('-'); return d+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+m-1]+' '+y; }
 
 // ── Utilities ─────────────────────────────────────────────────
-function notoId()        { return 'n' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function notoEsc(s)      { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function notoStorageUsage() { let t=0; for (let k in localStorage) if (localStorage.hasOwnProperty(k)) t+=(localStorage[k].length+k.length)*2; return t; }
-function notoFormatBytes(b) { if (b<1024) return b+' B'; if (b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(2)+' MB'; }
-function notoFactoryReset() { Object.keys(localStorage).filter(k=>k.startsWith('noto_')).forEach(k=>localStorage.removeItem(k)); sessionStorage.clear(); }
+function notoId()        { return 'noto_' + Math.random().toString(36).substr(2, 9); }
