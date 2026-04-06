@@ -278,6 +278,54 @@
 
     .transition-overlay { position:fixed; inset:0; background:var(--black); z-index:99998; transform:translateY(-200%); transition:transform 0.5s cubic-bezier(0.7,0,0.3,1); pointer-events:none; }
     .transition-overlay.active { transform:translateY(0%); pointer-events:all; }
+
+    /* ============================================================
+       TO-DO LIST — GEN-Z PREMIUM DESIGN
+       ============================================================ */
+    .td-toggle-btn{display:flex;align-items:center;gap:8px;padding:8px 16px;border:1.5px solid var(--gray-200);border-radius:var(--radius-full);background:var(--white);font-family:var(--font-body);font-size:12px;font-weight:500;color:var(--gray-500);cursor:pointer;transition:var(--transition);}
+    .td-toggle-btn:hover{border-color:var(--black);color:var(--black);background:var(--gray-50);}
+    .td-toggle-btn.active{background:var(--black);color:var(--white);border-color:var(--black);}
+    .td-toggle-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+    .td-badge{display:inline-flex;align-items:center;justify-content:center;min-width:18px;height:18px;border-radius:var(--radius-full);background:var(--gray-200);color:var(--gray-500);font-size:10px;font-weight:700;padding:0 5px;transition:var(--transition);}
+    .td-toggle-btn.active .td-badge{background:rgba(255,255,255,.2);color:var(--white);}
+
+    .todo-section{margin-top:32px;display:none;animation:cardIn 0.4s cubic-bezier(0.4,0,0.2,1);}
+    .todo-section.show{display:block;}
+    .todo-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+    .todo-header-title{font-size:11px;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;color:var(--gray-400);}
+    .todo-progress{display:flex;align-items:center;gap:8px;}
+    .todo-progress-bar{width:80px;height:4px;background:var(--gray-200);border-radius:var(--radius-full);overflow:hidden;}
+    .todo-progress-fill{height:100%;background:var(--black);border-radius:var(--radius-full);transition:width .4s cubic-bezier(.4,0,.2,1);}
+    .todo-progress-text{font-size:10px;font-weight:600;color:var(--gray-400);}
+
+    .todo-add-bar{display:flex;gap:8px;margin-bottom:16px;}
+    .todo-add-bar input{flex:1;padding:12px 16px;border:1.5px solid var(--gray-200);border-radius:var(--radius-full);font-family:var(--font-body);font-size:13px;color:var(--black);background:var(--white);outline:none;transition:border-color .2s;}
+    .todo-add-bar input:focus{border-color:var(--black);}
+    .todo-add-bar input::placeholder{color:var(--gray-400);}
+    .todo-add-bar button{padding:10px 20px;border:none;border-radius:var(--radius-full);background:var(--black);color:var(--white);font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);white-space:nowrap;}
+    .todo-add-bar button:hover{background:var(--gray-700);}
+
+    .todo-list{display:flex;flex-direction:column;gap:6px;}
+    .todo-item{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-md);transition:var(--transition);cursor:pointer;position:relative;}
+    .todo-item:hover{border-color:var(--gray-300);box-shadow:0 2px 8px rgba(0,0,0,0.04);}
+
+    .todo-checkbox{width:22px;height:22px;border-radius:6px;border:2px solid var(--gray-300);background:var(--white);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:var(--transition);cursor:pointer;}
+    .todo-item.done .todo-checkbox{background:var(--black);border-color:var(--black);animation:popCheck .3s cubic-bezier(.4,0,.2,1);}
+    .todo-item.done .todo-checkbox::after{content:'\2713';color:var(--white);font-size:12px;font-weight:700;}
+    @keyframes popCheck{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+    .todo-item.done .todo-label{text-decoration:line-through;color:var(--gray-400);}
+    .todo-label{flex:1;font-size:14px;color:var(--black);line-height:1.4;}
+    .todo-date{font-size:10px;color:var(--gray-400);white-space:nowrap;}
+    .todo-del{width:24px;height:24px;border:none;background:transparent;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+    .todo-item:hover .todo-del{opacity:1;}
+    .todo-del svg{width:12px;height:12px;stroke:var(--danger);fill:none;stroke-width:2;stroke-linecap:round;}
+
+    .todo-filter-row{display:flex;gap:6px;margin-bottom:14px;}
+    .todo-filter{padding:6px 14px;border:1.5px solid var(--gray-200);border-radius:var(--radius-full);background:var(--white);font-family:var(--font-body);font-size:11px;font-weight:500;color:var(--gray-500);cursor:pointer;transition:var(--transition);}
+    .todo-filter:hover{border-color:var(--gray-400);}
+    .todo-filter.active{background:var(--black);color:var(--white);border-color:var(--black);}
+
+    .todo-empty{text-align:center;padding:40px 20px;color:var(--gray-400);font-size:13px;line-height:1.7;}
   </style>
 </head>
 <body>
@@ -348,6 +396,11 @@
       </div>
       <div class="topbar-right">
         <button class="icon-btn" onclick="openAddModal()" title="Add Notebook"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></button>
+        <button class="td-toggle-btn" id="tdToggleBtn" onclick="toggleTodoSection()" title="To-Do List">
+          <svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          To-Do
+          <span class="td-badge" id="tdBadge">0</span>
+        </button>
         <button class="icon-btn" onclick="notoNavigate('settings.html')" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
       </div>
     </header>
@@ -358,6 +411,27 @@
         <span class="section-count" id="notebookCount">0 notebooks</span>
       </div>
       <div class="notebooks-grid" id="notebooksGrid"></div>
+
+      <!-- TO-DO LIST SECTION -->
+      <div class="todo-section" id="todoSection">
+        <div class="todo-header">
+          <span class="todo-header-title">✅ Tasks</span>
+          <div class="todo-progress">
+            <div class="todo-progress-bar"><div class="todo-progress-fill" id="tdProgressFill" style="width:0%"></div></div>
+            <span class="todo-progress-text" id="tdProgressText">0/0</span>
+          </div>
+        </div>
+        <div class="todo-add-bar">
+          <input id="tdInput" type="text" placeholder="Add a task — e.g. Finish Chapter 5, Submit lab report..." maxlength="100" autocomplete="off" onkeydown="if(event.key==='Enter')addTodoNb()"/>
+          <button onclick="addTodoNb()">+ Add</button>
+        </div>
+        <div class="todo-filter-row">
+          <button class="todo-filter active" data-f="all" onclick="setTdFilter('all')">All</button>
+          <button class="todo-filter" data-f="active" onclick="setTdFilter('active')">Active</button>
+          <button class="todo-filter" data-f="done" onclick="setTdFilter('done')">Done</button>
+        </div>
+        <div class="todo-list" id="tdList"></div>
+      </div>
     </main>
   </div>
 
@@ -601,7 +675,102 @@
       document.getElementById('deleteConfirmInput').addEventListener('input', function () {
         document.getElementById('deleteConfirmBtn').disabled = this.value.trim().toLowerCase() !== 'delete';
       });
+      loadTdBadge();
     });
   </script>
+
+  <!-- ============================================================
+       NOTEBOOK.HTML > JAVASCRIPT — TO-DO LIST
+       Persistent tasks stored per-subject in IndexedDB
+       ============================================================ -->
+  <script>
+    let _tdFilter = 'all';
+    function tdKey() { return 'noto_todos_'+currentSubjectId; }
+    async function loadTodos() { return await notoDb.get(tdKey(), []); }
+    async function saveTodos(t) { await notoDb.set(tdKey(), t); loadTdBadge(); }
+
+    async function loadTdBadge() {
+      const todos = await loadTodos();
+      const active = todos.filter(t=>!t.done).length;
+      const badge = document.getElementById('tdBadge');
+      if(badge) badge.textContent = active;
+    }
+
+    function toggleTodoSection() {
+      const sec = document.getElementById('todoSection');
+      const btn = document.getElementById('tdToggleBtn');
+      const isOpen = sec.classList.contains('show');
+      sec.classList.toggle('show',!isOpen);
+      btn.classList.toggle('active',!isOpen);
+      if(!isOpen) renderTdList();
+    }
+
+    function setTdFilter(f) {
+      _tdFilter = f;
+      document.querySelectorAll('.todo-filter').forEach(b=>b.classList.toggle('active',b.dataset.f===f));
+      renderTdList();
+    }
+
+    async function addTodoNb() {
+      const inp = document.getElementById('tdInput');
+      const text = inp.value.trim();
+      if(!text || text.length > 100) return;
+      const todos = await loadTodos();
+      todos.unshift({ id:'td_'+Date.now(), text:text, done:false, date:notoToday() });
+      await saveTodos(todos);
+      inp.value = '';
+      renderTdList();
+      notoToast('Task added ✅');
+    }
+
+    async function toggleTdItem(id) {
+      const todos = await loadTodos();
+      const t = todos.find(x=>x.id===id);
+      if(t) { t.done=!t.done; await saveTodos(todos); renderTdList(); }
+    }
+
+    async function deleteTdItem(id) {
+      let todos = await loadTodos();
+      todos = todos.filter(x=>x.id!==id);
+      await saveTodos(todos);
+      renderTdList();
+      notoToast('Task removed');
+    }
+
+    async function renderTdList() {
+      const todos = await loadTodos();
+      const list = document.getElementById('tdList');
+      const total = todos.length;
+      const done = todos.filter(t=>t.done).length;
+      const pct = total>0?Math.round((done/total)*100):0;
+      document.getElementById('tdProgressFill').style.width = pct+'%';
+      document.getElementById('tdProgressText').textContent = done+'/'+total;
+
+      let filtered = todos;
+      if(_tdFilter==='active') filtered = todos.filter(t=>!t.done);
+      if(_tdFilter==='done') filtered = todos.filter(t=>t.done);
+
+      list.innerHTML = '';
+      if(!filtered.length) {
+        const msg = _tdFilter==='done' ? 'No completed tasks yet.' : _tdFilter==='active' ? 'All done! 🎉' : 'No tasks yet.<br>Add one above to get organized!';
+        list.innerHTML = '<div class="todo-empty">'+msg+'</div>';
+        return;
+      }
+
+      filtered.forEach(t => {
+        const item = document.createElement('div');
+        item.className = 'todo-item'+(t.done?' done':'');
+        item.innerHTML = `
+          <div class="todo-checkbox" onclick="event.stopPropagation();toggleTdItem('${t.id}')"></div>
+          <span class="todo-label">${notoEsc(t.text)}</span>
+          <span class="todo-date">${t.date||''}</span>
+          <button class="todo-del" onclick="event.stopPropagation();deleteTdItem('${t.id}')" title="Delete"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+        `;
+        item.addEventListener('click', ()=>toggleTdItem(t.id));
+        list.appendChild(item);
+      });
+    }
+  </script>
+
 </body>
 </html>

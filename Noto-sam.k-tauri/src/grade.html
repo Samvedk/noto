@@ -247,6 +247,57 @@
     .transition-overlay { position:fixed; inset:0; background:var(--black); z-index:99998; transform:translateY(-200%); transition:transform 0.5s cubic-bezier(0.7,0,0.3,1); pointer-events:none; }
     .transition-overlay.active { transform:translateY(0%); pointer-events:all; }
 
+    /* ============================================================
+       HABIT TRACKER — GEN-Z PREMIUM DESIGN
+       ============================================================ */
+    .ht-toggle-btn{display:flex;align-items:center;gap:8px;padding:8px 16px;border:1.5px solid var(--gray-200);border-radius:var(--radius-full);background:var(--white);font-family:var(--font-body);font-size:12px;font-weight:500;color:var(--gray-500);cursor:pointer;transition:var(--transition);}
+    .ht-toggle-btn:hover{border-color:var(--black);color:var(--black);background:var(--gray-50);}
+    .ht-toggle-btn.active{background:var(--black);color:var(--white);border-color:var(--black);}
+    .ht-toggle-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+
+    .habit-section{margin-top:32px;display:none;animation:cardIn 0.4s cubic-bezier(0.4,0,0.2,1);}
+    .habit-section.show{display:block;}
+    .habit-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .habit-header-title{font-size:11px;font-weight:400;letter-spacing:0.14em;text-transform:uppercase;color:var(--gray-400);}
+
+    .habit-add-bar{display:flex;gap:8px;margin-bottom:20px;}
+    .habit-add-bar input{flex:1;padding:12px 16px;border:1.5px solid var(--gray-200);border-radius:var(--radius-full);font-family:var(--font-body);font-size:13px;color:var(--black);background:var(--white);outline:none;transition:border-color .2s;}
+    .habit-add-bar input:focus{border-color:var(--black);}
+    .habit-add-bar input::placeholder{color:var(--gray-400);}
+    .habit-add-btn{padding:10px 20px;border:none;border-radius:var(--radius-full);background:var(--black);color:var(--white);font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;transition:var(--transition);white-space:nowrap;}
+    .habit-add-btn:hover{background:var(--gray-700);}
+
+    .habit-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+
+    .habit-card{background:var(--white);border:1.5px solid var(--gray-200);border-radius:var(--radius-lg);padding:20px;transition:var(--transition);position:relative;overflow:hidden;}
+    .habit-card:hover{border-color:var(--gray-300);box-shadow:var(--shadow-soft);transform:translateY(-1px);}
+    .habit-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;}
+    .habit-card-info{flex:1;}
+    .habit-card-name{font-family:var(--font-display);font-size:17px;font-weight:400;color:var(--black);margin-bottom:3px;}
+    .habit-card-streak{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;background:linear-gradient(135deg,#ff6b35,#f7c948);color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;border-radius:var(--radius-full);text-transform:uppercase;}
+    .habit-card-streak.zero{background:var(--gray-200);color:var(--gray-500);}
+
+    .habit-ring{width:48px;height:48px;position:relative;flex-shrink:0;}
+    .habit-ring svg{width:48px;height:48px;transform:rotate(-90deg);}
+    .habit-ring-bg{fill:none;stroke:var(--gray-200);stroke-width:4;}
+    .habit-ring-fg{fill:none;stroke:var(--black);stroke-width:4;stroke-linecap:round;stroke-dasharray:126;stroke-dashoffset:126;transition:stroke-dashoffset .6s cubic-bezier(.4,0,.2,1);}
+    .habit-ring-pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--black);}
+
+    .habit-days{display:flex;gap:4px;margin-bottom:12px;}
+    .habit-day{width:28px;height:28px;border-radius:6px;font-size:9px;font-weight:600;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:var(--transition);border:1.5px solid var(--gray-200);background:var(--white);color:var(--gray-500);}
+    .habit-day:hover{border-color:var(--gray-400);}
+    .habit-day.done{background:var(--black);color:var(--white);border-color:var(--black);animation:popCheck .3s cubic-bezier(.4,0,.2,1);}
+    .habit-day.today{box-shadow:0 0 0 2px var(--black);}
+    @keyframes popCheck{0%{transform:scale(1)}50%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+    .habit-card-actions{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--gray-200);}
+    .habit-card-stat{font-size:11px;color:var(--gray-400);}
+    .habit-del-btn{width:24px;height:24px;border:none;background:transparent;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;}
+    .habit-card:hover .habit-del-btn{opacity:1;}
+    .habit-del-btn svg{width:13px;height:13px;stroke:var(--danger);fill:none;stroke-width:2;stroke-linecap:round;}
+
+    .habit-empty{text-align:center;padding:40px 20px;color:var(--gray-400);font-size:13px;line-height:1.7;grid-column:1/-1;}
+
   </style>
 </head>
 <body>
@@ -345,6 +396,10 @@
         <button class="icon-btn" onclick="notoNavigate('settings.html')" title="Settings">
           <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
         </button>
+        <button class="ht-toggle-btn" id="htToggleBtn" onclick="toggleHabitSection()" title="Habit Tracker">
+          <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+          Habits
+        </button>
       </div>
     </header>
     <main class="main-content">
@@ -353,6 +408,18 @@
         <span class="section-count" id="gradeCount">0 grades</span>
       </div>
       <div class="grades-grid" id="gradesGrid"></div>
+
+      <!-- HABIT TRACKER SECTION -->
+      <div class="habit-section" id="habitSection">
+        <div class="habit-header">
+          <span class="habit-header-title">🔥 Daily Habits</span>
+        </div>
+        <div class="habit-add-bar">
+          <input id="habitInput" type="text" placeholder="Add a habit — e.g. Read 30 min, Practice math..." maxlength="60" autocomplete="off" onkeydown="if(event.key==='Enter')addHabit()"/>
+          <button class="habit-add-btn" onclick="addHabit()">+ Add</button>
+        </div>
+        <div class="habit-grid" id="habitGrid"></div>
+      </div>
     </main>
   </div>
 
@@ -629,6 +696,135 @@
       await notoWaitInit();
       render();
     });
+  </script>
+
+  <!-- ============================================================
+       GRADE.HTML > JAVASCRIPT — HABIT TRACKER
+       Persistent habits stored in IndexedDB via notoDb
+       ============================================================ -->
+  <script>
+    const HT_KEY = 'noto_habits';
+    const WEEKDAYS = ['S','M','T','W','T','F','S'];
+
+    async function loadHabits() { return await notoDb.get(HT_KEY, []); }
+    async function saveHabits(h) { await notoDb.set(HT_KEY, h); }
+
+    function getWeekDates() {
+      const today = new Date();
+      const dow = today.getDay();
+      const dates = [];
+      for(let i=0;i<7;i++) {
+        const d = new Date(today);
+        d.setDate(today.getDate() - dow + i);
+        dates.push(d.toISOString().slice(0,10));
+      }
+      return dates;
+    }
+
+    function toggleHabitSection() {
+      const sec = document.getElementById('habitSection');
+      const btn = document.getElementById('htToggleBtn');
+      const isOpen = sec.classList.contains('show');
+      sec.classList.toggle('show',!isOpen);
+      btn.classList.toggle('active',!isOpen);
+      if(!isOpen) renderHabits();
+    }
+
+    async function addHabit() {
+      const inp = document.getElementById('habitInput');
+      const text = inp.value.trim();
+      if(!text || text.length > 60) return;
+      const habits = await loadHabits();
+      habits.push({ id:'hb_'+Date.now(), name:text, log:{}, created: notoTodayISO() });
+      await saveHabits(habits);
+      inp.value = '';
+      renderHabits();
+      notoToast('Habit added 🔥');
+    }
+
+    async function toggleHabitDay(id, date) {
+      const habits = await loadHabits();
+      const h = habits.find(x=>x.id===id);
+      if(!h) return;
+      if(!h.log) h.log = {};
+      h.log[date] = !h.log[date];
+      await saveHabits(habits);
+      renderHabits();
+    }
+
+    async function deleteHabit(id) {
+      let habits = await loadHabits();
+      habits = habits.filter(x=>x.id!==id);
+      await saveHabits(habits);
+      renderHabits();
+      notoToast('Habit removed');
+    }
+
+    function getStreak(log) {
+      let streak = 0;
+      const d = new Date();
+      for(let i=0;i<365;i++) {
+        const key = d.toISOString().slice(0,10);
+        if(log[key]) streak++;
+        else if(i>0) break; // Allow today to be unchecked
+        d.setDate(d.getDate()-1);
+      }
+      return streak;
+    }
+
+    async function renderHabits() {
+      const habits = await loadHabits();
+      const grid = document.getElementById('habitGrid');
+      const week = getWeekDates();
+      const todayISO = notoTodayISO();
+      const todayDow = new Date().getDay();
+      grid.innerHTML = '';
+
+      if(!habits.length) {
+        grid.innerHTML = '<div class="habit-empty">No habits yet.<br>Start building your streak — add one above! 🏆</div>';
+        return;
+      }
+
+      habits.forEach(h => {
+        const streak = getStreak(h.log||{});
+        const weekDone = week.filter(d=>(h.log||{})[d]).length;
+        const pct = Math.round((weekDone/7)*100);
+        const offset = 126 - (pct/100)*126;
+
+        const card = document.createElement('div');
+        card.className = 'habit-card';
+        card.innerHTML = `
+          <div class="habit-card-top">
+            <div class="habit-card-info">
+              <div class="habit-card-name">${notoEsc(h.name)}</div>
+              <div class="habit-card-streak ${streak===0?'zero':''}">${streak>0?'🔥 '+streak+' day streak':'No streak yet'}</div>
+            </div>
+            <div class="habit-ring">
+              <svg viewBox="0 0 48 48"><circle class="habit-ring-bg" cx="24" cy="24" r="20"/><circle class="habit-ring-fg" cx="24" cy="24" r="20" style="stroke-dashoffset:${offset}"/></svg>
+              <div class="habit-ring-pct">${pct}%</div>
+            </div>
+          </div>
+          <div class="habit-days" id="hd_${h.id}"></div>
+          <div class="habit-card-actions">
+            <span class="habit-card-stat">${weekDone}/7 this week</span>
+            <button class="habit-del-btn" onclick="event.stopPropagation();deleteHabit('${h.id}')" title="Remove"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+          </div>
+        `;
+        grid.appendChild(card);
+
+        // Render day buttons
+        const daysEl = card.querySelector('#hd_'+h.id);
+        week.forEach((date,i) => {
+          const btn = document.createElement('div');
+          const isDone = (h.log||{})[date];
+          btn.className = 'habit-day'+(isDone?' done':'')+(date===todayISO?' today':'');
+          btn.textContent = WEEKDAYS[i];
+          btn.title = date;
+          btn.addEventListener('click', ()=>toggleHabitDay(h.id, date));
+          daysEl.appendChild(btn);
+        });
+      });
+    }
   </script>
 
 </body>
