@@ -26,23 +26,6 @@
     /* DARK THEME ACCENTS */
     .stark-accent { color: #c0392b; font-family: var(--font-serif); font-style: italic; }
 
-    /* SPLASH SCREEN */
-    .splash-screen {
-      position:fixed;inset:0;z-index:9999;background:var(--bg);
-      display:flex;align-items:center;justify-content:center;
-      transition:opacity 0.6s ease;
-    }
-    .splash-screen.fade-out{opacity:0;pointer-events:none;}
-    .splash-quote{
-      font-family:var(--font-serif);font-size:clamp(1.2rem,3vw,2rem);
-      font-style:italic;color:var(--text);letter-spacing:-0.01em;
-      overflow:hidden;border-right:2px solid var(--text);
-      white-space:nowrap;width:0;
-      animation:typing 1.8s steps(40,end) 0.2s forwards, blink .6s step-end infinite;
-    }
-    @keyframes typing{from{width:0}to{width:100%}}
-    @keyframes blink{50%{border-color:transparent}}
-
     *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
     html, body {
@@ -137,11 +120,6 @@
       <button class="nav-btn" onclick="prev()"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="nav-btn" onclick="next()"><svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     </div>
-  </div>
-
-  <!-- SPLASH SCREEN -->
-  <div class="splash-screen" id="splashScreen">
-    <div class="splash-quote">Smarter Learning. Lighter Future.</div>
   </div>
 
   <div class="deck">
@@ -263,33 +241,11 @@
       <div class="source-text" style="position: relative; margin-top: 5rem; margin-left: 0; left: 0;">Sources: WWF, Environmental Paper Network, Industry Estimates</div>
     </section>
 
-    <!-- 08: WOOD — THE EXTRAORDINARY MATERIAL -->
-    <section class="slide">
-      <h3>Material Science</h3>
-      <h2>Wood — The Most Extraordinary Material in the Universe.</h2>
-      <p style="margin-bottom: 2rem;">Wood is the only structural material on Earth that is grown by sunlight. It is renewable, biodegradable, and stronger per-unit-weight than steel. We use it to build everything from homes to musical instruments — yet we consume it at an unsustainable rate for disposable paper.</p>
-      <div class="content-grid">
-        <div class="card">
-          <div class="card-title">Self-Repairing</div>
-          <div class="card-body">Unlike any synthetic material, living wood repairs itself. A tree can heal wounds, adapt to stress, and grow stronger over decades — properties no laboratory can replicate.</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Carbon Architecture</div>
-          <div class="card-body">A single mature tree stores roughly 22 kg of CO₂ per year. Over its lifetime, an oak stores over 10 tonnes — making forests the most efficient carbon capture technology on the planet.</div>
-        </div>
-        <div class="card">
-          <div class="card-title">Strength-to-Weight</div>
-          <div class="card-body">Balsa wood has a higher strength-to-weight ratio than many metals. NASA and aerospace engineers study wood's cellular microstructure for next-gen composite materials.</div>
-        </div>
-      </div>
-      <div class="source-text">Sources: Nature Materials (2021), USDA Forest Products Lab, Yale School of Forestry</div>
-    </section>
-
-    <!-- 09: THE VISION -->
+    <!-- 08: THE VISION -->
     <section class="slide" style="align-items: center;">
       <div style="max-width: 800px; padding: 4rem; border-left: 1px solid var(--line); position: relative;">
         <h1 style="font-family: var(--font-serif); font-size: clamp(2rem, 5vw, 4rem); font-style: italic; line-height: 1.3; font-weight: 400; margin-bottom: 2rem;">
-          "Sometimes you gotta run before you can walk."
+          “Sometimes you gotta run before you can walk.”
         </h1>
         <div style="text-align: right; font-family: var(--font-sans); letter-spacing: 0.4em; font-size: 0.8rem; text-transform: uppercase; color: var(--text-dim);">
           — Tony Stark
@@ -324,12 +280,6 @@
       if (e.key === 'ArrowRight' || e.key === ' ') next();
       if (e.key === 'ArrowLeft') prev();
     });
-
-    // Splash screen: auto-dismiss after 2 seconds
-    setTimeout(()=>{
-      const splash=document.getElementById('splashScreen');
-      if(splash){splash.classList.add('fade-out');setTimeout(()=>splash.remove(),600);}
-    },2000);
 
     update();
   </script>

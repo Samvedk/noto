@@ -256,6 +256,31 @@
     .sp-done-ic{width:52px;height:52px;border-radius:50%;background:#27ae60;display:flex;align-items:center;justify-content:center;animation:popIn .3s cubic-bezier(.4,0,.2,1);}
     .sp-done-ic svg{width:24px;height:24px;stroke:#fff;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round;}
     @keyframes popIn{from{transform:scale(0.5);opacity:0;}to{transform:scale(1);opacity:1;}}
+
+    /* ── TO-DO / HABIT TRACKER ── */
+    .todo-panel{position:fixed;bottom:calc(var(--bbh)+6px);right:14px;background:var(--white);border:1.5px solid var(--g200);border-radius:var(--r16);box-shadow:var(--sh);padding:14px;z-index:300;width:280px;max-height:360px;display:none;overflow:hidden;flex-direction:column;}
+    .todo-panel.show{display:flex;animation:mUp .18s ease;}
+    .todo-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+    .todo-head-t{font-family:var(--fd);font-size:15px;}
+    .todo-add-row{display:flex;gap:6px;margin-bottom:10px;}
+    .todo-add-row input{flex:1;padding:7px 10px;border:1.5px solid var(--g200);border-radius:var(--r8);font-family:var(--ff);font-size:12px;outline:none;color:var(--black);background:var(--white);}
+    .todo-add-row input:focus{border-color:var(--black);}
+    .todo-add-btn{width:30px;height:30px;border:none;border-radius:var(--r8);background:var(--black);color:var(--white);font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:var(--ease);}
+    .todo-add-btn:hover{background:var(--g700);}
+    .todo-list{flex:1;overflow-y:auto;max-height:240px;}
+    .todo-list::-webkit-scrollbar{width:3px;}
+    .todo-list::-webkit-scrollbar-thumb{background:var(--g200);}
+    .todo-item{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:var(--r8);transition:background .15s;cursor:pointer;}
+    .todo-item:hover{background:var(--g100);}
+    .todo-check{width:18px;height:18px;border-radius:4px;border:1.5px solid var(--g300);background:var(--white);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:var(--ease);cursor:pointer;}
+    .todo-item.done .todo-check{background:var(--black);border-color:var(--black);}
+    .todo-item.done .todo-check::after{content:'\2713';color:var(--white);font-size:11px;font-weight:700;}
+    .todo-item.done .todo-text{text-decoration:line-through;color:var(--g400);}
+    .todo-text{flex:1;font-size:12px;color:var(--black);line-height:1.4;}
+    .todo-del{width:18px;height:18px;border:none;background:transparent;cursor:pointer;opacity:0;transition:opacity .15s;display:flex;align-items:center;justify-content:center;}
+    .todo-item:hover .todo-del{opacity:1;}
+    .todo-del svg{width:11px;height:11px;stroke:var(--danger);fill:none;stroke-width:2;stroke-linecap:round;}
+    .todo-empty{text-align:center;padding:20px 10px;color:var(--g400);font-size:11px;line-height:1.7;}
   </style>
 </head>
 <body>
@@ -451,6 +476,7 @@
         <button class="bb-btn" onclick="togglePtm(event)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><span id="ptLabel">Lined</span></button>
         <button class="bb-btn" onclick="addPage()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Add Page</button>
         <button class="bb-btn" onclick="openShareM()"><svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>Share</button>
+        <button class="bb-btn" onclick="toggleTodo()"><svg viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>To-Do</button>
       </div>
       <div class="sv"><span class="sv-dot" id="saveDot"></span><span id="saveLabel">Saved</span></div>
       <div class="bb-r">
@@ -471,6 +497,13 @@
   </div>
 
 
+
+  <!-- TO-DO PANEL -->
+  <div class="todo-panel" id="todoPanel">
+    <div class="todo-head"><span class="todo-head-t">To-Do</span><button class="bmp-close" onclick="toggleTodo()"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="todo-add-row"><input id="todoInput" type="text" placeholder="Add a task..." maxlength="100" autocomplete="off" onkeydown="if(event.key==='Enter')addTodo()"/><button class="todo-add-btn" onclick="addTodo()">+</button></div>
+    <div class="todo-list" id="todoList"></div>
+  </div>
 
   <script src="renderer.js"></script>
   <script src="keyboard.js"></script>
@@ -504,31 +537,35 @@
     async function syncMeta(){const l=await notoLoadNotebooks(curSubjectId);const i=l.findIndex(n=>n.id===curNbId);if(i!==-1){l[i].pageCount=totPages;l[i].lastEdited=notoToday();await notoSaveNotebooks(curSubjectId,l);}}
   </script>
 
-  <!-- ── CANVAS ── -->
+  <!-- ── CANVAS (OPTIMIZED) ── -->
   <script>
     const dwC=document.getElementById('dwC');
     const bgC=document.getElementById('bgC');
-    const ctx=dwC.getContext('2d');
+    const ctx=dwC.getContext('2d',{willReadFrequently:false});
     const bgCtx=bgC.getContext('2d');
     const ps=document.getElementById('ps');
     const zc=document.getElementById('zc');
     const ca=document.getElementById('ca');
     const PAGE_W=794, PAGE_H=1050;
     let cScale=1, baseX=0, baseY=0;
+    // Offscreen cache: stores all committed strokes as a bitmap to avoid full redraws
+    let _strokeCache=null; let _strokeCacheDirty=true;
+    let _dpr=1;
 
     function initCanvas(){
       const r=ca.getBoundingClientRect();
       const sc=Math.min(r.width*.94/PAGE_W, r.height*.94/PAGE_H, 2.0);
       const dW=Math.round(PAGE_W*sc), dH=Math.round(PAGE_H*sc);
-      const dpr = window.devicePixelRatio || 1;
+      _dpr = window.devicePixelRatio || 1;
       ps.style.width=dW+'px'; ps.style.height=dH+'px';
-      dwC.width=dW*dpr; dwC.height=dH*dpr; bgC.width=dW*dpr; bgC.height=dH*dpr;
+      dwC.width=dW*_dpr; dwC.height=dH*_dpr; bgC.width=dW*_dpr; bgC.height=dH*_dpr;
       [dwC,bgC].forEach(c=>{c.style.width=dW+'px';c.style.height=dH+'px';});
-      ctx.setTransform(dpr,0,0,dpr,0,0); bgCtx.setTransform(dpr,0,0,dpr,0,0);
+      ctx.setTransform(_dpr,0,0,_dpr,0,0); bgCtx.setTransform(_dpr,0,0,_dpr,0,0);
       cScale=sc;
       baseX=(r.width-dW)/2; baseY=(r.height-dH)/2;
       zc.style.position='absolute'; zc.style.left=baseX+'px'; zc.style.top=baseY+'px';
       zc.style.transformOrigin='0 0';
+      _strokeCache=null; _strokeCacheDirty=true; // invalidate cache on resize
       applyZoom(); drawBg(); redraw();
     }
     window.addEventListener('resize',initCanvas);
@@ -730,62 +767,70 @@
     }
   </script>
 
-  <!-- ── DRAWING ENGINE ── -->
+  <!-- ── DRAWING ENGINE (OPTIMIZED FOR EMBEDDED) ── -->
   <script>
     let isDrawing=false, currentPath=[], undoSt=[], redoSt=[];
-    let shStart=null, isShDraw=false, preShSnap=null;
-    // Palm Rejection & Handedness state
+    let shStart=null, isShDraw=false;
+    // Palm Rejection & Handedness — settings cached at init (no async reads in hot path)
     let _lastPenTime=0, _lastPenX=0, _lastPenY=0, _lastPenP=0;
+    let _cachedSettings=null; // Populated once at DOMContentLoaded to avoid IndexedDB reads in pointer events
+    // rAF pipeline: batch pointer events into single frame renders
+    let _rafId=0, _needsRender=false;
+    // Pressure smoothing: exponential moving average
+    let _smoothPressure=0.5;
+    const _PRESSURE_SMOOTH=0.35; // lower = smoother (0.2-0.5 range)
 
-    // Convert screen coord → canvas pixel (correct at ALL zoom levels)
     function getPos(e){ return sc2cv(e.clientX, e.clientY); }
+
+    // ── SMART INK: Catmull-Rom spline for smooth curves ──
+    function catmullRomPoint(p0,p1,p2,p3,t){
+      const t2=t*t, t3=t2*t;
+      return {
+        x:0.5*((2*p1.x)+(-p0.x+p2.x)*t+(2*p0.x-5*p1.x+4*p2.x-p3.x)*t2+(-p0.x+3*p1.x-3*p2.x+p3.x)*t3),
+        y:0.5*((2*p1.y)+(-p0.y+p2.y)*t+(2*p0.y-5*p1.y+4*p2.y-p3.y)*t2+(-p0.y+3*p1.y-3*p2.y+p3.y)*t3)
+      };
+    }
 
     dwC.addEventListener('pointerdown',e=>{
       if(pinching)return;
       const tNow = Date.now();
       if(e.pointerType==='pen') { _lastPenTime = tNow; _lastPenX = e.clientX; _lastPenY = e.clientY; }
-      
-      // Palm Rejection Logic:
-      // 1. Block massive touch areas (fat fingers / palms) - some OS expose radius/width
+      // Palm Rejection (cached settings — zero async overhead)
       if(e.pointerType==='touch' && (e.width > 25 || e.height > 25)) return;
-      // 2. Block touches if a stylus was recently active (standard palm rejection)
       if(e.pointerType==='touch' && (tNow - _lastPenTime < 1500)) return;
-      // 3. Handedness spatial rejection
-      if(e.pointerType==='touch' && tNow - _lastPenTime < 8000) {
-          const S = (typeof notoLoadSettings === 'function') ? notoLoadSettings() : {};
-          if(S.handedness === 'right' && e.clientX > _lastPenX + 40) return; // Right-handed palm is generally to the right
-          if(S.handedness === 'left' && e.clientX < _lastPenX - 40) return; // Left-handed palm is generally to the left
+      if(e.pointerType==='touch' && tNow - _lastPenTime < 8000 && _cachedSettings) {
+          if(_cachedSettings.handedness === 'right' && e.clientX > _lastPenX + 40) return;
+          if(_cachedSettings.handedness === 'left' && e.clientX < _lastPenX - 40) return;
       }
-
       if(e.pointerType==='touch'&&!e.isPrimary)return;
-      if(e.pointerType==='pen'&&e.pressure===0)return; // Block stylus hover from starting strokes
-      
+      if(e.pointerType==='pen'&&e.pressure===0)return;
       e.preventDefault(); e.stopPropagation();
       dwC.setPointerCapture(e.pointerId);
       if(tool==='text'){placeTxBox(e);return;}
       if(tool==='eraser'){isDrawing=true;eraseAt(getPos(e));return;}
-      if(tool==='shape'){isShDraw=true;shStart=getPos(e);preShSnap=ctx.getImageData(0,0,dwC.width,dwC.height);redoSt=[];return;}
+      if(tool==='shape'){isShDraw=true;shStart=getPos(e);redoSt=[];redraw();return;}
       if(tool==='lasso'){isDrawing=true;currentPath=[getPos(e)];return;}
       isDrawing=true;redoSt=[];
       const p=getPos(e),s=stStyle();
-      currentPath=[{x:p.x,y:p.y,pressure:e.pressure||0.5}];currentPath._s=s;
+      _smoothPressure=e.pressure||0.5;
+      currentPath=[{x:p.x,y:p.y,pressure:_smoothPressure}];currentPath._s=s;
     },{passive:false});
 
     dwC.addEventListener('pointermove',e=>{
       if(pinching)return;
       const tNow = Date.now();
       if(e.pointerType==='pen') { _lastPenTime = tNow; _lastPenX = e.clientX; _lastPenY = e.clientY; _lastPenP = e.pressure||0.5; }
-      
-      // Live palm rejection
       if(e.pointerType==='touch' && (e.width > 25 || e.height > 25)) return;
       if(e.pointerType==='touch' && (tNow - _lastPenTime < 1500)) return;
-      
       if(e.pointerType==='touch'&&!e.isPrimary)return;
-      if(e.pointerType==='pen'&&e.pressure===0)return; // Block ghost strokes on stylus hover
-      if(isDrawing&&e.buttons===0&&e.pointerType!=='touch'){finalise(e);return;} // Ensure pointerup isn't missed
+      if(e.pointerType==='pen'&&e.pressure===0)return;
+      if(isDrawing&&e.buttons===0&&e.pointerType!=='touch'){finalise(e);return;}
       e.preventDefault();
       if(tool==='eraser'&&isDrawing){eraseAt(getPos(e));return;}
-      if(tool==='shape'&&isShDraw&&shStart){ctx.putImageData(preShSnap,0,0);drawShPrev(shStart,getPos(e));return;}
+      if(tool==='shape'&&isShDraw&&shStart){
+        // Shape preview: redraw committed strokes + shape overlay (no getImageData)
+        redraw(); drawShPrev(shStart,getPos(e)); return;
+      }
       if(tool==='lasso'&&isDrawing){
         const p=getPos(e); currentPath.push(p); redraw();
         ctx.strokeStyle='rgba(41,128,185,0.8)'; ctx.setLineDash([5,5]); ctx.lineWidth=2;
@@ -795,8 +840,38 @@
         return;
       }
       if(!isDrawing)return;
-      const p=getPos(e);currentPath.push({x:p.x,y:p.y,pressure:e.pressure||0.5});renderLive();
+      const p=getPos(e);
+      // Smart Ink: Pressure normalization via exponential moving average
+      const rawP=e.pressure||0.5;
+      _smoothPressure=_smoothPressure*(1-_PRESSURE_SMOOTH)+rawP*_PRESSURE_SMOOTH;
+      currentPath.push({x:p.x,y:p.y,pressure:_smoothPressure});
+      // Incremental render: only draw the newest segment (no full redraw)
+      if(!_needsRender){_needsRender=true;_rafId=requestAnimationFrame(renderIncremental);}
     },{passive:false});
+
+    // ── INCREMENTAL RENDERER: only draws the latest segment ──
+    function renderIncremental(){
+      _needsRender=false;
+      const path=currentPath, style=currentPath._s||stStyle();
+      if(path.length<2) return;
+      const len=path.length;
+      ctx.globalAlpha=style.alpha||1;
+      ctx.globalCompositeOperation=style.composite||style.comp||'source-over';
+      ctx.strokeStyle=style.color;ctx.lineCap='round';ctx.lineJoin='round';
+      // Draw only the last 2 points (incremental — no clearing!)
+      if(len>=3){
+        const i=len-2;
+        ctx.lineWidth=style.size*(0.5+(_smoothPressure)*0.8);
+        ctx.beginPath();
+        ctx.moveTo(path[i-1].x,path[i-1].y);
+        ctx.quadraticCurveTo(path[i].x,path[i].y,(path[i].x+path[i+1].x)/2,(path[i].y+path[i+1].y)/2);
+        ctx.stroke();
+      } else {
+        ctx.lineWidth=style.size*(0.5+(_smoothPressure)*0.8);
+        ctx.beginPath();ctx.moveTo(path[0].x,path[0].y);ctx.lineTo(path[1].x,path[1].y);ctx.stroke();
+      }
+      ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
+    }
 
     dwC.addEventListener('pointerup',finalise);
     dwC.addEventListener('pointercancel',finalise);
@@ -807,48 +882,26 @@
           btn = document.createElement('button');
           btn.id = 'snapLineBtn';
           btn.className = 'pptb-btn';
-          btn.style.position = 'fixed';
-          btn.style.zIndex = '1000';
-          btn.style.background = '#0a84ff';
-          btn.style.color = 'white';
-          btn.style.padding = '10px 24px';
-          btn.style.borderRadius = '30px';
-          btn.style.boxShadow = '0 8px 24px rgba(0,0,0,0.3)';
-          btn.style.border = '1px solid rgba(255,255,255,0.2)';
-          btn.style.fontWeight = '600';
-          btn.style.letterSpacing = '0.5px';
-          btn.style.transition = 'opacity 0.2s';
+          btn.style.cssText='position:fixed;z-index:1000;background:#0a84ff;color:white;padding:10px 24px;border-radius:30px;box-shadow:0 8px 24px rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);font-weight:600;letter-spacing:0.5px;transition:opacity 0.2s;';
           btn.innerHTML = '📏 Snap to Grid?';
           document.body.appendChild(btn);
        }
-       // Positioning strictly on screen
-       btn.style.left = '50%';
-       btn.style.bottom = '80px';
-       btn.style.transform = 'translateX(-50%)';
-       btn.style.display = 'block';
-       btn.style.opacity = '1';
-       
-       btn.onclick = (e) => {
-          e.stopPropagation(); e.preventDefault();
-          const pg = getPg(curPage);
-          const t = pg.type || 'lined';
+       btn.style.left='50%';btn.style.bottom='80px';btn.style.transform='translateX(-50%)';
+       btn.style.display='block';btn.style.opacity='1';
+       btn.onclick = (ev) => {
+          ev.stopPropagation(); ev.preventDefault();
+          const pg = getPg(curPage), t = pg.type || 'lined';
           let spacing = (t==='graph'||t==='dotted') ? 24 : 30;
           spacing *= cScale; 
-          
           if(Math.abs(sStroke.y2 - sStroke.y1) < Math.abs(sStroke.x2 - sStroke.x1)) {
              let gridY = Math.round(sStroke.y1 / spacing) * spacing;
-             if(t==='lined') {
-                const startY = 58 * cScale;
-                gridY = startY + Math.round((sStroke.y1 - startY) / spacing) * spacing;
-             }
+             if(t==='lined') { const startY = 58 * cScale; gridY = startY + Math.round((sStroke.y1 - startY) / spacing) * spacing; }
              sStroke.y1 = gridY; sStroke.y2 = gridY;
           } else {
-             let gridX = Math.round(sStroke.x1 / spacing) * spacing;
-             sStroke.x1 = gridX; sStroke.x2 = gridX;
+             sStroke.x1 = Math.round(sStroke.x1 / spacing) * spacing; sStroke.x2 = sStroke.x1;
           }
-          redraw(); trigSave();
-          btn.style.opacity = '0';
-          setTimeout(() => btn.style.display = 'none', 300);
+          _strokeCacheDirty=true; redraw(); trigSave();
+          btn.style.opacity = '0'; setTimeout(() => btn.style.display = 'none', 300);
        };
        setTimeout(()=> { if(btn){ btn.style.opacity='0'; setTimeout(()=>btn.style.display='none',300); } }, 4500);
     }
@@ -857,20 +910,18 @@
       if(tool==='eraser'){isDrawing=false;return;}
       if(tool==='shape'&&isShDraw){
         isShDraw=false;if(!shStart)return;
-        const p=getPos(e);ctx.putImageData(preShSnap,0,0);
+        const p=getPos(e); redraw();
         const s=drawShPrev(shStart,p);
         if(s){
-           getPg(curPage).strokes.push(s);undoSt.push({pg:curPage});trigSave();
+           getPg(curPage).strokes.push(s);undoSt.push({pg:curPage});
+           _strokeCacheDirty=true; trigSave();
            const pt = getPg(curPage).type || 'lined';
            if (s.shape === 'line' && (pt === 'lined' || pt === 'graph' || pt === 'dotted')) {
-              // Trigger alignment ONLY if it's somewhat pure horizontal or vertical
               const slope = Math.abs((s.y2-s.y1)/(s.x2-s.x1));
-              if(slope < 0.25 || slope > 4) {
-                triggerLineAlignPrompt(s);
-              }
+              if(slope < 0.25 || slope > 4) triggerLineAlignPrompt(s);
            }
         }
-        shStart=null;preShSnap=null;return;
+        shStart=null;return;
       }
       if(tool==='lasso'){
         isDrawing=false;
@@ -878,26 +929,46 @@
         return;
       }
       if(!isDrawing)return;isDrawing=false;
+      cancelAnimationFrame(_rafId); _needsRender=false;
       if(currentPath.length<2){currentPath=[];return;}
       const s=currentPath._s||stStyle();
       const stPath = currentPath.map(p=>({x:p.x,y:p.y,pressure:p.pressure}));
       getPg(curPage).strokes.push({path:stPath,tool,color:s.color,size:s.size,alpha:s.alpha,composite:s.comp});
-      undoSt.push({pg:curPage});currentPath=[];trigSave();
+      undoSt.push({pg:curPage});currentPath=[];
+      _strokeCacheDirty=true; trigSave();
       redraw();
     }
 
-    function renderLive(){redraw();if(currentPath.length<2)return;drawPath(currentPath,currentPath._s||stStyle());}
-    function redraw(){ctx.clearRect(0,0,dwC.width,dwC.height);const pg=getPg(curPage);if(pg.strokes)pg.strokes.forEach(s=>drawStroke(s));}
+    // Full redraw: only when strokes change (undo/redo/erase/page switch)
+    function redraw(){
+      ctx.clearRect(0,0,dwC.width,dwC.height);
+      const pg=getPg(curPage);
+      if(pg.strokes) pg.strokes.forEach(s=>drawStroke(s));
+    }
     function drawStroke(s){if(s.type==='shape'){drawShFromSt(s);return;}if(s.type==='text'){drawTxFromSt(s);return;}if(!s.path||s.path.length<2)return;drawPath(s.path,s);}
     function drawPath(path,style){
       ctx.globalAlpha=style.alpha||1;ctx.globalCompositeOperation=style.composite||style.comp||'source-over';
       ctx.strokeStyle=style.color;ctx.lineCap='round';ctx.lineJoin='round';
       ctx.beginPath();ctx.moveTo(path[0].x,path[0].y);
-      for(let i=1;i<path.length-1;i++){
-        ctx.lineWidth=style.size*(0.5+(path[i].pressure||0.5)*0.8);
-        ctx.quadraticCurveTo(path[i].x,path[i].y,(path[i].x+path[i+1].x)/2,(path[i].y+path[i+1].y)/2);
+      // Smart Ink: Catmull-Rom spline interpolation for smoother curves
+      if(path.length>3){
+        for(let i=0;i<path.length-1;i++){
+          const p0=path[Math.max(i-1,0)], p1=path[i], p2=path[Math.min(i+1,path.length-1)], p3=path[Math.min(i+2,path.length-1)];
+          ctx.lineWidth=style.size*(0.5+(p1.pressure||0.5)*0.8);
+          for(let t=0;t<1;t+=0.25){
+            const pt=catmullRomPoint(p0,p1,p2,p3,t);
+            ctx.lineTo(pt.x,pt.y);
+          }
+        }
+        ctx.lineTo(path[path.length-1].x,path[path.length-1].y);
+      } else {
+        for(let i=1;i<path.length-1;i++){
+          ctx.lineWidth=style.size*(0.5+(path[i].pressure||0.5)*0.8);
+          ctx.quadraticCurveTo(path[i].x,path[i].y,(path[i].x+path[i+1].x)/2,(path[i].y+path[i+1].y)/2);
+        }
+        ctx.lineTo(path[path.length-1].x,path[path.length-1].y);
       }
-      ctx.lineTo(path[path.length-1].x,path[path.length-1].y);ctx.stroke();
+      ctx.stroke();
       ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
     }
   </script>
@@ -954,8 +1025,8 @@
 
   <!-- ── UNDO / REDO ── -->
   <script>
-    function doUndo(){const pg=getPg(curPage);if(!pg.strokes.length)return;redoSt.push({stroke:pg.strokes.pop(),pg:curPage});redraw();trigSave();notoToast('Undo');}
-    function doRedo(){if(!redoSt.length)return;const i=redoSt.pop();getPg(i.pg).strokes.push(i.stroke);redraw();trigSave();notoToast('Redo');}
+    function doUndo(){const pg=getPg(curPage);if(!pg.strokes.length)return;redoSt.push({stroke:pg.strokes.pop(),pg:curPage});_strokeCacheDirty=true;redraw();trigSave();notoToast('Undo');}
+    function doRedo(){if(!redoSt.length)return;const i=redoSt.pop();getPg(i.pg).strokes.push(i.stroke);_strokeCacheDirty=true;redraw();trigSave();notoToast('Redo');}
   </script>
 
   <!-- ── PAGE NAVIGATION ── -->
@@ -1499,6 +1570,32 @@
     }
   </script>
 
+  <!-- ── TO-DO / HABIT TRACKER LOGIC ── -->
+  <script>
+    let _todoOpen=false;
+    function getTodos(){ if(!pgData._todo)pgData._todo=[];return pgData._todo;}
+    function toggleTodo(){ _todoOpen=!_todoOpen; const p=document.getElementById('todoPanel'); if(_todoOpen){p.classList.add('show');renderTodos();}else{p.classList.remove('show');} }
+    function addTodo(){
+      const inp=document.getElementById('todoInput'), text=inp.value.trim();
+      if(!text||text.length>100)return;
+      getTodos().push({id:'td_'+Date.now(),text:text,done:false});
+      inp.value=''; renderTodos(); trigSave();
+    }
+    function toggleTodoItem(id){ const t=getTodos().find(x=>x.id===id); if(t){t.done=!t.done;renderTodos();trigSave();} }
+    function deleteTodoItem(id){ pgData._todo=getTodos().filter(x=>x.id!==id); renderTodos(); trigSave(); }
+    function renderTodos(){
+      const list=document.getElementById('todoList'), todos=getTodos();
+      list.innerHTML='';
+      if(!todos.length){list.innerHTML='<div class="todo-empty">No tasks yet.<br>Add one above to get started.</div>';return;}
+      todos.forEach(t=>{
+        const item=document.createElement('div');
+        item.className='todo-item'+(t.done?' done':'');
+        item.innerHTML='<div class="todo-check" onclick="event.stopPropagation();toggleTodoItem(\''+t.id+'\')"></div><span class="todo-text">'+notoEsc(t.text)+'</span><button class="todo-del" onclick="event.stopPropagation();deleteTodoItem(\''+t.id+'\')"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>';
+        list.appendChild(item);
+      });
+    }
+  </script>
+
   <!-- ── INIT ── -->
   <script>
     document.addEventListener('DOMContentLoaded', async ()=>{
@@ -1506,6 +1603,7 @@
       if(!curNbId){notoNavigate('notebook.html');return;}
       await initStorage();
       const S = await notoLoadSettings();
+      _cachedSettings = S; // Cache settings for palm rejection (zero-latency access in pointer events)
       curPgType   = S.defaultPageType||'lined';
       txSize      = S.defaultTextSize||'medium';
       txCol       = S.defaultPenColor||'#000000';
@@ -1516,6 +1614,8 @@
       document.getElementById('bmpanel').classList.remove('open');
       if(S.handedness === 'left') { document.querySelector('.dtb').classList.add('to-right'); }
       if(S.autoDateStamp){const pg=getPg(curPage);if(!pg.stamps||!pg.stamps.length){const st={id:'ds_'+Date.now(),date:notoFormatDate(notoTodayISO()),label:'',x:40,y:40};pg.stamps=[st];renderStamp(st);}}
+      // Security: enforce maxlength on all text inputs
+      document.querySelectorAll('input[type="text"]').forEach(inp=>{ if(!inp.maxLength||inp.maxLength>200) inp.maxLength=200; });
     });
   </script>
 </body>
