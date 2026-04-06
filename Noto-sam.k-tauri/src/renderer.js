@@ -319,15 +319,21 @@ async function notoFactoryReset() {
 
 // ── Initialization Guard ──────────────────────────────────────
 let _notoInitPromise = null;
+let _notoInitDone = false;
 function notoWaitInit() {
   if (!_notoInitPromise) {
     _notoInitPromise = (async () => {
       try {
+        await notoDb.open();
         await notoMigrateIfNeeded();
-        const s = await notoLoadSettings();
-        notoApplyTheme(s.theme);
+        // Read settings DIRECTLY from DB to avoid circular call (notoLoadSettings calls notoWaitInit)
+        const s = await notoDb.get(NOTO_KEYS.settings, {});
+        const merged = Object.assign({}, NOTO_DEFAULTS, s);
+        notoApplyTheme(merged.theme);
+        _notoInitDone = true;
       } catch (e) {
         console.error('Noto Initialization failed:', e);
+        _notoInitDone = true; // Mark done even on error so app doesn't stall
       }
     })();
   }
