@@ -1,54 +1,68 @@
-# Noto — The Elite Digital Canvas 📓✨
+<div align="center">
 
-<p align="center">
-  <img src="assets/presentation_preview.png" alt="Noto Presentation Preview" width="600" style="border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.15);">
-</p>
+<img src="public/icon.png" alt="Noto Logo" width="120" height="120" />
 
-[![Status](https://img.shields.io/badge/Status-Executed-success?style=for-the-badge)](https://github.com/Samvedk/noto)
-[![Storage](https://img.shields.io/badge/Storage-High--Capacity%20IndexedDB-F3DF49?style=for-the-badge&logo=javascript&logoColor=black)](https://github.com/Samvedk/noto)
+# Noto — The Elite Digital Canvas
 
-> **"Smarter Learning. Lighter Future."** — Noto is a high-performance environment built to bridge creative intuition and digital efficiency.
+**Smarter Learning. Lighter Future.**
 
----
+[![Status](https://img.shields.io/badge/Status-Production_Ready-black?style=flat-square)](#)
+[![Platform](https://img.shields.io/badge/Platform-Android_%7C_Web-black?style=flat-square)](#)
+[![Stack](https://img.shields.io/badge/Stack-HTML5_%7C_Capacitor-black?style=flat-square)](#)
 
-## 🏗️ The Problem & The Mission
-Traditional education systems carry an invisible weight:
-*   **Physical Burden**: Students carry **6–8 kg** of notebooks daily.
-*   **Ecological Debt**: Every student consumes **3,000+ pages** of paper annually.
-*   **Water Security**: Paper production consumes **500 billion liters** of water annually.
-
-**Noto solves this by consolidating the entire academic experience into a single, 1GB+ high-capacity digital canvas.**
+*Replace traditional notebooks with one intelligent digital system.*<br>
+*One device. One system. Infinite learning.*
 
 ---
 
-## 🧠 Core Engineering (Executed)
+</div>
 
-### 🏎️ High-Capacity Storage (IndexedDB)
-Noto is engineered for massive libraries.
-*   **1GB+ Capacity**: Custom **IndexedDB persistence** for thousands of rich, hand-drawn pages.
-*   **Atomic Saves**: Asynchronous background writes ensure your writing never stutters.
+## 🎒 The Heavy Burden
+The modern academic system is broken physically and digitally.
+- **Physical Strain:** Students carry 6–8 kg of paper notebooks daily.
+- **Environmental Impact:** Over 3000+ pages of paper wasted per student, every single year.
+- **Fragmented Learning:** Discovering, archiving, and retrieving years of academic work is nearly impossible across loose notebooks.
 
-### 🖊️ Proximity-Sync Ink Engine
-Built for the stylus, mimicking the friction of high-end paper with **Software Palm Rejection** and low-latency rendering.
+## ✨ The Vision
+**Noto** is designed to replace traditional notebooks entirely. It is a unified digital notebook ecosystem engineered for elite students, creators, and thinkers. It combines a lightweight system with a zero-friction user interface.
 
-### 🛡️ Desktop Architecture (Tauri + Rust)
-*   **Native Webview**: Minimal resource footprint via the Tauri Framework.
-*   **100% Offline**: Data stays on your machine for absolute privacy.
+## 🚀 Core Features
+
+### Architectural Organization
+The core of Noto revolves around a pristine, hierarchical structure: 
+**Grade → Subject → Notebook → Page**. No more digging through unorganized files.
+
+### Pure Focus & Pressure-Sensitive Ink
+Noto boasts a minimalist UI and an ultra-responsive, zero-lag drawing engine. It offers full active stylus support with robust palm rejection. Total immersion, zero distractions.
+
+### Intelligent Canvas
+- **Offline Freedom:** No internet needed. Works everywhere, always.
+- **Background Sync:** Invisible auto-save ensures your data is permanently protected.
+- **Global Search:** Find any note in seconds, regardless of when it was written.
+
+## 🏗 Built for Scale: Technical Architecture
+
+Noto isn't a bloated SaaS application; it's lightweight and built to last.
+
+- **Web-Core Engine:** Built directly with HTML5, CSS3, and JavaScript for blazing-fast, ultra-light performance.
+- **Android Capacitor:** Production-ready Native Android deployment using Capacitor for deep hardware integration.
+- **IndexedDB Storage:** "1GB+ Capacity" offline-first local storage architecture built to handle massive notebooks seamlessly without race conditions.
+
+## 📱 Hardware Harmony
+Noto isn't just an app; it's designed to breathe inside high-end tablet hardware.
+Optimized for large-screen, landscape productivity environments with a pure focus on the stylus-first paradigm.
+
+## 🔮 Roadmap
+- **2026: AI Integration:** Smart handwriting-to-text, mathematical equation solving, and AI lecture summaries.
+- **2027: Custom Hardware:** The Noto Dedicated Note Device. A bespoke tablet built exclusively for the Noto OS.
 
 ---
 
-## 🎭 The Pitch & Engineering Deck
-Preview the engineering philosophy and global impact metrics directly:
+<div align="center">
 
-👉 **[View Full Presentation Source](Noto-sam.k-tauri/src/presentation.html)**  
-*(Clone and open in any browser to experience the full interactive deck.)*
+### *"This is not just a notebook. This is the future of learning."*
 
----
+<br>
+<img src="public/icon.png" alt="Noto Logo" width="60" style="opacity: 0.5" />
 
-## 👤 Author
-**Sam.K**  
-*“Sometimes you gotta run before you can walk.” — Tony Stark*
-
----
-
-© 2026 Samved K (Noto Project). All rights reserved.
+</div>

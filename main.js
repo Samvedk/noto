@@ -12,7 +12,7 @@ function createWindow() {
     }
   });
 
-  win.loadFile('welcome.html');
+  win.loadFile('public/index.html');
 }
 
 app.whenReady().then(createWindow);

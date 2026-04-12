@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noto — The Elite Digital Canvas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #050505;
+            --card-bg: #111111;
+            --accent: #3a86ff;
+            --text: #ffffff;
+            --text-muted: #888888;
+            --gradient: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 100%);
+            --transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        /* Presentation Container */
+        #deck {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        .slide {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 40px 10%;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(20px) scale(0.98);
+            transition: var(--transition);
+            text-align: center;
+        }
+
+        .slide.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Typography */
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            font-weight: 400;
+            margin-bottom: 20px;
+            letter-spacing: -0.02em;
+        }
+
+        .tagline {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            font-weight: 300;
+        }
+
+        p {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            color: var(--text-muted);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .highlight { color: var(--accent); }
+
+        /* Problem List */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            width: 100%;
+            max-width: 1000px;
+            margin-top: 60px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            padding: 40px;
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.05);
+            text-align: left;
+            transition: var(--transition);
+        }
+
+        .feature-card:hover {
+            border-color: rgba(255,255,255,0.15);
+            transform: translateY(-8px);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 24px;
+            display: block;
+        }
+
+        .feature-title {
+            font-size: 1.5rem;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .feature-desc {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            display: flex;
+            gap: 20px;
+            z-index: 1000;
+        }
+
+        .btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+        }
+
+        .btn:hover { background: rgba(255,255,255,0.1); }
+
+        .progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 4px;
+            background: var(--accent);
+            transition: width 0.3s ease;
+            z-index: 1000;
+        }
+
+        /* Mockup Frame */
+        .mockup-container {
+            margin-top: 40px;
+            width: 100%;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .mockup-img {
+            width: 100%;
+            border-radius: 20px;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* Micro-animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .active .animate {
+            animation: fadeIn 0.8s ease forwards;
+        }
+
+        #bg-glow {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, rgba(58, 134, 255, 0.05) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="progress" id="progressBar"></div>
+    <div id="bg-glow"></div>
+
+    <div id="deck">
+        <!-- 1. Cover -->
+        <section class="slide active" id="slide-1">
+            <div class="animate">
+                <img src="public/icon.png" alt="Noto Logo" style="width: 120px; height: 120px; margin-bottom: 40px; filter: drop-shadow(0 0 20px rgba(255,255,255,0.2));">
+                <h1>Noto</h1>
+                <p class="tagline">The Elite Digital Canvas</p>
+                <p style="margin-top: 40px; font-weight: 300;">Smarter Learning. Lighter Future.</p>
+            </div>
+        </section>
+
+        <!-- 2. The Problem -->
+        <section class="slide" id="slide-2">
+            <h1 class="animate">The Heavy Burden</h1>
+            <div class="grid animate">
+                <div class="feature-card">
+                    <span class="feature-icon">🎒</span>
+                    <div class="feature-title">Physical Strain</div>
+                    <div class="feature-desc">Students carry 6–8 kg of paper notebooks daily.</div>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🌳</span>
+                    <div class="feature-title">Environmental Impact</div>
+                    <div class="feature-desc">3000+ pages of paper wasted per student, every year.</div>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🧩</span>
+                    <div class="feature-title">Fragmented Learning</div>
+                    <div class="feature-desc">No centralized system to manage years of academic work.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. The Vision -->
+        <section class="slide" id="slide-3">
+            <p class="tagline animate highlight">The Vision</p>
+            <h1 class="animate" style="max-width: 900px; line-height: 1.1;">Replace traditional notebooks with one <span class="highlight">intelligent</span> digital system.</h1>
+            <p class="animate" style="margin-top: 30px;">One device. One system. Infinite learning.</p>
+        </section>
+
+        <!-- 4. The Solution -->
+        <section class="slide" id="slide-4">
+            <h1 class="animate">Meet Noto.</h1>
+            <p class="animate">A unified digital notebook ecosystem designed for elite students, creators, and thinkers.</p>
+            <div class="mockup-container animate">
+                <img src="/Users/samved/.gemini/antigravity/brain/cdd83a22-6f4a-4baf-bd41-2a509b68c432/noto_ui_mockup_grades_1775985126723.png" class="mockup-img" alt="Noto Grades Interface">
+            </div>
+        </section>
+
+        <!-- 5. Core Features -->
+        <section class="slide" id="slide-5">
+            <h1 class="animate">Pure Focus.</h1>
+            <div class="grid animate">
+                <div class="feature-card">
+                    <div class="feature-title">Architectural Organization</div>
+                    <div class="feature-desc">Grade → Subject → Notebook → Page structure.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">Pressure-Sensitive Ink</div>
+                    <div class="feature-desc">Zero-lag handwriting with full stylus support.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">Offline Freedom</div>
+                    <div class="feature-desc">No internet needed. Works everywhere, always.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 6. Smart Features -->
+        <section class="slide" id="slide-6">
+            <h1 class="animate">Intelligent Canvas.</h1>
+            <div class="grid animate">
+                <div class="feature-card">
+                    <span class="feature-icon">🤖</span>
+                    <div class="feature-title">AI Organization</div>
+                    <div class="feature-desc">Smart categorization and future-ready AI insights.</div>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">☁️</span>
+                    <div class="feature-title">Background Sync</div>
+                    <div class="feature-desc">Invisible auto-save. Your data is always safe.</div>
+                </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔍</span>
+                    <div class="feature-title">Global Search</div>
+                    <div class="feature-desc">Find any note in seconds, regardless of when it was written.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 7. Architecture -->
+        <section class="slide" id="slide-7">
+            <h1 class="animate">Built for Scale.</h1>
+            <div class="grid animate">
+                <div class="feature-card">
+                    <div class="feature-title">Web-Core Engine</div>
+                    <div class="feature-desc">Built with HTML5/CSS3/JS for ultra-light performance.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">Android Capacitor</div>
+                    <div class="feature-desc">Production-ready expansion to all mobile platforms.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">IndexedDB Storage</div>
+                    <div class="feature-desc">Extreme data capacity (1GB+) local storage.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 8. Hardware -->
+        <section class="slide" id="slide-8">
+            <h1 class="animate">Hardware Harmony.</h1>
+            <p class="animate">Noto isn't just an app; it's designed to breathe inside high-end hardware.</p>
+            <div class="grid animate">
+                <div class="feature-card">
+                    <div class="feature-title">Tablet Native</div>
+                    <div class="feature-desc">Optimized for large-screen landscape productivity.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">Active Stylus Support</div>
+                    <div class="feature-desc">Full palm rejection and handwriting optimization.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 9. UX Philosophy -->
+        <section class="slide" id="slide-9">
+            <h1 class="animate">Zero Friction.</h1>
+            <p class="animate" style="font-size: 2rem; font-weight: 300;">Zero Lag. Minimal UI. <span class="highlight">Total Immersion.</span></p>
+            <div style="margin-top: 40px; width: 100px; height: 1px; background: var(--accent);"></div>
+        </section>
+
+        <!-- 10. Competition -->
+        <section class="slide" id="slide-10">
+            <h1 class="animate">The Noto Advantage.</h1>
+            <div class="grid animate">
+                <div class="feature-card">
+                    <div class="feature-title">Lightweight System</div>
+                    <div class="feature-desc">No unnecessary complexity or subscription bloat.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">Student First</div>
+                    <div class="feature-desc">Built specifically for the rigors of academic life.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 11. Market -->
+        <section class="slide" id="slide-11">
+            <h1 class="animate">A Global Opportunity.</h1>
+            <p class="animate">Millions of students are shifting toward digital learning. Noto is positioned to be the premium standard.</p>
+        </section>
+
+        <!-- 12. Roadmap -->
+        <section class="slide" id="slide-12">
+            <h1 class="animate">Roadmap.</h1>
+            <div class="grid animate">
+                <div class="feature-card">
+                    <div class="feature-title">2026: AI Integration</div>
+                    <div class="feature-desc">Smart handwriting-to-text and AI lecture summaries.</div>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-title">2027: Custom Hardware</div>
+                    <div class="feature-desc">The Noto Dedicated Note Device.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 13. Business Vision -->
+        <section class="slide" id="slide-13">
+            <h1 class="animate">The Ecosystem.</h1>
+            <p class="animate" style="font-size: 1.8rem;">Becoming the global standard for <span class="highlight">organized intelligence.</span></p>
+        </section>
+
+        <!-- 14. Closing -->
+        <section class="slide" id="slide-14">
+            <div class="animate">
+                <h1 style="font-family: 'Inter'; font-weight: 400;">"This is not just a notebook."</h1>
+                <p class="highlight" style="font-size: 2.5rem; letter-spacing: -0.01em;">This is the future of learning.</p>
+                <img src="public/icon.png" alt="Noto Logo" style="width: 80px; height: 80px; margin-top: 60px; opacity: 0.6;">
+            </div>
+        </section>
+    </div>
+
+    <div class="controls">
+        <button class="btn" onclick="prevSlide()">←</button>
+        <button class="btn" onclick="nextSlide()">→</button>
+    </div>
+
+    <script>
+        let currentSlide = 1;
+        const totalSlides = 14;
+
+        function updateSlide() {
+            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+            document.getElementById(`slide-${currentSlide}`).classList.add('active');
+            
+            const progress = (currentSlide / totalSlides) * 100;
+            document.getElementById('progressBar').style.width = `${progress}%`;
+        }
+
+        function nextSlide() {
+            if (currentSlide < totalSlides) {
+                currentSlide++;
+                updateSlide();
+            }
+        }
+
+        function prevSlide() {
+            if (currentSlide > 1) {
+                currentSlide--;
+                updateSlide();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ') nextSlide();
+            if (e.key === 'ArrowLeft') prevSlide();
+        });
+
+        // Initialize progress
+        updateSlide();
+    </script>
+</body>
+</html>

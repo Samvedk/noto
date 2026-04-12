@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Noto V4 — The Beginner's Master Build Guide</title>
+    <style>
+        :root {
+            --bg: #ffffff;
+            --card-bg: #fdfdfd;
+            --border: #e8e8e8;
+            --text: #1a1a1a;
+            --muted: #666666;
+            --accent: #2563eb;
+            --font: 'Outfit', 'Inter', -apple-system, sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            line-height: 1.6;
+            padding: 60px 24px;
+        }
+
+        .guide-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            border-bottom: 2px solid var(--accent);
+            padding-bottom: 40px;
+            margin-bottom: 80px;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--text);
+            letter-spacing: -1.5px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            color: var(--muted);
+            margin-top: 10px;
+        }
+
+        section {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 40px;
+            margin-bottom: 60px;
+            border-radius: 12px;
+            page-break-inside: avoid;
+        }
+
+        h2 {
+            font-size: 1rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 30px;
+            font-weight: 900;
+            letter-spacing: 2px;
+        }
+
+        p { margin-bottom: 20px; color: #333; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+            margin: 20px 0;
+            background: #fff;
+        }
+
+        th { text-align: left; padding: 12px; border-bottom: 2px solid #eee; background: #f9f9f9; }
+        td { padding: 12px; border-bottom: 1px solid #f0f0f0; }
+
+        .step-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 32px;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            background: #f0f0f0;
+            color: var(--accent);
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+
+        .step-text h3 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .code-box {
+            background: #f4f4f5;
+            padding: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.85rem;
+            color: #111;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+
+        .checkpoint {
+            background: #ecfdf5;
+            border: 1px solid #10b981;
+            padding: 20px;
+            border-radius: 8px;
+            color: #065f46;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-top: 30px;
+        }
+
+        .warning-box {
+            border: 1px solid #ef4444;
+            background: #fef2f2;
+            padding: 20px;
+            border-radius: 8px;
+            color: #991b1b;
+            font-size: 0.9rem;
+            margin-top: 30px;
+        }
+
+        @media print {
+            body { padding: 0; }
+            .print-btn { display: none; }
+            section { border-color: #eee; background: none; page-break-after: always; }
+        }
+
+        .print-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent);
+            color: #fff;
+            padding: 14px 28px;
+            border: none;
+            cursor: pointer;
+            font-weight: 800;
+            font-size: 0.85rem;
+            border-radius: 99px;
+            box-shadow: 0 10px 25px rgba(37, 99, 235, 0.2);
+        }
+
+    </style>
+</head>
+<body>
+
+<button class="print-btn" onclick="window.print()">PRINT AS PDF</button>
+
+<div class="guide-container">
+    <header>
+        <h1>Noto Phase IV</h1>
+        <div class="subtitle">Complete Beginner's Master Build Guide — Final Edition</div>
+    </header>
+
+    <section>
+        <h2>SECTION 1: COMPONENT LIST (REAL BUYING GUIDE)</h2>
+        <p>Ensure you have these exactly before starting. We recommend these Indian suppliers.</p>
+        <table>
+            <thead>
+                <tr>
+                    <th>Part</th>
+                    <th>Name</th>
+                    <th>Where to Buy (India)</th>
+                    <th>Est. Cost</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>The Brain</td><td>Radxa CM3 (2GB/16GB)</td><td><a href="https://robu.in/product/radxa-compute-module-3/" target="_blank" style="color:var(--accent);">Robu.in</a> / Evelta</td><td>₹3,500</td></tr>
+                <tr><td>The Body</td><td>CM3 IO Board</td><td><a href="https://robu.in/product/radxa-cm3-io-board/" target="_blank" style="color:var(--accent);">Robu.in</a></td><td>₹1,500</td></tr>
+                <tr><td>The Eyes</td><td>8" / 7" MIPI DSI LCD</td><td><a href="https://robu.in/category/display/dsi-lcd/" target="_blank" style="color:var(--accent);">Robu.in</a></td><td>₹2,800</td></tr>
+                <tr><td>The Pen</td><td>Universal Active Stylus</td><td><a href="https://www.amazon.in/s?k=universal+active+stylus" target="_blank" style="color:var(--accent);">Amazon India</a></td><td>₹900</td></tr>
+                <tr><td>The Battery</td><td>Li-Po 5000mAh (Flat)</td><td><a href="https://robu.in/product/li-po-3-7v-5000mah-rechargeable-battery/" target="_blank" style="color:var(--accent);">Robu.in</a></td><td>₹600</td></tr>
+                <tr><td>The Power</td><td>TP4056 + MT3608</td><td><a href="https://robu.in/product/mt3608-step-up-booster-tp4056-charger-combo/" target="_blank" style="color:var(--accent);">Robu.in</a></td><td>₹100</td></tr>
+                <tr><td>Hardware</td><td>M2.5 Standoffs</td><td>Local Shop</td><td>₹200</td></tr>
+                <tr style="background:#f4f4f5; font-weight:800;"><td>TOTAL</td><td></td><td></td><td>≈ ₹9,600</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section>
+        <h2>SECTION 2: HARDWARE ASSEMBLY (VERY DETAILED)</h2>
+        <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">
+                <h3>Brain to Board</h3>
+                <p>Click the <b>CM3 Brain Chip</b> into the long white connectors on the IO Board. Press both sides firmly until it "clicks".</p>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">
+                <h3>Screen Ribbon</h3>
+                <p>Flip up the black tab on the "DSI 0" port. Slide the ribbon in (<b>Blue side UP</b>) and lock the tab back down.</p>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">
+                <h3>Battery Logic</h3>
+                <p>Solder the Red wire to B+ and the Black wire to B- on the charger. Keep bare wires insulated with tape.</p>
+            </div>
+        </div>
+        <div class="warning-box">
+            <b>SAFETY WARNING:</b> Never let exposed Red and Black wires touch. Tape them immediately with electrical (Kapton) tape.
+        </div>
+    </section>
+
+    <section>
+        <h2>SECTION 3: FIRST BOOT (SYSTEM SETUP)</h2>
+        <p>1. Flash the OS to your eMMC using Balena Etcher.<br>
+           2. Insert power via USB-C. Login: <code>root</code>, Pass: <code>1234</code>.<br>
+           3. Update the system soul:</p>
+        <div class="code-box">
+            sudo apt update && sudo apt upgrade -y
+        </div>
+        <div class="checkpoint">
+            ✅ If you see the Armbian logo on the screen, your boot is successful.
+        </div>
+    </section>
+
+    <section>
+        <h2>SECTION 4: RUNNING THE APP (KIOSK MODE)</h2>
+        <p>Goal: Automate the Noto Web Engine boot sequence.</p>
+        <div class="code-box">
+            git clone https://github.com/Samvedk/noto.git /home/noto/app
+        </div>
+        <p>Set the autostart in <code>~/.config/openbox/autostart</code>:</p>
+        <div class="code-box">
+            chromium-browser --kiosk --no-sandbox file:///home/noto/app/welcome.html
+        </div>
+    </section>
+
+    <section>
+        <h2>SECTION 5: TOUCH + STYLUS OPTIMIZATION</h2>
+        <p>1. <b>AI Smoothing</b>: Activate the RK3566 AI core brain:</p>
+        <div class="code-box">
+            sudo apt install -y rknn-toolkit2 rknn-rt
+        </div>
+        <p>2. <b>Instant Response</b>: Set the touch polling to 400Hz in the system HUD settings.</p>
+    </section>
+
+    <section>
+        <h2>SECTION 6: POWER OPTIMIZATION</h2>
+        <p>1. <b>Sleep Mode</b>: Enable Deep Sleep for 12+ hour endurace.<br>
+           2. <b>省電 (Power Save)</b>: Set CPU governor mode:</p>
+        <div class="code-box">
+            echo powersave | sudo tee /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+        </div>
+    </section>
+
+    <section>
+        <h2>SECTION 7: FINAL INTEGRATION (CLEAN SETUP)</h2>
+        <p>1. <b>The Spine</b>: Screw the board to a clear acrylic base using M2.5 nylon standoffs.<br>
+           2. <b>Tape</b>: Tape the battery flat against the screen's back using Kapton tape.</p>
+    </section>
+
+    <section>
+        <h2>SECTION 8: DEBUGGING GUIDE</h2>
+        <table>
+            <thead>
+                <tr><td>Question</td><td>Reason</td><td>The Fix</td></tr>
+            </thead>
+            <tbody>
+                <tr><td>Screen Is Black</td><td>Ribbon Loose</td><td>Re-insert ribbon (Blue up)</td></tr>
+                <tr><td>No Touch Found</td><td>Software Error</td><td>Reset system or re-flash OS</td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <footer style="text-align: center; color: var(--muted); font-size: 0.8rem; margin-top: 80px;">
+        © 2026 Noto Project · Samved K · Beginner Phase Build IV
+    </footer>
+</div>
+
+</body>
+</html>

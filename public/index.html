@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Noto — Welcome</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.png">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { overscroll-behavior-y: contain; } /* Disable pull-to-refresh */
+    :root {
+      --black:        #0a0a0a;
+      --white:        #fafafa;
+      --gray-100:     #f4f4f4;
+      --gray-200:     #e8e8e8;
+      --gray-300:     #d0d0d0;
+      --gray-400:     #b0b0b0;
+      --gray-500:     #888888;
+      --font-display: 'DM Serif Display', Georgia, serif;
+      --font-body:    'DM Sans', system-ui, sans-serif;
+      --radius-full:  9999px;
+      --radius-md:    16px;
+      --transition:   all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    [data-theme="dark"] { --black: #f0f0f0; --white: #141414; --gray-100: #222; --gray-200: #2e2e2e; --gray-300: #444; --gray-400: #666; --gray-500: #999; }
+    [data-theme="sepia"] { --white: #f5f0e8; --gray-100: #e5dfd6; --gray-200: #d5cfc6; }
+
+    html, body {
+      width: 100%; height: 100%; overflow: hidden;
+      background: var(--white); color: var(--black);
+      font-family: var(--font-body); -webkit-font-smoothing: antialiased;
+    }
+    .screen { width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+    .screen::after { content: ''; position: absolute; inset: 0; background-image: repeating-linear-gradient(180deg, transparent, transparent 39px, rgba(0,0,0,0.025) 39px, rgba(0,0,0,0.025) 40px); pointer-events: none; opacity: 0.6; }
+    .version-badge { position: absolute; top: 28px; left: 32px; z-index: 20; font-size: 10px; color: var(--gray-300); text-transform: uppercase; letter-spacing: 0.12em; }
+    .hero { position: relative; z-index: 10; display: flex; flex-direction: column; align-items: center; text-align: center; animation: heroReveal 1.0s cubic-bezier(0.4,0,0.2,1) forwards; opacity: 0; transform: translateY(22px); }
+    @keyframes heroReveal { to { opacity: 1; transform: translateY(0); } }
+    .logo-mark { width: 70px; height: 70px; background: var(--black); border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; margin-bottom: 26px; box-shadow: 0 8px 28px rgba(0,0,0,0.18); }
+    .logo-mark svg { width: 34px; height: 34px; fill: none; stroke: var(--white); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    .title { font-family: var(--font-display); font-size: clamp(72px, 12vw, 116px); font-weight: 400; letter-spacing: -0.03em; line-height: 1; color: var(--black); margin-bottom: 6px; }
+    .byline { font-size: 12px; font-weight: 300; letter-spacing: 0.18em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 28px; }
+    .quote-block { margin-top: 28px; max-width: 380px; text-align: center; animation: quoteFade 1.4s cubic-bezier(0.4,0,0.2,1) forwards; opacity: 0; }
+    @keyframes quoteFade { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    .quote-text { font-family: var(--font-display); font-style: italic; font-size: clamp(14px, 2vw, 18px); color: var(--black); line-height: 1.6; margin-bottom: 8px; }
+    .quote-author { font-size: 11px; font-weight: 400; letter-spacing: 0.13em; text-transform: uppercase; color: var(--gray-400); }
+    .btn-wrap { margin-top: 36px; animation: btnFade 1.6s cubic-bezier(0.4,0,0.2,1) forwards; opacity: 0; }
+    @keyframes btnFade { to { opacity: 1; transform: translateY(0); } }
+    .btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 40px; background: var(--black); color: var(--white); border: none; border-radius: var(--radius-full); cursor: pointer; transition: var(--transition); box-shadow: 0 4px 24px rgba(0,0,0,0.18); font-size:13px; font-weight:500; text-transform:uppercase; letter-spacing:0.07em; width: 100%; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(0,0,0,0.22); }
+    .footer { position: absolute; bottom: 24px; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 0 36px; z-index: 10; opacity: 0; animation: fadeUp 1.6s forwards; }
+    @keyframes fadeUp { to { opacity: 1; transform: translateY(0); } }
+    .footer-text { font-size: 10px; color: var(--gray-300); text-transform: uppercase; letter-spacing: 0.1em; }
+    .transition-overlay { position: fixed; inset: 0; background: var(--black); z-index: 9999; transform: translateY(100%); transition: transform 0.5s cubic-bezier(0.7,0,0.3,1); pointer-events: none; }
+    .transition-overlay.active { transform: translateY(0%); pointer-events: all; }
+  </style>
+</head>
+<body>
+  <div class="transition-overlay" id="transitionOverlay"></div>
+  <main class="screen">
+    <span class="version-badge">Noto v1.0</span>
+    <div class="hero">
+      <div class="logo-mark"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+      <h1 class="title">Noto</h1>
+      <p class="byline">by sam.k</p>
+      <div class="quote-block" id="quoteBlock">
+        <p class="quote-text" id="quoteText"></p>
+        <p class="quote-author" id="quoteAuthor"></p>
+      </div>
+      <div class="btn-wrap">
+        <button class="btn-primary" onclick="notoNavigate('grade.html')">Get Started 
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+
+    </div>
+    <footer class="footer">
+      <span class="footer-text">Offline Device</span>
+      <span class="footer-text" id="currentTime">--:--</span>
+    </footer>
+  </main>
+
+  <script src="js/renderer.js"></script>
+  <script>
+    const QUOTES = [
+      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark" },
+      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark" },
+      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark" },
+      { text: "Sometimes you gotta run before you can walk.", author: "Tony Stark" },
+      { text: "The secret to doing it all is knowing that you can't. You have to prioritize what you want to achieve, and then just go for it.", author: "Robert Downey Jr." },
+      { text: "The people who are crazy enough to think they can change the world are the ones who do.", author: "Steve Jobs" },
+      { text: "I think it is possible for ordinary people to choose to be extraordinary.", author: "Elon Musk" },
+      { text: "The best way to predict the future is to invent it.", author: "Alan Kay" },
+      { text: "Dream, dream, dream. Dreams transform into thoughts and thoughts result in action.", author: "APJ Abdul Kalam" }
+    ];
+
+    function renderQuote() {
+      const q = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+      document.getElementById('quoteText').textContent = '\u201C' + q.text + '\u201D';
+      document.getElementById('quoteAuthor').textContent = '— ' + q.author;
+    }
+
+    function updateClock() {
+      const n = new Date();
+      document.getElementById('currentTime').textContent = String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      renderQuote();
+      updateClock();
+      setInterval(updateClock, 1000);
+      
+      // Early migration & theme init
+      await notoMigrateIfNeeded();
+      const s = await notoLoadSettings();
+      notoApplyTheme(s.theme);
+
+      // Register Service Worker
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(console.error);
+      }
+    });
+  </script>
+</body>
+</html>
