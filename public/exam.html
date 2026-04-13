@@ -43,9 +43,12 @@
     .xc-tag.active { background:var(--danger-bg); color:var(--danger); border:1px solid #fadbd8; }
     .xc-tag.submitted { background:#eef7f2; color:#27ae60; border:1px solid #d4efdf; }
     .xc-tag.checked { background:#ebf5fb; color:#2980b9; border:1px solid #d6eaf8; }
-    .xc-title { font-family:var(--fd); font-size:18px; margin-bottom:8px; color:var(--black); }
-    .xc-meta { font-size:12px; color:var(--g500); display:flex; align-items:center; gap:6px; margin-bottom:4px; }
     .xc-meta svg { width:12px; height:12px; stroke:currentColor; fill:none; }
+    
+    .xc-del { position:absolute; top:12px; right:12px; width:28px; height:28px; border-radius:50%; background:var(--g100); display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:var(--ease); border:none; }
+    .exam-card:hover .xc-del { opacity:1; background:var(--danger-bg); }
+    .xc-del svg { width:14px; height:14px; stroke:var(--danger); fill:none; stroke-width:2; }
+    .xc-del:hover { transform:scale(1.1); }
     
     /* Setup Form */
     .setup-box { background:var(--white); border:1px solid var(--g200); border-radius:20px; padding:32px; box-shadow:var(--sh); }
@@ -691,14 +694,23 @@
         else if(ex.status === 'checked') sc = `<span class="xc-tag checked">Marks: ${ex.marks.obtained}/${ex.marks.total}</span>`;
         
         list.innerHTML += `
-          <div class="exam-card" onclick="openExam('${ex.id}')">
+          <div class="exam-card" style="position:relative;" onclick="openExam('${ex.id}')">
             ${sc}
+            <button class="xc-del" onclick="event.stopPropagation(); if(confirm('Delete this exam?')) deleteExam('${ex.id}')">
+              <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
+            </button>
             <div class="xc-title">${ex.title || 'Untitled Exam'}</div>
             <div class="xc-meta"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${Math.round(ex.duration/60)} mins</div>
             <div class="xc-meta"><svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg> ${ex.subject || 'General'}</div>
           </div>
         `;
       });
+    }
+
+    async function deleteExam(id) {
+      await notoDeleteExam(id);
+      notoToast('Exam Deleted.');
+      await renderExamDashboard();
     }
 
     function showSetup() { document.getElementById('examSetup').style.display='flex'; }
@@ -773,15 +785,24 @@
         document.getElementById('exSubmitBtn').style.display = 'block';
         document.getElementById('exTimerPill').style.display = 'block';
         isCheckMode = false;
+        document.getElementById('checkTb').style.display = 'none';
         startExamTimer();
       } else {
         notoSetExam(false);
         document.getElementById('examFooter').style.display = 'none';
         document.getElementById('dtb').style.display = 'none';
         document.getElementById('exSubmitBtn').style.display = 'none';
-        document.getElementById('exTimerPill').textContent = (curExam.status === 'checked') ? 'Checked' : 'Submitted';
+        
+        const pill = document.getElementById('exTimerPill');
+        pill.style.display = 'block';
+        pill.textContent = (curExam.status === 'checked') ? 'Checked' : 'Submitted';
+        pill.style.background = (curExam.status === 'checked') ? '#ebf5fb' : '#eef7f2';
+        pill.style.color = (curExam.status === 'checked') ? '#2980b9' : '#27ae60';
+        pill.style.border = '1px solid currentColor';
+
         isCheckMode = true;
         document.getElementById('checkTb').style.display = 'flex';
+        setCheckTool('tick'); // Default tool
       }
       
       initCanvas();
