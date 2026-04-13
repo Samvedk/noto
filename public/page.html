@@ -554,9 +554,10 @@
     function resetZoom(){Z=1;pX=0;pY=0;applyZoom();notoToast('Zoom reset');}
 
     // Screen → canvas pixel (correct at any zoom level)
-    function sc2cv(cx,cy){
-      const r=ps.getBoundingClientRect();
-      return{x:(cx-r.left)/Z,y:(cy-r.top)/Z};
+    let _cachedRect = null;
+    function sc2cv(cx, cy) {
+      const r = _cachedRect || ps.getBoundingClientRect();
+      return { x: (cx - r.left) / Z, y: (cy - r.top) / Z };
     }
 
     function pd(p1,p2){return Math.sqrt((p1.clientX-p2.clientX)**2+(p1.clientY-p2.clientY)**2);}
@@ -740,54 +741,79 @@
     // Convert screen coord → canvas pixel (correct at ALL zoom levels)
     function getPos(e){ return sc2cv(e.clientX, e.clientY); }
 
+    let _activePointerId = null;
+    let _lastValidX = null, _lastValidY = null;
+
     dwC.addEventListener('pointerdown',e=>{
       if(pinching)return;
       const tNow = Date.now();
+      
+      // Lockdown to one pointer at a time (Reliable Palm Rejection)
+      if(_activePointerId !== null) return;
+      _activePointerId = e.pointerId;
+
       if(e.pointerType==='pen') { _lastPenTime = tNow; _lastPenX = e.clientX; _lastPenY = e.clientY; }
       
       // Palm Rejection Logic:
-      // 1. Block massive touch areas (fat fingers / palms) - some OS expose radius/width
-      if(e.pointerType==='touch' && (e.width > 25 || e.height > 25)) return;
-      // 2. Block touches if a stylus was recently active (standard palm rejection)
-      if(e.pointerType==='touch' && (tNow - _lastPenTime < 1500)) return;
-      // 3. Handedness spatial rejection
+      if(e.pointerType==='touch' && (e.width > 25 || e.height > 25)) { _activePointerId = null; return; }
+      if(e.pointerType==='touch' && (tNow - _lastPenTime < 1500)) { _activePointerId = null; return; }
+      
+      // Handedness spatial rejection
       if(e.pointerType==='touch' && tNow - _lastPenTime < 8000) {
           const S = (typeof notoLoadSettings === 'function') ? notoLoadSettings() : {};
-          if(S.handedness === 'right' && e.clientX > _lastPenX + 40) return; // Right-handed palm is generally to the right
-          if(S.handedness === 'left' && e.clientX < _lastPenX - 40) return; // Left-handed palm is generally to the left
+          if(S.handedness === 'right' && e.clientX > _lastPenX + 40) { _activePointerId = null; return; }
+          if(S.handedness === 'left' && e.clientX < _lastPenX - 40) { _activePointerId = null; return; }
       }
 
-      if(e.pointerType==='touch'&&!e.isPrimary)return;
-      if(e.pointerType==='pen'&&e.pressure===0)return; // Block stylus hover from starting strokes
+      if(e.pointerType==='touch'&&!e.isPrimary) { _activePointerId = null; return; }
+      if(e.pointerType==='pen'&&e.pressure===0) { _activePointerId = null; return; } 
       
       e.preventDefault(); e.stopPropagation();
       dwC.setPointerCapture(e.pointerId);
+
+      // Cache the bounding box for this stroke (Performance & Stability)
+      _cachedRect = ps.getBoundingClientRect();
+
       if(tool==='text'){placeTxBox(e);return;}
       if(tool==='eraser'){isDrawing=true;eraseAt(getPos(e));return;}
       if(tool==='shape'){isShDraw=true;shStart=getPos(e);preShSnap=ctx.getImageData(0,0,dwC.width,dwC.height);redoSt=[];return;}
       if(tool==='lasso'){isDrawing=true;currentPath=[getPos(e)];return;}
+      
       isDrawing=true;redoSt=[];
       const p=getPos(e),s=stStyle();
+      _lastValidX = p.x; _lastValidY = p.y;
       currentPath=[{x:p.x,y:p.y,pressure:e.pressure||0.5}];currentPath._s=s;
     },{passive:false});
 
     dwC.addEventListener('pointermove',e=>{
-      if(pinching)return;
+      if(pinching || _activePointerId !== e.pointerId) return;
       const tNow = Date.now();
       if(e.pointerType==='pen') { _lastPenTime = tNow; _lastPenX = e.clientX; _lastPenY = e.clientY; _lastPenP = e.pressure||0.5; }
       
-      // Live palm rejection
-      if(e.pointerType==='touch' && (e.width > 25 || e.height > 25)) return;
-      if(e.pointerType==='touch' && (tNow - _lastPenTime < 1500)) return;
-      
-      if(e.pointerType==='touch'&&!e.isPrimary)return;
-      if(e.pointerType==='pen'&&e.pressure===0)return; // Block ghost strokes on stylus hover
-      if(isDrawing&&e.buttons===0&&e.pointerType!=='touch'){finalise(e);return;} // Ensure pointerup isn't missed
+      // Pressure threshold to avoid hover-ink
+      const prs = e.pressure || (e.pointerType === 'touch' ? 0.5 : 0);
+      if(e.pointerType==='pen' && prs < 0.02) return; 
+
+      if(isDrawing && e.buttons===0 && e.pointerType!=='touch'){finalise(e);return;}
       e.preventDefault();
-      if(tool==='eraser'&&isDrawing){eraseAt(getPos(e));return;}
-      if(tool==='shape'&&isShDraw&&shStart){ctx.putImageData(preShSnap,0,0);drawShPrev(shStart,getPos(e));return;}
+
+      const p = getPos(e);
+
+      // Coordinate Jump Filter (Prevent "Long Strokes" bug)
+      // If a coordinate jumps > 120 pixels in one event, it's almost certainly a hardware glitch.
+      if(isDrawing && _lastValidX !== null) {
+          const dist = Math.hypot(p.x - _lastValidX, p.y - _lastValidY);
+          if(dist > 120) {
+              console.warn("Noto Stroke Filter: Ignored coordinate jump of " + Math.round(dist) + "px");
+              return; 
+          }
+      }
+      _lastValidX = p.x; _lastValidY = p.y;
+
+      if(tool==='eraser'&&isDrawing){eraseAt(p);return;}
+      if(tool==='shape'&&isShDraw&&shStart){ctx.putImageData(preShSnap,0,0);drawShPrev(shStart,p);return;}
       if(tool==='lasso'&&isDrawing){
-        const p=getPos(e); currentPath.push(p); redraw();
+        currentPath.push(p); redraw();
         ctx.strokeStyle='rgba(41,128,185,0.8)'; ctx.setLineDash([5,5]); ctx.lineWidth=2;
         ctx.beginPath(); ctx.moveTo(currentPath[0].x,currentPath[0].y);
         for(let i=1;i<currentPath.length;i++) ctx.lineTo(currentPath[i].x,currentPath[i].y);
@@ -795,7 +821,7 @@
         return;
       }
       if(!isDrawing)return;
-      const p=getPos(e);currentPath.push({x:p.x,y:p.y,pressure:e.pressure||0.5});renderLive();
+      currentPath.push({x:p.x,y:p.y,pressure:prs});renderLive();
     },{passive:false});
 
     dwC.addEventListener('pointerup',finalise);
@@ -854,6 +880,11 @@
     }
 
     function finalise(e){
+      if(_activePointerId !== null && e.pointerId !== _activePointerId) return;
+      _activePointerId = null;
+      _cachedRect = null;
+      _lastValidX = null; _lastValidY = null;
+
       if(tool==='eraser'){isDrawing=false;return;}
       if(tool==='shape'&&isShDraw){
         isShDraw=false;if(!shStart)return;
@@ -866,7 +897,7 @@
               // Trigger alignment ONLY if it's somewhat pure horizontal or vertical
               const slope = Math.abs((s.y2-s.y1)/(s.x2-s.x1));
               if(slope < 0.25 || slope > 4) {
-                triggerLineAlignPrompt(s);
+                 triggerLineAlignPrompt(s);
               }
            }
         }
