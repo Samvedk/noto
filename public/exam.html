@@ -43,6 +43,10 @@
     .xc-tag.active { background:var(--danger-bg); color:var(--danger); border:1px solid #fadbd8; }
     .xc-tag.submitted { background:#eef7f2; color:#27ae60; border:1px solid #d4efdf; }
     .xc-tag.checked { background:#ebf5fb; color:#2980b9; border:1px solid #d6eaf8; }
+    
+    .xc-action-btn { margin-top:8px; width:fit-content; padding:4px 12px; border-radius:var(--r99); background:var(--black); color:var(--white); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em; border:none; cursor:pointer; display:none; }
+    .xc-action-btn.show { display:block; }
+    .xc-action-btn:hover { background:var(--g700); }
     .xc-meta svg { width:12px; height:12px; stroke:currentColor; fill:none; }
     
     .xc-del { position:absolute; top:12px; right:12px; width:28px; height:28px; border-radius:50%; background:var(--g100); display:flex; align-items:center; justify-content:center; cursor:pointer; opacity:0; transition:var(--ease); border:none; }
@@ -688,14 +692,24 @@
         list.innerHTML = '<div style="color:var(--g500);font-size:14px;padding:20px;">No exams found. Take a new one!</div>';
       }
       _exams.forEach(ex => {
-        let sc = '';
-        if(ex.status === 'active') sc = '<span class="xc-tag active">Active</span>';
-        else if(ex.status === 'submitted') sc = '<span class="xc-tag submitted">Submitted</span>';
-        else if(ex.status === 'checked') sc = `<span class="xc-tag checked">Marks: ${ex.marks.obtained}/${ex.marks.total}</span>`;
+        let sc = '', ab = '';
+        if(ex.status === 'active') {
+          sc = '<span class="xc-tag active">Active</span>';
+          ab = '<button class="xc-action-btn show" style="background:var(--danger); color:white;">Resume</button>';
+        } else if(ex.status === 'submitted') {
+          sc = '<span class="xc-tag submitted">Submitted</span>';
+          ab = '<button class="xc-action-btn show">Check Exam</button>';
+        } else if(ex.status === 'checked') {
+          sc = `<span class="xc-tag checked">Marks: ${ex.marks.obtained}/${ex.marks.total}</span>`;
+          ab = '<button class="xc-action-btn show" style="background:var(--accent);">View Result</button>';
+        }
         
         list.innerHTML += `
           <div class="exam-card" style="position:relative;" onclick="openExam('${ex.id}')">
-            ${sc}
+            <div style="display:flex; flex-direction:column; gap:4px; margin-bottom:12px;">
+              ${sc}
+              ${ab}
+            </div>
             <button class="xc-del" onclick="event.stopPropagation(); if(confirm('Delete this exam?')) deleteExam('${ex.id}')">
               <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
             </button>
