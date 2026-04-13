@@ -1,262 +1,246 @@
 /* ================================================================
-   KEYBOARD.JS — Noto On-Screen Keyboard Component
-   Shared across all screens: grade, subject, notebook, page.
-   Usage: call NotoKeyboard.show(inputElement) to attach.
-          call NotoKeyboard.hide() to dismiss.
+   KEYBOARD.JS — Noto On-Screen Keyboard
+   Apple-quality design with GPU-optimized 60fps animations.
+   Usage: NotoKeyboard.show(inputElement) / NotoKeyboard.hide()
    ================================================================ */
 
 const NotoKeyboard = (() => {
 
-  /* ================================================================
-     KEYBOARD.JS > STATE
-     ================================================================ */
-  let targetInput  = null;   // the <input> or <textarea> currently bound
+  let targetInput  = null;
   let isShift      = false;
   let isCaps       = false;
   let isNumbers    = false;
+  let isSymbols    = false;
   let isVisible    = false;
 
-  /* ================================================================
-     KEYBOARD.JS > KEY LAYOUT DEFINITIONS
-     ================================================================ */
-  const ROWS_ALPHA_LOWER = [
+  /* ── KEY LAYOUTS ── */
+  const ROWS_LOWER = [
     ['q','w','e','r','t','y','u','i','o','p'],
     ['a','s','d','f','g','h','j','k','l'],
-    ['⇧','z','x','c','v','b','n','m','⌫'],
-    ['123','🌐','space','return'],
+    ['shift','z','x','c','v','b','n','m','backspace'],
+    ['123','globe','space','return'],
   ];
-
-  const ROWS_ALPHA_UPPER = [
+  const ROWS_UPPER = [
     ['Q','W','E','R','T','Y','U','I','O','P'],
     ['A','S','D','F','G','H','J','K','L'],
-    ['⇧','Z','X','C','V','B','N','M','⌫'],
-    ['123','🌐','space','return'],
+    ['shift','Z','X','C','V','B','N','M','backspace'],
+    ['123','globe','space','return'],
   ];
-
-  const ROWS_NUMBERS = [
+  const ROWS_NUM = [
     ['1','2','3','4','5','6','7','8','9','0'],
     ['-','/',':',';','(',')','₹','&','@','"'],
-    ['#+=','.', ',','?','!','\'','⌫'],
-    ['ABC','🌐','space','return'],
+    ['symbols','.',',','?','!','\'','backspace'],
+    ['ABC','globe','space','return'],
   ];
-
-  const ROWS_SYMBOLS = [
+  const ROWS_SYM = [
     ['[',']','{','}','#','%','^','*','+','='],
     ['_','\\','|','~','<','>','€','£','¥','·'],
-    ['123','.', ',','?','!','\'','⌫'],
-    ['ABC','🌐','space','return'],
+    ['123','.',',','?','!','\'','backspace'],
+    ['ABC','globe','space','return'],
   ];
 
-  /* ================================================================
-     KEYBOARD.JS > DOM INJECTION
-     Injects the keyboard container into the document once.
-     ================================================================ */
+  /* ── INJECT ONCE ── */
   function inject() {
     if (document.getElementById('noto-osk')) return;
 
-    const style = document.createElement('style');
-    style.textContent = `
+    const s = document.createElement('style');
+    s.textContent = `
+      /* ═══════════════════════════════════════════
+         NOTO KEYBOARD — Apple-style, GPU-optimized
+         ═══════════════════════════════════════════ */
 
-      /* ============================================================
-         KEYBOARD.JS > BASE CONTAINER
-         ============================================================ */
       #noto-osk {
         position: fixed;
         bottom: 0; left: 0; right: 0;
         z-index: 99999;
-        background: #d1d5db;
-        border-top: 1px solid #b0b8c1;
-        padding: 10px 6px 16px;
+        background: #d0d3d9;
+        padding: 8px 4px 14px;
         transform: translateY(100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        opacity: 0;
+        transition: transform .32s cubic-bezier(.25,.1,.25,1),
+                    opacity .2s ease;
+        will-change: transform;
         user-select: none;
         -webkit-user-select: none;
-        font-family: -apple-system, 'DM Sans', system-ui, sans-serif;
-        box-shadow: 0 -4px 24px rgba(0,0,0,0.12);
+        font-family: -apple-system, 'SF Pro Text', 'Helvetica Neue', system-ui, sans-serif;
       }
 
       #noto-osk.osk-visible {
         transform: translateY(0);
+        opacity: 1;
       }
 
-      /* ============================================================
-         KEYBOARD.JS > KEYBOARD ROW
-         ============================================================ */
+      /* ── Row ── */
       .osk-row {
         display: flex;
         justify-content: center;
-        align-items: center;
-        gap: 6px;
-        margin-bottom: 8px;
+        align-items: stretch;
+        gap: 5px;
+        margin-bottom: 7px;
+        padding: 0 2px;
       }
-
       .osk-row:last-child { margin-bottom: 0; }
 
-      /* ============================================================
-         KEYBOARD.JS > BASE KEY STYLE
-         ============================================================ */
+      /* ── Base Key ── */
       .osk-key {
-        height: 46px;
-        min-width: 36px;
+        height: 44px;
+        min-width: 32px;
+        flex: 0 1 auto;
         background: #ffffff;
         border: none;
-        border-radius: 6px;
-        font-size: 16px;
+        border-radius: 5px;
+        font-size: 22px;
         font-weight: 400;
-        color: #0a0a0a;
+        letter-spacing: -0.01em;
+        color: #000000;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0 4px;
-        box-shadow: 0 2px 0 #9fa6af;
-        transition: background 0.08s, transform 0.08s;
+        padding: 0;
+        box-shadow: 0 1px 0 rgba(0,0,0,.35);
         -webkit-tap-highlight-color: transparent;
         touch-action: manipulation;
-        font-family: -apple-system, 'DM Sans', system-ui, sans-serif;
-        flex-shrink: 0;
+        font-family: inherit;
+        transform: scale(1);
+        transition: transform .06s ease,
+                    background .06s ease;
       }
 
       .osk-key:active {
-        background: #e0e0e0;
-        transform: translateY(1px);
-        box-shadow: 0 1px 0 #9fa6af;
+        transform: scale(0.93);
+        background: #c8c8cc;
       }
 
-      /* ============================================================
-         KEYBOARD.JS > KEY VARIANTS
-         ============================================================ */
-
-      /* Dark/modifier keys (shift, backspace, switch) */
-      .osk-key-dark {
-        background: #adb5bd;
-        color: #0a0a0a;
-        box-shadow: 0 2px 0 #7a8290;
+      /* ── Modifier Keys (dark) ── */
+      .osk-key-mod {
+        background: #a5a8b0;
+        color: #000;
+        box-shadow: 0 1px 0 rgba(0,0,0,.3);
         font-size: 14px;
+        font-weight: 500;
+        min-width: 42px;
+      }
+      .osk-key-mod:active {
+        background: #8e919a;
+        transform: scale(0.93);
       }
 
-      .osk-key-dark:active {
-        background: #9aa0a8;
+      /* Shift active */
+      .osk-key-shift-on {
+        background: #ffffff;
+        box-shadow: 0 1px 0 rgba(0,0,0,.35);
       }
 
-      /* Space bar */
+      /* ── Space ── */
       .osk-key-space {
         flex: 1;
-        max-width: 340px;
-        font-size: 13px;
+        max-width: 55%;
+        font-size: 15px;
         font-weight: 400;
-        letter-spacing: 0.04em;
-        color: #444;
+        color: #000;
+        letter-spacing: 0;
       }
 
-      /* Return / Enter key */
+      /* ── Return ── */
       .osk-key-return {
-        background: #adb5bd;
-        min-width: 80px;
-        font-size: 13px;
+        background: #a5a8b0;
+        min-width: 78px;
+        font-size: 15px;
         font-weight: 400;
-        color: #0a0a0a;
-        box-shadow: 0 2px 0 #7a8290;
+        color: #000;
+        box-shadow: 0 1px 0 rgba(0,0,0,.3);
+      }
+      .osk-key-return:active {
+        background: #8e919a;
+        transform: scale(0.95);
       }
 
-      .osk-key-return:active { background: #9aa0a8; }
-
-      /* Shift active state */
-      .osk-key-shift-active {
-        background: #ffffff;
-        box-shadow: 0 0 0 2px #0a0a0a, 0 2px 0 #0a0a0a;
+      /* ── Dismiss bar ── */
+      .osk-dismiss {
+        display: flex;
+        justify-content: flex-end;
+        padding: 0 6px 6px;
       }
-
-      /* Close button at top right */
-      .osk-close-btn {
-        position: absolute;
-        top: 8px; right: 10px;
-        width: 28px; height: 28px;
-        background: #adb5bd;
+      .osk-dismiss-btn {
+        background: none;
         border: none;
-        border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
+        padding: 6px 12px;
         cursor: pointer;
-        box-shadow: 0 1px 0 #7a8290;
         -webkit-tap-highlight-color: transparent;
+        opacity: .5;
+        transition: opacity .15s ease;
+      }
+      .osk-dismiss-btn:active { opacity: .8; }
+      .osk-dismiss-btn svg {
+        width: 18px; height: 18px;
+        stroke: #000; fill: none;
+        stroke-width: 2; stroke-linecap: round;
       }
 
-      .osk-close-btn svg {
-        width: 13px; height: 13px;
-        stroke: #444; fill: none;
-        stroke-width: 2.5; stroke-linecap: round;
-      }
-
-      .osk-close-btn:active { background: #9aa0a8; }
-
-      /* ============================================================
-         KEYBOARD.JS > RESPONSIVE — SMALLER KEYS ON NARROW SCREENS
-         ============================================================ */
+      /* ── Responsive ── */
       @media (max-width: 600px) {
-        .osk-key      { height: 42px; min-width: 30px; font-size: 15px; }
-        .osk-row      { gap: 5px; }
+        .osk-key { height: 40px; min-width: 28px; font-size: 20px; }
+        .osk-row { gap: 4px; margin-bottom: 6px; }
+      }
+
+      @media (min-width: 768px) {
+        #noto-osk { padding: 10px 24px 18px; }
+        .osk-key { height: 48px; min-width: 36px; font-size: 23px; border-radius: 6px; }
+        .osk-row { gap: 6px; margin-bottom: 8px; }
       }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(s);
 
     const osk = document.createElement('div');
     osk.id = 'noto-osk';
     osk.setAttribute('role', 'toolbar');
     osk.setAttribute('aria-label', 'On-screen keyboard');
 
-    // Close button
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'osk-close-btn';
-    closeBtn.innerHTML = `<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
-    closeBtn.addEventListener('pointerdown', e => { e.preventDefault(); hide(); });
-    osk.appendChild(closeBtn);
+    // Dismiss bar
+    const dismiss = document.createElement('div');
+    dismiss.className = 'osk-dismiss';
+    const dismissBtn = document.createElement('button');
+    dismissBtn.className = 'osk-dismiss-btn';
+    dismissBtn.innerHTML = `<svg viewBox="0 0 24 24"><polyline points="7 13 12 18 17 13"/><line x1="12" y1="18" x2="12" y2="6"/></svg>`;
+    dismissBtn.addEventListener('pointerdown', e => { e.preventDefault(); hide(); });
+    dismiss.appendChild(dismissBtn);
+    osk.appendChild(dismiss);
 
     document.body.appendChild(osk);
   }
 
-  /* ================================================================
-     KEYBOARD.JS > BUILD ROWS
-     Renders key rows into the OSK container.
-     ================================================================ */
+  /* ── BUILD ROWS ── */
   function buildRows() {
     const osk = document.getElementById('noto-osk');
-    // Remove existing rows
     osk.querySelectorAll('.osk-row').forEach(r => r.remove());
 
-    const rows = isNumbers
-      ? ROWS_NUMBERS
-      : (isShift || isCaps ? ROWS_ALPHA_UPPER : ROWS_ALPHA_LOWER);
+    let rows;
+    if (isSymbols) rows = ROWS_SYM;
+    else if (isNumbers) rows = ROWS_NUM;
+    else if (isShift || isCaps) rows = ROWS_UPPER;
+    else rows = ROWS_LOWER;
 
     rows.forEach(rowKeys => {
       const rowEl = document.createElement('div');
       rowEl.className = 'osk-row';
-
-      rowKeys.forEach(key => {
-        const btn = buildKey(key);
-        rowEl.appendChild(btn);
-      });
-
+      rowKeys.forEach(key => rowEl.appendChild(buildKey(key)));
       osk.appendChild(rowEl);
     });
   }
 
-  /* ================================================================
-     KEYBOARD.JS > BUILD SINGLE KEY
-     ================================================================ */
+  /* ── BUILD KEY ── */
   function buildKey(key) {
     const btn = document.createElement('button');
     btn.type = 'button';
 
     switch (key) {
-
-      /* -- SPACE -------------------------------------------------- */
       case 'space':
         btn.className = 'osk-key osk-key-space';
         btn.textContent = 'space';
         btn.addEventListener('pointerdown', e => { e.preventDefault(); insertChar(' '); });
         break;
 
-      /* -- RETURN ------------------------------------------------- */
       case 'return':
         btn.className = 'osk-key osk-key-return';
         btn.textContent = 'return';
@@ -265,7 +249,6 @@ const NotoKeyboard = (() => {
           if (targetInput && targetInput.tagName === 'TEXTAREA') {
             insertChar('\n');
           } else {
-            // Trigger form submission or blur on single-line inputs
             if (targetInput) {
               targetInput.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
               hide();
@@ -274,103 +257,89 @@ const NotoKeyboard = (() => {
         });
         break;
 
-      /* -- BACKSPACE ----------------------------------------------- */
-      case '⌫':
-        btn.className = 'osk-key osk-key-dark';
-        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>`;
-        // Support hold-to-delete
-        let backspaceInterval = null;
+      case 'backspace': {
+        btn.className = 'osk-key osk-key-mod';
+        btn.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"/><line x1="18" y1="9" x2="12" y2="15"/><line x1="12" y1="9" x2="18" y2="15"/></svg>`;
+        let bsInterval = null;
         btn.addEventListener('pointerdown', e => {
           e.preventDefault();
           deleteChar();
-          backspaceInterval = setInterval(deleteChar, 100);
+          bsInterval = setInterval(deleteChar, 90);
         });
-        btn.addEventListener('pointerup',   () => clearInterval(backspaceInterval));
-        btn.addEventListener('pointerout',  () => clearInterval(backspaceInterval));
+        btn.addEventListener('pointerup',     () => clearInterval(bsInterval));
+        btn.addEventListener('pointercancel', () => clearInterval(bsInterval));
+        btn.addEventListener('pointerleave',  () => clearInterval(bsInterval));
         break;
+      }
 
-      /* -- SHIFT -------------------------------------------------- */
-      case '⇧':
-        btn.className = 'osk-key osk-key-dark' + (isShift || isCaps ? ' osk-key-shift-active' : '');
-        btn.innerHTML = `<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 11 12 6 7 11"/><polyline points="17 18 12 13 7 18"/></svg>`;
+      case 'shift':
+        btn.className = 'osk-key osk-key-mod' + ((isShift || isCaps) ? ' osk-key-shift-on' : '');
+        btn.innerHTML = isCaps
+          ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1"><path d="M12 3l-8 9h5v8h6v-8h5z"/><rect x="7" y="20" width="10" height="2" rx="1"/></svg>`
+          : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l-8 9h5v8h6v-8h5z"/></svg>`;
         btn.addEventListener('pointerdown', e => {
           e.preventDefault();
-          // Double-tap = caps lock
-          if (isShift && !isCaps) { isCaps = true; isShift = false; }
-          else if (isCaps)        { isCaps = false; isShift = false; }
-          else                    { isShift = true; }
+          if (isShift && !isCaps)  { isCaps = true; isShift = false; }
+          else if (isCaps)         { isCaps = false; isShift = false; }
+          else                     { isShift = true; }
           buildRows();
         });
         break;
 
-      /* -- SWITCH TO NUMBERS -------------------------------------- */
       case '123':
-        btn.className = 'osk-key osk-key-dark';
-        btn.style.fontSize = '13px';
+        btn.className = 'osk-key osk-key-mod';
         btn.textContent = '123';
-        btn.addEventListener('pointerdown', e => { e.preventDefault(); isNumbers = true;  buildRows(); });
+        btn.addEventListener('pointerdown', e => { e.preventDefault(); isNumbers = true; isSymbols = false; buildRows(); });
         break;
 
-      /* -- SWITCH TO ALPHA ---------------------------------------- */
       case 'ABC':
-        btn.className = 'osk-key osk-key-dark';
-        btn.style.fontSize = '13px';
+        btn.className = 'osk-key osk-key-mod';
         btn.textContent = 'ABC';
-        btn.addEventListener('pointerdown', e => { e.preventDefault(); isNumbers = false; buildRows(); });
+        btn.addEventListener('pointerdown', e => { e.preventDefault(); isNumbers = false; isSymbols = false; buildRows(); });
         break;
 
-      /* -- GLOBE (PLACEHOLDER) ------------------------------------ */
-      case '🌐':
-        btn.className = 'osk-key osk-key-dark';
+      case 'symbols':
+        btn.className = 'osk-key osk-key-mod';
+        btn.textContent = '#+=';
+        btn.addEventListener('pointerdown', e => { e.preventDefault(); isSymbols = true; buildRows(); });
+        break;
+
+      case 'globe':
+        btn.className = 'osk-key osk-key-mod';
         btn.style.fontSize = '18px';
-        btn.textContent = '🌐';
+        btn.innerHTML = `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>`;
         btn.addEventListener('pointerdown', e => e.preventDefault());
         break;
 
-      /* -- REGULAR CHARACTER -------------------------------------- */
       default:
         btn.className = 'osk-key';
         btn.textContent = key;
         btn.addEventListener('pointerdown', e => {
           e.preventDefault();
           insertChar(key);
-          // Auto-cancel shift after one character (not caps lock)
           if (isShift && !isCaps) { isShift = false; buildRows(); }
         });
         break;
     }
-
     return btn;
   }
 
-  /* ================================================================
-     KEYBOARD.JS > CHARACTER INSERTION
-     Works with any <input> or <textarea>.
-     ================================================================ */
+  /* ── TEXT OPERATIONS ── */
   function insertChar(char) {
     if (!targetInput) return;
-
     const start = targetInput.selectionStart;
     const end   = targetInput.selectionEnd;
     const val   = targetInput.value;
-
     targetInput.value = val.slice(0, start) + char + val.slice(end);
     targetInput.selectionStart = targetInput.selectionEnd = start + char.length;
-
-    // Fire input event so any oninput handlers (like delete confirmation) respond
     targetInput.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  /* ================================================================
-     KEYBOARD.JS > CHARACTER DELETION (BACKSPACE)
-     ================================================================ */
   function deleteChar() {
     if (!targetInput) return;
-
     const start = targetInput.selectionStart;
     const end   = targetInput.selectionEnd;
     const val   = targetInput.value;
-
     if (start === end && start > 0) {
       targetInput.value = val.slice(0, start - 1) + val.slice(end);
       targetInput.selectionStart = targetInput.selectionEnd = start - 1;
@@ -378,79 +347,53 @@ const NotoKeyboard = (() => {
       targetInput.value = val.slice(0, start) + val.slice(end);
       targetInput.selectionStart = targetInput.selectionEnd = start;
     }
-
     targetInput.dispatchEvent(new Event('input', { bubbles: true }));
   }
 
-  /* ================================================================
-     KEYBOARD.JS > PUBLIC API — SHOW
-     Call this with any input element to bind and display the keyboard.
-     ================================================================ */
+  /* ── PUBLIC API ── */
   function show(inputElement) {
     inject();
     targetInput = inputElement;
-    isShift     = false;
-    isCaps      = false;
-    isNumbers   = false;
-    isVisible   = true;
+    isShift = false; isCaps = false; isNumbers = false; isSymbols = false;
+    isVisible = true;
     buildRows();
-
     const osk = document.getElementById('noto-osk');
+    // Force reflow before adding class for smooth animation
+    osk.offsetHeight;
     osk.classList.add('osk-visible');
-
-    // Push page content up so the active input is not hidden behind the keyboard
     nudgeLayout(true);
   }
 
-  /* ================================================================
-     KEYBOARD.JS > PUBLIC API — HIDE
-     ================================================================ */
   function hide() {
     const osk = document.getElementById('noto-osk');
     if (osk) osk.classList.remove('osk-visible');
     nudgeLayout(false);
     targetInput = null;
-    isVisible   = false;
+    isVisible = false;
   }
 
-  /* ================================================================
-     KEYBOARD.JS > PUBLIC API — TOGGLE
-     ================================================================ */
   function toggle(inputElement) {
     isVisible ? hide() : show(inputElement);
   }
 
-  /* ================================================================
-     KEYBOARD.JS > PUBLIC API — IS VISIBLE
-     ================================================================ */
   function visible() { return isVisible; }
 
-  /* ================================================================
-     KEYBOARD.JS > LAYOUT NUDGE
-     Shifts the main content area upward when the keyboard is open
-     so the focused input is never obscured.
-     ================================================================ */
-  function nudgeLayout(keyboardOpen) {
-    const oskHeight = 240; // approximate keyboard height in px
-    const targets   = [
+  /* ── LAYOUT NUDGE ── */
+  function nudgeLayout(open) {
+    const h = 260;
+    const targets = [
       document.querySelector('.main-content'),
       document.querySelector('.modal'),
       document.querySelector('.modal-backdrop'),
     ];
     targets.forEach(el => {
       if (!el) return;
-      el.style.transition = 'margin-bottom 0.3s cubic-bezier(0.4,0,0.2,1)';
-      el.style.marginBottom = keyboardOpen ? oskHeight + 'px' : '';
+      el.style.transition = 'margin-bottom .32s cubic-bezier(.25,.1,.25,1)';
+      el.style.marginBottom = open ? h + 'px' : '';
     });
   }
 
-  /* ================================================================
-     KEYBOARD.JS > AUTO-ATTACH TO INPUTS
-     Any <input> or <textarea> that carries the attribute
-     data-osk="true" will automatically show the keyboard on focus
-     and hide it on blur. Add this attribute in any HTML file to
-     opt in without writing extra JavaScript.
-     ================================================================ */
+  /* ── AUTO-ATTACH ── */
   document.addEventListener('focusin', e => {
     const el = e.target;
     if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.dataset.osk === 'true') {
@@ -458,12 +401,7 @@ const NotoKeyboard = (() => {
     }
   });
 
-  /* ================================================================
-     KEYBOARD.JS > PREVENT NATIVE KEYBOARD ON TOUCH DEVICES
-     Setting readOnly temporarily stops the native keyboard from
-     appearing when an OSK-managed input is tapped, then immediately
-     removes readOnly so the field still receives programmatic input.
-     ================================================================ */
+  /* ── PREVENT NATIVE KEYBOARD ── */
   document.addEventListener('touchstart', e => {
     const el = e.target;
     if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.dataset.osk === 'true') {
@@ -472,9 +410,6 @@ const NotoKeyboard = (() => {
     }
   }, { passive: true });
 
-  /* ================================================================
-     KEYBOARD.JS > PUBLIC INTERFACE
-     ================================================================ */
   return { show, hide, toggle, visible };
 
 })();

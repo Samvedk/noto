@@ -207,34 +207,27 @@
     .dw-pill .dw-time{font-variant-numeric:tabular-nums;min-width:42px;text-align:center;}
     @keyframes dw-pulse{0%,100%{box-shadow:0 0 0 0 rgba(10,132,255,.4);}50%{box-shadow:0 0 0 8px rgba(10,132,255,0);}}
 
-    /* ── ACHIEVEMENT CELEBRATION ── */
-    .achiev-overlay{position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,.85);backdrop-filter:blur(16px);display:none;align-items:center;justify-content:center;flex-direction:column;}
-    .achiev-overlay.show{display:flex;animation:achFadeIn .5s ease;}
-    @keyframes achFadeIn{from{opacity:0}to{opacity:1}}
-    .ach-card{background:linear-gradient(145deg,#1a1a2e,#16213e);border:1px solid rgba(255,255,255,.08);border-radius:28px;padding:48px 56px;text-align:center;max-width:440px;width:90vw;animation:achPop .6s cubic-bezier(.2,.8,.2,1);position:relative;overflow:hidden;}
-    @keyframes achPop{from{opacity:0;transform:scale(.85) translateY(30px)}to{opacity:1;transform:scale(1) translateY(0)}}
-    .ach-card::before{content:'';position:absolute;inset:-2px;border-radius:30px;background:conic-gradient(from 0deg,#0a84ff,#5e5ce6,#bf5af2,#ff375f,#ff9f0a,#30d158,#0a84ff);opacity:.4;z-index:-1;animation:achGlow 3s linear infinite;}@keyframes achGlow{to{transform:rotate(360deg)}}
-    .ach-icon{font-size:64px;margin-bottom:16px;display:block;animation:achBounce .8s ease .3s both;}@keyframes achBounce{0%{transform:scale(0) rotate(-20deg)}60%{transform:scale(1.2) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
-    .ach-title{font-family:'DM Serif Display',serif;font-size:28px;color:#fff;margin-bottom:6px;}
+    /* ── ACHIEVEMENT CELEBRATION (GPU-optimized, no particles) ── */
+    .achiev-overlay{position:fixed;inset:0;z-index:99997;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;flex-direction:column;opacity:0;transition:opacity .35s ease;}
+    .achiev-overlay.show{display:flex;opacity:1;}
+    .ach-card{background:linear-gradient(145deg,#1a1a2e,#16213e);border:1px solid rgba(255,255,255,.08);border-radius:28px;padding:48px 56px;text-align:center;max-width:440px;width:90vw;transform:scale(.92) translateY(20px);opacity:0;transition:transform .4s cubic-bezier(.2,.8,.2,1),opacity .4s ease;}
+    .achiev-overlay.show .ach-card{transform:scale(1) translateY(0);opacity:1;}
+    .ach-icon{font-size:56px;margin-bottom:16px;display:block;}
+    .ach-title{font-family:'DM Serif Display',serif;font-size:26px;color:#fff;margin-bottom:6px;}
     .ach-sub{font-size:13px;color:rgba(255,255,255,.5);margin-bottom:28px;}
-    .ach-xp{display:inline-flex;align-items:center;gap:6px;background:rgba(10,132,255,.2);border:1px solid rgba(10,132,255,.3);color:#0a84ff;padding:8px 20px;border-radius:var(--r99);font-weight:700;font-size:14px;margin-bottom:20px;}
-    .ach-level{color:rgba(255,255,255,.7);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
-    .ach-lvl-bar{width:100%;height:8px;background:rgba(255,255,255,.08);border-radius:99px;overflow:hidden;margin-bottom:24px;}
-    .ach-lvl-fill{height:100%;background:linear-gradient(90deg,#0a84ff,#5e5ce6);border-radius:99px;transition:width 1.5s cubic-bezier(.4,0,.2,1);}
+    .ach-xp{display:inline-flex;align-items:center;gap:6px;background:rgba(10,132,255,.15);border:1px solid rgba(10,132,255,.25);color:#0a84ff;padding:8px 20px;border-radius:var(--r99);font-weight:700;font-size:14px;margin-bottom:20px;}
+    .ach-level{color:rgba(255,255,255,.6);font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;}
+    .ach-lvl-bar{width:100%;height:6px;background:rgba(255,255,255,.06);border-radius:99px;overflow:hidden;margin-bottom:24px;}
+    .ach-lvl-fill{height:100%;background:linear-gradient(90deg,#0a84ff,#5e5ce6);border-radius:99px;transition:width 1.2s cubic-bezier(.4,0,.2,1);}
     .ach-badges{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
-    .ach-badge{width:40px;height:40px;border-radius:12px;background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:18px;border:1px solid rgba(255,255,255,.06);transition:var(--ease);}
-    .ach-badge.new{background:rgba(10,132,255,.2);border-color:rgba(10,132,255,.4);animation:achBadgePop .5s ease both;}
-    @keyframes achBadgePop{from{transform:scale(0)}to{transform:scale(1)}}
-    .ach-dismiss{padding:12px 32px;border:none;border-radius:var(--r99);background:#fff;color:#0a0a0a;font-family:var(--ff);font-size:13px;font-weight:700;cursor:pointer;transition:var(--ease);}
-    .ach-dismiss:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(255,255,255,.15);}
+    .ach-badge{width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.05);display:flex;align-items:center;justify-content:center;font-size:17px;border:1px solid rgba(255,255,255,.05);}
+    .ach-badge.new{background:rgba(10,132,255,.15);border-color:rgba(10,132,255,.3);}
+    .ach-dismiss{padding:12px 32px;border:none;border-radius:var(--r99);background:#fff;color:#0a0a0a;font-family:var(--ff);font-size:13px;font-weight:700;cursor:pointer;transition:transform .2s ease,opacity .2s ease;}
+    .ach-dismiss:active{transform:scale(.97);opacity:.8;}
     .ach-stats-row{display:flex;gap:24px;justify-content:center;margin-bottom:24px;}
     .ach-stat{text-align:center;}
-    .ach-stat-val{font-size:24px;font-weight:700;color:#fff;font-family:'DM Serif Display',serif;}
-    .ach-stat-lbl{font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.1em;font-weight:600;}
-    /* Particles */
-    .ach-particles{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
-    .ach-particle{position:absolute;width:6px;height:6px;border-radius:50%;animation:achFloat 2.5s ease-out forwards;}
-    @keyframes achFloat{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-200px) scale(0)}}
+    .ach-stat-val{font-size:22px;font-weight:700;color:#fff;font-family:'DM Serif Display',serif;}
+    .ach-stat-lbl{font-size:10px;color:rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.1em;font-weight:600;}
 
     /* Modals */
     .back{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:600;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
@@ -304,7 +297,6 @@
   <!-- ACHIEVEMENT CELEBRATION OVERLAY -->
   <div class="achiev-overlay" id="achievOverlay">
     <div class="ach-card">
-      <div class="ach-particles" id="achParticles"></div>
       <span class="ach-icon" id="achIcon">🔥</span>
       <div class="ach-title" id="achTitle">Session Complete</div>
       <div class="ach-sub" id="achSub">You stayed focused for 25 minutes</div>
@@ -1389,7 +1381,6 @@
 
       // Save session and process achievements (deferred — after writing stops)
       const logs = await notoSaveFocusSession(session);
-      await notoUpdateLeaderboardSelf(duration);
 
       // Show the celebration overlay
       showAchievCelebration(session, logs);
@@ -1440,9 +1431,6 @@
         badgeBox.appendChild(div);
       });
 
-      // Spawn particles
-      spawnParticles();
-
       // Show overlay
       document.getElementById('achievOverlay').classList.add('show');
 
@@ -1450,24 +1438,6 @@
       setTimeout(() => {
         document.getElementById('achLvlFill').style.width = Math.round((lvl.currentXP / lvl.nextLevelXP) * 100) + '%';
       }, 400);
-    }
-
-    function spawnParticles() {
-      const box = document.getElementById('achParticles');
-      box.innerHTML = '';
-      const colors = ['#0a84ff', '#5e5ce6', '#bf5af2', '#ff375f', '#ff9f0a', '#30d158', '#ffd60a'];
-      for (let i = 0; i < 30; i++) {
-        const p = document.createElement('div');
-        p.className = 'ach-particle';
-        p.style.left = Math.random() * 100 + '%';
-        p.style.top = (60 + Math.random() * 40) + '%';
-        p.style.background = colors[Math.floor(Math.random() * colors.length)];
-        p.style.animationDelay = (Math.random() * 1.2) + 's';
-        p.style.animationDuration = (1.5 + Math.random() * 1.5) + 's';
-        p.style.width = (4 + Math.random() * 6) + 'px';
-        p.style.height = p.style.width;
-        box.appendChild(p);
-      }
     }
 
     function dismissAchiev() {

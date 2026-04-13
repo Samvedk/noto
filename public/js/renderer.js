@@ -14,7 +14,6 @@ const NOTO_KEYS = {
   todos:     id => 'noto_todos_' + id,
   focusLogs: 'noto_focus_logs',
   achievements: 'noto_achievements',
-  leaderboard: 'noto_leaderboard',
   session: {
     grade:    'noto_cur_grade',
     subject:  'noto_cur_subject',
@@ -381,32 +380,7 @@ async function notoProcessAchievements(logs) {
   return newlyUnlocked;
 }
 
-// ── Leaderboard (Local Profiles for Competitive Mode) ─────────
-async function notoLoadLeaderboard()    { return await notoDb.get(NOTO_KEYS.leaderboard, []); }
-async function notoSaveLeaderboard(l)   { await notoDb.set(NOTO_KEYS.leaderboard, l); }
 
-async function notoAddLeaderboardEntry(name, emoji) {
-  const lb = await notoLoadLeaderboard();
-  if (lb.find(e => e.name === name)) return; // no dupes
-  lb.push({ id: notoId(), name, emoji: emoji || '👤', xp: 0, focusMin: 0, sessions: 0 });
-  await notoSaveLeaderboard(lb);
-}
-
-async function notoUpdateLeaderboardSelf(sessionDurationSec) {
-  const lb = await notoLoadLeaderboard();
-  const settings = await notoLoadSettings();
-  const myName = settings.deviceName || 'Me';
-  let me = lb.find(e => e.name === myName);
-  if (!me) {
-    me = { id: notoId(), name: myName, emoji: '🧑‍💻', xp: 0, focusMin: 0, sessions: 0 };
-    lb.push(me);
-  }
-  const ach = await notoLoadAchievements();
-  me.xp = ach.xp;
-  me.focusMin += Math.round(sessionDurationSec / 60);
-  me.sessions += 1;
-  await notoSaveLeaderboard(lb);
-}
 
 // ── Settings ──────────────────────────────────────────────────
 const NOTO_DEFAULTS = {
