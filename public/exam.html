@@ -376,20 +376,23 @@
         <h3 style="font-family:var(--fd); font-size:22px; margin-bottom:24px;">Title Section</h3>
         <div class="form-grid">
           <div class="ig"><label class="il">Exam Title</label><input class="if" id="exfTitle" placeholder="e.g. Weekly DPP #4"/></div>
-          <div class="ig"><label class="il">Subject</label><input class="if" id="exfSubject" placeholder="e.g. Physics"/></div>
+          <div class="ig"><label class="il">Topic</label><input class="if" id="exfSubject" placeholder="e.g. Physics / Kinematics"/></div>
           <div class="ig"><label class="il">Student Name</label><input class="if" id="exfName" placeholder="e.g. Samved K"/></div>
           <div class="ig"><label class="il">Roll No.</label><input class="if" id="exfRoll" placeholder="e.g. 24001"/></div>
           <div class="ig" style="grid-column:1 / -1;"><label class="il">PRN</label><input class="if" id="exfPrn" placeholder="e.g. 1029384756"/></div>
         </div>
         
-        <h3 style="font-family:var(--fd); font-size:22px; margin-bottom:16px;">Duration</h3>
-        <div class="timer-opts" id="exTimerOpts">
-          <button class="t-opt" data-sec="600">10 mins</button>
-          <button class="t-opt" data-sec="1800">30 mins</button>
-          <button class="t-opt on" data-sec="3600">1 hour</button>
-          <button class="t-opt" data-sec="5400">1.5 hours</button>
-          <button class="t-opt" data-sec="7200">2 hours</button>
-          <button class="t-opt" data-sec="10800">3 hours</button>
+        <h3 style="font-family:var(--fd); font-size:22px; margin-bottom:16px;">Set Custom Timer</h3>
+        <div style="display:flex; gap:16px; align-items:center; margin-bottom:20px;">
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <input type="number" class="if" id="tmHours" value="1" min="0" max="23" style="font-size:24px; text-align:center; width:80px; padding:8px;" />
+            <span style="font-size:12px; color:var(--g500); margin-top:4px;">Hours</span>
+          </div>
+          <span style="font-size:24px; font-weight:700;">:</span>
+          <div style="display:flex; flex-direction:column; align-items:center;">
+            <input type="number" class="if" id="tmMins" value="0" min="0" max="59" style="font-size:24px; text-align:center; width:80px; padding:8px;" />
+            <span style="font-size:12px; color:var(--g500); margin-top:4px;">Minutes</span>
+          </div>
         </div>
 
         <div style="margin-top:40px; padding-top:20px; border-top:1px solid var(--g200); display:flex; justify-content:flex-end;">
@@ -626,6 +629,7 @@
 
     <footer class="bb" id="examFooter" style="display:none;">
       <div class="bb-l">
+        <button class="bb-btn" onclick="togglePtm(event)"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></svg><span id="ptLabel">Lined</span></button>
         <button class="bb-btn" onclick="addSupplement()"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>Add Supplement</button>
       </div>
       <div class="sv"><span class="sv-dot" id="saveDot"></span><span id="saveLabel">Saved</span></div>
@@ -697,15 +701,6 @@
       });
     }
 
-    let selectedDuration = 3600;
-    document.querySelectorAll('.t-opt').forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll('.t-opt').forEach(b => b.classList.remove('on'));
-        btn.classList.add('on');
-        selectedDuration = parseInt(btn.dataset.sec);
-      };
-    });
-
     function showSetup() { document.getElementById('examSetup').style.display='flex'; }
     function hideSetup() { document.getElementById('examSetup').style.display='none'; }
 
@@ -716,7 +711,12 @@
       const roll = document.getElementById('exfRoll').value || '';
       const prn = document.getElementById('exfPrn').value || '';
       
-      const ex = await notoAddExam({ title, subject, name, rollNo: roll, prn, duration: selectedDuration, startTime: Date.now() });
+      const hr = parseInt(document.getElementById('tmHours').value || '0');
+      const min = parseInt(document.getElementById('tmMins').value || '0');
+      let duration = (hr * 3600) + (min * 60);
+      if(duration <= 0) duration = 3600; // fallback to 1h
+      
+      const ex = await notoAddExam({ title, subject, name, rollNo: roll, prn, duration: duration, startTime: Date.now() });
       hideSetup();
       openExam(ex.id);
     }
@@ -742,8 +742,7 @@
       if(!curExam || curExam.status !== 'active') return;
       curExam.pages = pgData;
       curExam.supplementCount = totPages - 10;
-      // Exam logic - disable non-exam functions
-      await trigSave();
+      await notoUpdateExam(curExam.id, curExam);
     }
     
     // --- EXAM FUNCTIONS ---
