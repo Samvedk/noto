@@ -429,7 +429,15 @@
         </div>
         <div class="ig" style="width:100%; max-width:300px;"><label class="il">Checked By</label><input class="if" id="mpName" placeholder="Signatory Name"/></div>
         
-        <button class="ec-btn-primary" id="mpFinalBtn" style="margin-top:20px; font-size:16px; padding:12px 32px;" onclick="saveMarks()">Submit Marks</button>
+        <div style="width:100%; max-width:300px; margin-top:16px;">
+          <label class="il">Signature</label>
+          <div style="width:100%; height:120px; background:var(--g100); border:1.5px dashed var(--g300); border-radius:12px; position:relative; overflow:hidden;">
+            <canvas id="mpSigC" style="width:100%; height:100%; touch-action:none;"></canvas>
+            <button class="ec-btn-sec" style="position:absolute; top:8px; right:8px; padding:4px 8px; font-size:9px;" onclick="clearSig()">Clear</button>
+          </div>
+        </div>
+        
+        <button class="ec-btn-primary" id="mpFinalBtn" style="margin-top:24px; font-size:16px; padding:12px 32px;" onclick="saveMarks()">Submit & Sign</button>
       </div>
     </div>
   </div>
@@ -909,26 +917,60 @@
       });
     }
 
+    let sigPath = [];
+    function initSigPad() {
+      const c = document.getElementById('mpSigC');
+      if(!c) return;
+      const ctx = c.getContext('2d');
+      // Set actual resolution based on displayed rect
+      const rect = c.getBoundingClientRect();
+      c.width = rect.width; c.height = rect.height;
+      
+      ctx.strokeStyle = '#000'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      
+      let drawing = false;
+      function getSigPos(e) {
+        const r = c.getBoundingClientRect();
+        return { x: (e.clientX || e.touches[0].clientX) - r.left, y: (e.clientY || e.touches[0].clientY) - r.top };
+      }
+      
+      const start = (e) => { drawing = true; const p = getSigPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); sigPath.push({t:'s', x:p.x, y:p.y}); };
+      const move = (e) => { if(!drawing) return; const p = getSigPos(e); ctx.lineTo(p.x, p.y); ctx.stroke(); sigPath.push({t:'m', x:p.x, y:p.y}); };
+      const stop = () => { drawing = false; };
+      
+      c.onpointerdown = start; c.onpointermove = move; c.onpointerup = stop;
+      c.ontouchstart = (e) => { e.preventDefault(); start(e); };
+      c.ontouchmove = (e) => { e.preventDefault(); move(e); };
+      c.ontouchend = stop;
+    }
+    
+    function clearSig() {
+      const c = document.getElementById('mpSigC');
+      if(!c) return;
+      const ctx = c.getContext('2d');
+      ctx.clearRect(0,0,c.width,c.height);
+      sigPath = [];
+    }
+
     function openMarksPage() {
-      hideSetup();
       document.getElementById('marksPage').style.display = 'flex';
       document.getElementById('mpObtained').value = curExam.marks?.obtained || '';
       document.getElementById('mpTotal').value = curExam.marks?.total || '';
       document.getElementById('mpName').value = curExam.marks?.checkerName || '';
-      
-      const ob = document.getElementById('mpObtained').value;
-      if(ob) {
-        document.getElementById('mpFinalBtn').textContent = 'Update Marks';
-      }
+      clearSig();
+      setTimeout(initSigPad, 200); // Wait for modal to render
     }
 
     async function saveMarks() {
-      curExam.marks.obtained = document.getElementById('mpObtained').value;
-      curExam.marks.total = document.getElementById('mpTotal').value;
-      curExam.marks.checkerName = document.getElementById('mpName').value;
+      const ob = document.getElementById('mpObtained').value;
+      const tot = document.getElementById('mpTotal').value;
+      const nm = document.getElementById('mpName').value;
+      if(!ob || !tot) { notoToast('Please enter marks'); return; }
+      
+      curExam.marks = { obtained: ob, total: tot, checkerName: nm, signature: sigPath };
       curExam.status = 'checked';
-      await trigSave();
-      notoToast('Marks saved successfully.');
+      await trigSave(true);
+      notoToast('Exam Checked & Finalized.');
       setTimeout(() => window.location.reload(), 800);
     }
   </script>
