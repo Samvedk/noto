@@ -23,7 +23,7 @@ const NOTO_KEYS = {
 };
 
 // ── IndexedDB Engine (The "1GB+ Capacity" Upgrade) ────────────
-const _DB_NAME = 'NotoDB';
+const _DB_NAME = 'NotoDB_v2';
 const _DB_STORE = 'notebooks';
 const _DB_VER = 1;
 
@@ -504,13 +504,22 @@ async function notoFactoryReset() {
 })();
 
 // ── Navigation & Lockdown ────────────────────────────────────
-let _notoExamActive = false;
-function notoSetExam(isActive) { _notoExamActive = isActive; }
+let _notoExamActive = (localStorage.getItem('noto_exam_lockdown') === 'true');
+
+function notoSetExam(isActive) { 
+  _notoExamActive = isActive; 
+  localStorage.setItem('noto_exam_lockdown', isActive ? 'true' : 'false');
+}
 function notoIsExamActive() { return _notoExamActive; }
+
+// AUTO-LOCK: Redirect to exam paper if lockdown is active
+if (_notoExamActive && !window.location.href.includes('exam.html')) {
+  window.location.href = 'exam.html';
+}
 
 function notoNavigate(page) {
   if (_notoExamActive && page !== 'exam.html') {
-    notoToast('Navigation locked during Exam Session.');
+    notoToast('Exam in progress. Navigation locked.');
     return;
   }
   const o = document.getElementById('transitionOverlay');
