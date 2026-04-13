@@ -502,8 +502,16 @@ async function notoFactoryReset() {
   } catch (e) { console.error('Startup failed:', e); }
 })();
 
-// ── Navigation ────────────────────────────────────────────────
+// ── Navigation & Lockdown ────────────────────────────────────
+let _notoExamActive = false;
+function notoSetExam(isActive) { _notoExamActive = isActive; }
+function notoIsExamActive() { return _notoExamActive; }
+
 function notoNavigate(page) {
+  if (_notoExamActive && page !== 'exam.html') {
+    notoToast('Navigation locked during Exam Session.');
+    return;
+  }
   const o = document.getElementById('transitionOverlay');
   if (o) { o.classList.add('active'); setTimeout(() => { window.location.href = page; }, 440); }
   else window.location.href = page;
