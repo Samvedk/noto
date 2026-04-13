@@ -173,6 +173,52 @@
     .hm-months { display:flex; margin-bottom:12px; font-size:10px; font-weight:700; color:rgba(255,255,255,0.4); text-transform:uppercase; letter-spacing:0.05em; }
     .hm-month { flex:1; min-width:40px; }
 
+    /* ── DEEP WORK SECTION ── */
+    .dw-section { margin-top:80px; }
+    .dw-stats-row { display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:20px; margin-bottom:40px; }
+    .dw-stat-card { background:var(--card-bg); backdrop-filter:var(--glass); border:1px solid var(--gray-200); border-radius:var(--radius-lg); padding:28px; transition:var(--ease); }
+    .dw-stat-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-md); }
+    .dw-stat-icon { font-size:28px; margin-bottom:12px; }
+    .dw-stat-val { font-family:var(--font-display); font-size:36px; line-height:1; margin-bottom:4px; }
+    .dw-stat-lbl { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.1em; color:var(--gray-400); }
+
+    /* ── BADGE WALL ── */
+    .badge-wall { display:grid; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); gap:16px; margin-bottom:48px; }
+    .badge-card { background:var(--card-bg); border:1px solid var(--gray-200); border-radius:var(--radius-lg); padding:24px 16px; text-align:center; transition:var(--ease); position:relative; overflow:hidden; }
+    .badge-card:hover { transform:translateY(-3px); box-shadow:var(--shadow-md); }
+    .badge-card.locked { opacity:.45; filter:grayscale(1); }
+    .badge-card.locked:hover { opacity:.6; }
+    .badge-icon-lg { font-size:36px; display:block; margin-bottom:10px; }
+    .badge-name { font-size:13px; font-weight:700; color:var(--gray-900); margin-bottom:4px; }
+    .badge-desc { font-size:10px; color:var(--gray-400); line-height:1.4; }
+    .badge-xp { display:inline-block; margin-top:8px; background:var(--gray-100); padding:3px 10px; border-radius:var(--radius-full); font-size:10px; font-weight:700; color:var(--accent); }
+
+    /* ── LEVEL PROGRESS ── */
+    .lvl-bar-wrap { background:var(--card-bg); border:1px solid var(--gray-200); border-radius:var(--radius-lg); padding:32px; margin-bottom:40px; }
+    .lvl-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+    .lvl-title-row { display:flex; align-items:center; gap:12px; }
+    .lvl-num { width:48px; height:48px; border-radius:14px; background:var(--gray-900); color:var(--white); display:flex; align-items:center; justify-content:center; font-family:var(--font-display); font-size:22px; }
+    .lvl-track { width:100%; height:14px; background:var(--gray-100); border-radius:var(--radius-full); overflow:hidden; }
+    .lvl-fill { height:100%; background:linear-gradient(90deg, #0a84ff, #5e5ce6); border-radius:var(--radius-full); transition:width 1.8s cubic-bezier(.4,0,.2,1); }
+    .lvl-pct { font-size:12px; font-weight:700; color:var(--gray-400); margin-top:8px; text-align:right; }
+
+    /* ── LEADERBOARD ── */
+    .lb-section { margin-top:48px; }
+    .lb-container { background:var(--gray-900); border-radius:var(--radius-lg); padding:32px; color:#fff; }
+    .lb-row { display:flex; align-items:center; gap:16px; padding:16px 20px; border-radius:16px; margin-bottom:8px; background:rgba(255,255,255,.04); transition:var(--ease); }
+    .lb-row:hover { background:rgba(255,255,255,.08); }
+    .lb-row.gold { background:linear-gradient(135deg, rgba(255,214,10,.12), rgba(255,159,10,.08)); border:1px solid rgba(255,214,10,.2); }
+    .lb-rank { font-family:var(--font-display); font-size:22px; min-width:32px; text-align:center; color:rgba(255,255,255,.4); }
+    .lb-row.gold .lb-rank { color:#ffd60a; }
+    .lb-avatar { width:40px; height:40px; border-radius:12px; background:rgba(255,255,255,.08); display:flex; align-items:center; justify-content:center; font-size:20px; }
+    .lb-info { flex:1; }
+    .lb-name { font-size:15px; font-weight:600; }
+    .lb-meta { font-size:11px; color:rgba(255,255,255,.4); }
+    .lb-xp { font-family:var(--font-display); font-size:18px; color:#0a84ff; }
+    .lb-add-btn { display:flex; align-items:center; gap:8px; padding:12px 24px; background:rgba(255,255,255,.08); border:1.5px solid rgba(255,255,255,.12); border-radius:var(--radius-full); color:rgba(255,255,255,.7); font-weight:600; font-size:13px; cursor:pointer; transition:var(--ease); margin-top:16px; }
+    .lb-add-btn:hover { background:rgba(255,255,255,.15); color:#fff; }
+    .lb-add-btn svg { width:14px; height:14px; stroke:currentColor; fill:none; stroke-width:2.2; }
+
     /* ── ROADMAP TEASER ── */
     .teaser-banner {
       margin-top:64px; background:linear-gradient(135deg, #0a84ff, #5e5ce6);
@@ -220,6 +266,29 @@
       <div style="display:flex; gap:12px; margin-top:10px">
         <button class="home-btn" style="flex:1; justify-content:center" onclick="closeAdd()">Cancel</button>
         <button class="icon-btn primary" style="flex:1; width:auto; border-radius:var(--radius-full); color:white; font-weight:700; font-family:var(--font-body)" onclick="confirmHabit()">Activate Protocol</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FRIEND MODAL -->
+  <div class="modal-back" id="friendModal">
+    <div class="modal">
+      <span class="section-tag">Competition</span>
+      <h2 class="page-title" style="margin-bottom:8px">Add Competitor</h2>
+      <p style="color:var(--gray-400); font-size:14px; margin-bottom:30px">Add a friend's profile to compete on the Focus Leaderboard.</p>
+      
+      <div class="input-grp">
+        <label class="input-lbl">Name</label>
+        <input class="input-fld" id="friendNameIn" type="text" placeholder="e.g. Arjun, Priya..." autocomplete="off">
+      </div>
+      <div class="input-grp">
+        <label class="input-lbl">Avatar (Emoji)</label>
+        <input class="input-fld" id="friendEmojiIn" type="text" placeholder="😎" maxlength="2" style="width:100px; text-align:center" autocomplete="off">
+      </div>
+
+      <div style="display:flex; gap:12px; margin-top:10px">
+        <button class="home-btn" style="flex:1; justify-content:center" onclick="closeFriendModal()">Cancel</button>
+        <button class="icon-btn primary" style="flex:1; width:auto; border-radius:var(--radius-full); color:white; font-weight:700; font-family:var(--font-body)" onclick="addFriend()">Add to Board</button>
       </div>
     </div>
   </div>
@@ -318,12 +387,69 @@
         </div>
       </div>
 
+      <!-- DEEP WORK ANALYTICS -->
+      <div class="dw-section">
+        <div class="section-header">
+          <div>
+            <span class="section-tag">Deep Work</span>
+            <h2 class="section-title">Focus Analytics</h2>
+          </div>
+        </div>
+        <div class="dw-stats-row" id="dwStatsRow">
+          <div class="dw-stat-card"><div class="dw-stat-icon">⏱️</div><div class="dw-stat-val" id="dwTotalTime">0h</div><div class="dw-stat-lbl">Total Focus</div></div>
+          <div class="dw-stat-card"><div class="dw-stat-icon">📊</div><div class="dw-stat-val" id="dwSessions">0</div><div class="dw-stat-lbl">Sessions</div></div>
+          <div class="dw-stat-card"><div class="dw-stat-icon">🔥</div><div class="dw-stat-val" id="dwStreak">0</div><div class="dw-stat-lbl">Day Streak</div></div>
+          <div class="dw-stat-card"><div class="dw-stat-icon">⚡</div><div class="dw-stat-val" id="dwXP">0</div><div class="dw-stat-lbl">Total XP</div></div>
+        </div>
+
+        <!-- LEVEL PROGRESS -->
+        <div class="lvl-bar-wrap">
+          <div class="lvl-header">
+            <div class="lvl-title-row">
+              <div class="lvl-num" id="lvlNum">1</div>
+              <div>
+                <span class="section-tag" style="margin-bottom:2px" id="lvlTitle">Beginner</span>
+                <h2 class="section-title" style="font-size:20px" id="lvlLabel">Level 1</h2>
+              </div>
+            </div>
+            <div class="lvl-pct" id="lvlPctLabel">0 / 100 XP</div>
+          </div>
+          <div class="lvl-track"><div class="lvl-fill" id="lvlFill" style="width:0%"></div></div>
+        </div>
+
+        <!-- BADGE WALL -->
+        <div class="section-header">
+          <div>
+            <span class="section-tag">Trophies</span>
+            <h2 class="section-title">Achievement Wall</h2>
+          </div>
+        </div>
+        <div class="badge-wall" id="badgeWall"></div>
+      </div>
+
+      <!-- LEADERBOARD -->
+      <div class="lb-section">
+        <div class="section-header">
+          <div>
+            <span class="section-tag">Competition</span>
+            <h2 class="section-title">Focus Leaderboard</h2>
+          </div>
+        </div>
+        <div class="lb-container">
+          <div id="lbList"></div>
+          <div class="lb-add-btn" onclick="openFriendModal()">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Friend to Leaderboard
+          </div>
+        </div>
+      </div>
+
       <!-- TEASER BANNER -->
-      <div class="teaser-banner">
+      <div class="teaser-banner" style="margin-top:48px">
         <div class="teaser-l">
           <span class="teaser-pill">Coming 2026</span>
-          <h3>Predictive AI Insights</h3>
-          <p>We're building an engine to correlate your handwriting speed and notebook volume with habit consistency.</p>
+          <h3>Cross-Device Sync</h3>
+          <p>Challenge your friends in real-time with synced leaderboards across all Noto devices.</p>
         </div>
         <div class="teaser-r">
           <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
@@ -502,7 +628,112 @@
       }
     }
 
-    document.addEventListener('DOMContentLoaded', () => { initControls(); loadDashboard(); });
+    document.addEventListener('DOMContentLoaded', () => { initControls(); loadDashboard(); loadDeepWorkDashboard(); });
+
+    // ── DEEP WORK DASHBOARD ──
+    async function loadDeepWorkDashboard() {
+      const logs = await notoLoadFocusLogs();
+      const ach = await notoLoadAchievements();
+      const lvl = notoCalcLevel(ach.xp);
+      const title = NOTO_LEVEL_TITLES[Math.min(lvl.level - 1, NOTO_LEVEL_TITLES.length - 1)];
+      const streak = notoCalcStreak(logs);
+      const totalSec = logs.reduce((a, l) => a + l.duration, 0);
+
+      // Stats
+      const th = Math.floor(totalSec / 3600);
+      const tm = Math.floor((totalSec % 3600) / 60);
+      document.getElementById('dwTotalTime').textContent = th > 0 ? th + 'h ' + tm + 'm' : tm + 'm';
+      document.getElementById('dwSessions').textContent = logs.length;
+      document.getElementById('dwStreak').textContent = streak;
+      document.getElementById('dwXP').textContent = ach.xp;
+
+      // Level
+      document.getElementById('lvlNum').textContent = lvl.level;
+      document.getElementById('lvlTitle').textContent = title;
+      document.getElementById('lvlLabel').textContent = 'Level ' + lvl.level;
+      document.getElementById('lvlPctLabel').textContent = lvl.currentXP + ' / ' + lvl.nextLevelXP + ' XP';
+      setTimeout(() => {
+        document.getElementById('lvlFill').style.width = Math.round((lvl.currentXP / lvl.nextLevelXP) * 100) + '%';
+      }, 300);
+
+      // Badge Wall
+      renderBadgeWall(ach);
+
+      // Leaderboard
+      renderLeaderboard();
+    }
+
+    function renderBadgeWall(ach) {
+      const wall = document.getElementById('badgeWall');
+      wall.innerHTML = '';
+      NOTO_BADGE_DEFS.forEach(b => {
+        const unlocked = ach.unlockedIds.includes(b.id);
+        const card = document.createElement('div');
+        card.className = 'badge-card' + (unlocked ? '' : ' locked');
+        card.innerHTML = `
+          <span class="badge-icon-lg">${unlocked ? b.icon : '🔒'}</span>
+          <div class="badge-name">${b.name}</div>
+          <div class="badge-desc">${b.desc}</div>
+          <span class="badge-xp">${unlocked ? '✅ ' + b.xp + ' XP' : b.xp + ' XP'}</span>
+        `;
+        wall.appendChild(card);
+      });
+    }
+
+    async function renderLeaderboard() {
+      const lb = await notoLoadLeaderboard();
+      const list = document.getElementById('lbList');
+      list.innerHTML = '';
+
+      if (!lb.length) {
+        // Auto-seed the user
+        const settings = await notoLoadSettings();
+        const myName = settings.deviceName || 'Me';
+        await notoAddLeaderboardEntry(myName, '🧑‍💻');
+        return renderLeaderboard();
+      }
+
+      // Sort by XP desc
+      lb.sort((a, b) => b.xp - a.xp || b.focusMin - a.focusMin);
+
+      lb.forEach((entry, i) => {
+        const row = document.createElement('div');
+        row.className = 'lb-row' + (i === 0 ? ' gold' : '');
+        const rankIcon = i === 0 ? '🥇' : (i === 1 ? '🥈' : (i === 2 ? '🥉' : (i + 1)));
+        const totalH = Math.floor(entry.focusMin / 60);
+        const totalM = entry.focusMin % 60;
+        const timeStr = totalH > 0 ? totalH + 'h ' + totalM + 'm' : totalM + 'm';
+        row.innerHTML = `
+          <div class="lb-rank">${rankIcon}</div>
+          <div class="lb-avatar">${entry.emoji}</div>
+          <div class="lb-info">
+            <div class="lb-name">${notoEsc(entry.name)}</div>
+            <div class="lb-meta">${entry.sessions} sessions · ${timeStr} focused</div>
+          </div>
+          <div class="lb-xp">${entry.xp} XP</div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function openFriendModal() {
+      document.getElementById('friendNameIn').value = '';
+      document.getElementById('friendEmojiIn').value = '😎';
+      document.getElementById('friendModal').classList.add('show');
+    }
+    function closeFriendModal() {
+      document.getElementById('friendModal').classList.remove('show');
+    }
+
+    async function addFriend() {
+      const name = document.getElementById('friendNameIn').value.trim();
+      const emoji = document.getElementById('friendEmojiIn').value.trim();
+      if (!name) return notoToast('Enter a name');
+      await notoAddLeaderboardEntry(name, emoji || '😎');
+      closeFriendModal();
+      renderLeaderboard();
+      notoToast(name + ' joined the board 🔥');
+    }
   </script>
 </body>
 </html>

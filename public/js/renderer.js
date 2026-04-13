@@ -12,6 +12,9 @@ const NOTO_KEYS = {
   habitDefs: 'noto_habit_defs',
   habitLogs: 'noto_habit_logs',
   todos:     id => 'noto_todos_' + id,
+  focusLogs: 'noto_focus_logs',
+  achievements: 'noto_achievements',
+  leaderboard: 'noto_leaderboard',
   session: {
     grade:    'noto_cur_grade',
     subject:  'noto_cur_subject',
@@ -286,6 +289,124 @@ async function notoToggleHabitLog(habitId, isoDate) {
 // ── To-Dos ────────────────────────────────────────────────────
 async function notoLoadTodos(ctxId)     { return await notoDb.get(NOTO_KEYS.todos(ctxId), []); }
 async function notoSaveTodos(ctxId, t)  { await notoDb.set(NOTO_KEYS.todos(ctxId), t); }
+
+// ── Deep Work Engine: Focus Sessions ──────────────────────────
+async function notoLoadFocusLogs()      { return await notoDb.get(NOTO_KEYS.focusLogs, []); }
+async function notoSaveFocusLogs(l)     { await notoDb.set(NOTO_KEYS.focusLogs, l); }
+
+async function notoSaveFocusSession(session) {
+  const logs = await notoLoadFocusLogs();
+  logs.push(session);
+  await notoSaveFocusLogs(logs);
+  // After saving, process achievements
+  await notoProcessAchievements(logs);
+  return logs;
+}
+
+// ── Achievement Engine ────────────────────────────────────────
+const NOTO_BADGE_DEFS = [
+  { id:'first_focus',   name:'First Focus',       desc:'Complete your first focus session',             icon:'🔥', xp:50,   check: logs => logs.length >= 1 },
+  { id:'focus_5',       name:'Getting Warmed Up',  desc:'Complete 5 focus sessions',                     icon:'⚡', xp:100,  check: logs => logs.length >= 5 },
+  { id:'focus_25',      name:'Focus Warrior',      desc:'Complete 25 focus sessions',                    icon:'⚔️', xp:250,  check: logs => logs.length >= 25 },
+  { id:'focus_100',     name:'Deep Work Legend',   desc:'Complete 100 focus sessions',                   icon:'👑', xp:500,  check: logs => logs.length >= 100 },
+  { id:'hour_1',        name:'Hour of Power',      desc:'Complete a 1-hour focus session',               icon:'💪', xp:150,  check: logs => logs.some(l => l.duration >= 3600) },
+  { id:'hour_2',        name:'Unstoppable',        desc:'Complete a 2-hour focus session',               icon:'🚀', xp:300,  check: logs => logs.some(l => l.duration >= 7200) },
+  { id:'streak_3',      name:'3-Day Streak',       desc:'Focus 3 days in a row',                        icon:'🔗', xp:200,  check: logs => notoCalcStreak(logs) >= 3 },
+  { id:'streak_7',      name:'Week Warrior',       desc:'Focus 7 days in a row',                        icon:'💎', xp:400,  check: logs => notoCalcStreak(logs) >= 7 },
+  { id:'streak_30',     name:'Monthly Master',     desc:'Focus 30 days in a row',                       icon:'🏆', xp:1000, check: logs => notoCalcStreak(logs) >= 30 },
+  { id:'total_10h',     name:'10 Hours Deep',      desc:'Accumulate 10 hours of total focus',           icon:'🧠', xp:300,  check: logs => logs.reduce((a,l) => a + l.duration, 0) >= 36000 },
+  { id:'total_50h',     name:'Scholar',            desc:'Accumulate 50 hours of total focus',           icon:'📚', xp:600,  check: logs => logs.reduce((a,l) => a + l.duration, 0) >= 180000 },
+  { id:'total_100h',    name:'Centurion',          desc:'Accumulate 100 hours of total focus',          icon:'🏛️', xp:1000, check: logs => logs.reduce((a,l) => a + l.duration, 0) >= 360000 },
+  { id:'early_bird',    name:'Early Bird',         desc:'Start a focus session before 7 AM',            icon:'🌅', xp:150,  check: logs => logs.some(l => { const h = new Date(l.startedAt).getHours(); return h < 7; }) },
+  { id:'night_owl',     name:'Night Owl',          desc:'Complete a focus session after 11 PM',         icon:'🦉', xp:150,  check: logs => logs.some(l => { const h = new Date(l.endedAt).getHours(); return h >= 23; }) },
+];
+
+function notoCalcStreak(logs) {
+  if (!logs.length) return 0;
+  const days = new Set(logs.map(l => l.date));
+  const sorted = [...days].sort().reverse();
+  let streak = 1;
+  for (let i = 1; i < sorted.length; i++) {
+    const prev = new Date(sorted[i-1]);
+    const curr = new Date(sorted[i]);
+    prev.setDate(prev.getDate() - 1);
+    if (prev.toISOString().split('T')[0] === sorted[i]) streak++;
+    else break;
+  }
+  return streak;
+}
+
+function notoCalcLevel(xp) {
+  // Level curve: each level needs progressively more XP
+  // Level 1: 0, Level 2: 100, Level 3: 250, Level 4: 450...
+  let level = 1, threshold = 0, step = 100;
+  while (xp >= threshold + step) {
+    threshold += step;
+    level++;
+    step = Math.round(step * 1.35);
+  }
+  return { level, currentXP: xp - threshold, nextLevelXP: step, totalXP: xp };
+}
+
+const NOTO_LEVEL_TITLES = [
+  'Beginner',       // 1
+  'Apprentice',     // 2
+  'Focused',        // 3
+  'Disciplined',    // 4
+  'Scholar',        // 5
+  'Strategist',     // 6
+  'Prodigy',        // 7
+  'Master',         // 8
+  'Grandmaster',    // 9
+  'Legend',         // 10+
+];
+
+async function notoLoadAchievements()   { return await notoDb.get(NOTO_KEYS.achievements, { unlockedIds: [], xp: 0 }); }
+async function notoSaveAchievements(a)  { await notoDb.set(NOTO_KEYS.achievements, a); }
+
+async function notoProcessAchievements(logs) {
+  const ach = await notoLoadAchievements();
+  const newlyUnlocked = [];
+  for (const badge of NOTO_BADGE_DEFS) {
+    if (ach.unlockedIds.includes(badge.id)) continue;
+    try {
+      if (badge.check(logs)) {
+        ach.unlockedIds.push(badge.id);
+        ach.xp += badge.xp;
+        newlyUnlocked.push(badge);
+      }
+    } catch(e) { /* safety */ }
+  }
+  await notoSaveAchievements(ach);
+  return newlyUnlocked;
+}
+
+// ── Leaderboard (Local Profiles for Competitive Mode) ─────────
+async function notoLoadLeaderboard()    { return await notoDb.get(NOTO_KEYS.leaderboard, []); }
+async function notoSaveLeaderboard(l)   { await notoDb.set(NOTO_KEYS.leaderboard, l); }
+
+async function notoAddLeaderboardEntry(name, emoji) {
+  const lb = await notoLoadLeaderboard();
+  if (lb.find(e => e.name === name)) return; // no dupes
+  lb.push({ id: notoId(), name, emoji: emoji || '👤', xp: 0, focusMin: 0, sessions: 0 });
+  await notoSaveLeaderboard(lb);
+}
+
+async function notoUpdateLeaderboardSelf(sessionDurationSec) {
+  const lb = await notoLoadLeaderboard();
+  const settings = await notoLoadSettings();
+  const myName = settings.deviceName || 'Me';
+  let me = lb.find(e => e.name === myName);
+  if (!me) {
+    me = { id: notoId(), name: myName, emoji: '🧑‍💻', xp: 0, focusMin: 0, sessions: 0 };
+    lb.push(me);
+  }
+  const ach = await notoLoadAchievements();
+  me.xp = ach.xp;
+  me.focusMin += Math.round(sessionDurationSec / 60);
+  me.sessions += 1;
+  await notoSaveLeaderboard(lb);
+}
 
 // ── Settings ──────────────────────────────────────────────────
 const NOTO_DEFAULTS = {
