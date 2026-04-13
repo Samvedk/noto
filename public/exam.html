@@ -695,7 +695,7 @@
         let sc = '', ab = '';
         if(ex.status === 'active') {
           sc = '<span class="xc-tag active">Active</span>';
-          ab = '<button class="xc-action-btn show" style="background:var(--danger); color:white;">Resume</button>';
+          ab = ''; // No action button for active, student just clicks the card to continue paper
         } else if(ex.status === 'submitted') {
           sc = '<span class="xc-tag submitted">Submitted</span>';
           ab = '<button class="xc-action-btn show">Check Exam</button>';
