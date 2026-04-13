@@ -756,8 +756,13 @@
       curPage = 1;
       checkAnnotations = curExam.checkAnnotations || {};
       
-      document.getElementById('etTitle').textContent = curExam.title;
-      document.getElementById('etMeta').textContent = `${curExam.name} | Roll ${curExam.rollNo}`;
+      document.getElementById('etTitle').textContent = curExam.title || 'Exam';
+      document.getElementById('etMeta').textContent = `${curExam.name || 'Student'} | Roll ${curExam.rollNo || 'N/A'}`;
+      
+      // Safety guards
+      if(!curExam.startTime) curExam.startTime = Date.now();
+      if(!curExam.duration) curExam.duration = 3600;
+      if(curExam.supplementCount === undefined) curExam.supplementCount = 0;
       
       document.getElementById('examTopbar').style.display = 'flex';
       
@@ -766,6 +771,7 @@
         document.getElementById('examFooter').style.display = 'flex';
         document.getElementById('dtb').style.display = 'flex';
         document.getElementById('exSubmitBtn').style.display = 'block';
+        document.getElementById('exTimerPill').style.display = 'block';
         isCheckMode = false;
         startExamTimer();
       } else {
@@ -773,7 +779,7 @@
         document.getElementById('examFooter').style.display = 'none';
         document.getElementById('dtb').style.display = 'none';
         document.getElementById('exSubmitBtn').style.display = 'none';
-        document.getElementById('exTimerPill').textContent = (curExam.status === 'checked') ? 'Checked' : 'Locked';
+        document.getElementById('exTimerPill').textContent = (curExam.status === 'checked') ? 'Checked' : 'Submitted';
         isCheckMode = true;
         document.getElementById('checkTb').style.display = 'flex';
       }

@@ -18,7 +18,8 @@ const NOTO_KEYS = {
     grade: 'noto_cur_grade',
     subject: 'noto_cur_subject',
     notebook: 'noto_cur_notebook',
-  }
+  },
+  exam: 'noto_exam'
 };
 
 // ── IndexedDB Engine (The "1GB+ Capacity" Upgrade) ────────────
