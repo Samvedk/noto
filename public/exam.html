@@ -738,10 +738,11 @@
       if(isCheckMode) renderCheckStamps();
     }
     
-    async function trigSave() {
-      if(!curExam || curExam.status !== 'active') return;
+    async function trigSave(forceStatus) {
+      if(!curExam) return;
+      if(curExam.status !== 'active' && !forceStatus) return;
       curExam.pages = pgData;
-      curExam.supplementCount = totPages - 10;
+      curExam.supplementCount = Math.max(0, totPages - 10);
       await notoUpdateExam(curExam.id, curExam);
     }
     
@@ -784,36 +785,46 @@
     function startExamTimer() {
       const elapsed = Math.floor((Date.now() - curExam.startTime) / 1000);
       remainingSec = curExam.duration - elapsed;
-      if(remainingSec <= 0) { submitExam(); return; }
+      if(remainingSec <= 0) { remainingSec = 0; pillUpdate(); submitExam(); return; }
       
       const pill = document.getElementById('exTimerPill');
       clearInterval(examTimer);
       
+      pillUpdate(); // Initial update
       examTimer = setInterval(() => {
         remainingSec--;
         if(remainingSec <= 0) {
+          remainingSec = 0;
+          pillUpdate();
           clearInterval(examTimer);
           submitExam();
           return;
         }
-        const h = Math.floor(remainingSec / 3600);
-        const m = Math.floor((remainingSec % 3600) / 60);
-        const s = remainingSec % 60;
-        pill.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+        pillUpdate();
       }, 1000);
+    }
+    
+    function pillUpdate() {
+      const pill = document.getElementById('exTimerPill');
+      if(!pill) return;
+      const h = Math.floor(remainingSec / 3600);
+      const m = Math.floor((remainingSec % 3600) / 60);
+      const s = remainingSec % 60;
+      pill.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
     }
     
     async function submitExam() {
       clearInterval(examTimer);
       notoSetExam(false);
       curExam.status = 'submitted';
-      await trigSave();
+      await trigSave(true); // Always save when submitting
       notoToast('Exam Submitted & Locked.');
       setTimeout(() => window.location.reload(), 1500);
     }
     
     function addSupplement() {
       if(curExam.status !== 'active') return;
+      if(curExam.supplementCount === undefined) curExam.supplementCount = 0;
       totPages += 4;
       curExam.supplementCount += 4;
       curPage = totPages - 3;
