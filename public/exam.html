@@ -2055,7 +2055,6 @@
   <!-- ── INIT ── -->
   <script>
     document.addEventListener('DOMContentLoaded', async ()=>{
-      if(!curNbId){notoNavigate('notebook.html');return;}
       await initStorage();
       const S = await notoLoadSettings();
       curPgType   = S.defaultPageType||'lined';
