@@ -788,8 +788,13 @@
   <script>
     let isDrawing=false, currentPath=[], undoSt=[], redoSt=[];
     let shStart=null, isShDraw=false, preShSnap=null;
-    // Palm Rejection & Handedness state
-    let _lastPenTime=0, _lastPenX=0, _lastPenY=0, _lastPenP=0;
+    // Palm Rejection State
+    let _activePointerType = null;
+    let _pointerTypeLockTime = 0;
+
+    // Drawing buffer state
+    let _pendingPoints = [];
+    let _rafId = null;
 
     // Convert screen coord → canvas pixel (correct at ALL zoom levels)
     function getPos(e){ return sc2cv(e.clientX, e.clientY); }
@@ -801,30 +806,24 @@
       if(pinching)return;
       const tNow = Date.now();
       
-      // Lockdown to one pointer at a time (Reliable Palm Rejection)
+      // Strict Palm Rejection / Stylus Priority
+      if(_activePointerType === 'pen' && e.pointerType === 'touch') {
+          // If we had a stylus in the last 2 seconds, strictly reject touch
+          if (tNow - _pointerTypeLockTime < 2000) return;
+      }
+      
       if(_activePointerId !== null) return;
       _activePointerId = e.pointerId;
-
-      if(e.pointerType==='pen') { _lastPenTime = tNow; _lastPenX = e.clientX; _lastPenY = e.clientY; }
+      _activePointerType = e.pointerType;
+      if (e.pointerType === 'pen') _pointerTypeLockTime = tNow;
       
-      // Palm Rejection Logic:
+      // Filter out fat palm contacts if touch
       if(e.pointerType==='touch' && (e.width > 25 || e.height > 25)) { _activePointerId = null; return; }
-      if(e.pointerType==='touch' && (tNow - _lastPenTime < 1500)) { _activePointerId = null; return; }
-      
-      // Handedness spatial rejection
-      if(e.pointerType==='touch' && tNow - _lastPenTime < 8000) {
-          const S = (typeof notoLoadSettings === 'function') ? notoLoadSettings() : {};
-          if(S.handedness === 'right' && e.clientX > _lastPenX + 40) { _activePointerId = null; return; }
-          if(S.handedness === 'left' && e.clientX < _lastPenX - 40) { _activePointerId = null; return; }
-      }
-
       if(e.pointerType==='touch'&&!e.isPrimary) { _activePointerId = null; return; }
-      if(e.pointerType==='pen'&&e.pressure===0) { _activePointerId = null; return; } 
       
       e.preventDefault(); e.stopPropagation();
       dwC.setPointerCapture(e.pointerId);
 
-      // Cache the bounding box for this stroke (Performance & Stability)
       _cachedRect = ps.getBoundingClientRect();
 
       if(tool==='text'){placeTxBox(e);return;}
@@ -835,15 +834,18 @@
       isDrawing=true;redoSt=[];
       const p=getPos(e),s=stStyle();
       _lastValidX = p.x; _lastValidY = p.y;
-      currentPath=[{x:p.x,y:p.y,pressure:e.pressure||0.5}];currentPath._s=s;
+      
+      currentPath=[]; currentPath._s=s;
+      _pendingPoints = [{x:p.x,y:p.y,pressure:e.pressure||0.5,time:tNow}];
+      if(!_rafId) _rafId = requestAnimationFrame(drainBufferAndRender);
     },{passive:false});
 
     dwC.addEventListener('pointermove',e=>{
       if(pinching || _activePointerId !== e.pointerId) return;
       const tNow = Date.now();
-      if(e.pointerType==='pen') { _lastPenTime = tNow; _lastPenX = e.clientX; _lastPenY = e.clientY; _lastPenP = e.pressure||0.5; }
       
-      // Pressure threshold to avoid hover-ink
+      if(e.pointerType === 'pen') _pointerTypeLockTime = tNow;
+      
       const prs = e.pressure || (e.pointerType === 'touch' ? 0.5 : 0);
       if(e.pointerType==='pen' && prs < 0.02) return; 
 
@@ -852,14 +854,10 @@
 
       const p = getPos(e);
 
-      // Coordinate Jump Filter (Prevent "Long Strokes" bug)
-      // If a coordinate jumps > 120 pixels in one event, it's almost certainly a hardware glitch.
+      // Coordinate Jump Filter
       if(isDrawing && _lastValidX !== null) {
           const dist = Math.hypot(p.x - _lastValidX, p.y - _lastValidY);
-          if(dist > 120) {
-              console.warn("Noto Stroke Filter: Ignored coordinate jump of " + Math.round(dist) + "px");
-              return; 
-          }
+          if(dist > 120 && e.pointerType !== 'mouse') return; // Ignore glitches
       }
       _lastValidX = p.x; _lastValidY = p.y;
 
@@ -874,7 +872,7 @@
         return;
       }
       if(!isDrawing)return;
-      currentPath.push({x:p.x,y:p.y,pressure:prs});renderLive();
+      _pendingPoints.push({x:p.x,y:p.y,pressure:prs,time:tNow});
     },{passive:false});
 
     dwC.addEventListener('pointerup',finalise);
@@ -937,6 +935,7 @@
       _activePointerId = null;
       _cachedRect = null;
       _lastValidX = null; _lastValidY = null;
+      if(_rafId) { cancelAnimationFrame(_rafId); _rafId = null; drainBufferAndRender(); } // flush remaining
 
       if(tool==='eraser'){isDrawing=false;return;}
       if(tool==='shape'&&isShDraw){
@@ -947,41 +946,95 @@
            getPg(curPage).strokes.push(s);undoSt.push({pg:curPage});trigSave();
            const pt = getPg(curPage).type || 'lined';
            if (s.shape === 'line' && (pt === 'lined' || pt === 'graph' || pt === 'dotted')) {
-              // Trigger alignment ONLY if it's somewhat pure horizontal or vertical
               const slope = Math.abs((s.y2-s.y1)/(s.x2-s.x1));
-              if(slope < 0.25 || slope > 4) {
-                 triggerLineAlignPrompt(s);
-              }
+              if(slope < 0.25 || slope > 4) triggerLineAlignPrompt(s);
            }
         }
         shStart=null;preShSnap=null;return;
       }
-      if(tool==='lasso'){
-        isDrawing=false;
-        if(typeof finishLasso==='function') finishLasso();
-        return;
-      }
+      if(tool==='lasso'){ isDrawing=false; if(typeof finishLasso==='function') finishLasso(); return; }
       if(!isDrawing)return;isDrawing=false;
       if(currentPath.length<2){currentPath=[];return;}
+      
       const s=currentPath._s||stStyle();
-      const stPath = currentPath.map(p=>({x:p.x,y:p.y,pressure:p.pressure}));
+      const stPath = currentPath.map(p=>({x:p.x,y:p.y,pressure:p.pressure,w:p.w}));
       getPg(curPage).strokes.push({path:stPath,tool,color:s.color,size:s.size,alpha:s.alpha,composite:s.comp});
       undoSt.push({pg:curPage});currentPath=[];trigSave();
       redraw();
     }
 
-    function renderLive(){redraw();if(currentPath.length<2)return;drawPath(currentPath,currentPath._s||stStyle());}
+    function drainBufferAndRender() {
+       if(!isDrawing) return;
+       if(_pendingPoints.length > 0) {
+           const s = currentPath._s || stStyle();
+           ctx.globalAlpha = s.alpha || 1;
+           ctx.globalCompositeOperation = s.comp || 'source-over';
+           ctx.strokeStyle = s.color;
+           ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+           
+           while(_pendingPoints.length > 0) {
+              const pt = _pendingPoints.shift();
+              currentPath.push(pt);
+              const len = currentPath.length;
+              if(len === 1) { pt.w = s.size; continue; }
+              if(len === 2) {
+                 pt.w = s.size * (0.4 + (pt.pressure||0.5)*0.8);
+                 ctx.beginPath(); ctx.moveTo(currentPath[0].x, currentPath[0].y);
+                 ctx.lineTo(pt.x, pt.y); ctx.lineWidth = pt.w; ctx.stroke();
+                 continue;
+              }
+              const p0 = currentPath[len-3], p1 = currentPath[len-2], p2 = pt;
+              
+              const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+              const tf = Math.max(1, p2.time - p1.time);
+              const velocity = dist / tf;
+              const vFactor = Math.max(0, Math.min(1, velocity / 3.0));
+              const dynPressure = _activePointerType === 'pen' ? p2.pressure : 1.0;
+              
+              pt.w = s.size * (1.1 - vFactor * 0.5) * (0.4 + dynPressure * 0.6);
+              
+              const mid1x = (p0.x + p1.x)/2, mid1y = (p0.y + p1.y)/2;
+              const mid2x = (p1.x + p2.x)/2, mid2y = (p1.y + p2.y)/2;
+              
+              ctx.beginPath(); ctx.moveTo(mid1x, mid1y);
+              ctx.quadraticCurveTo(p1.x, p1.y, mid2x, mid2y);
+              ctx.lineWidth = pt.w; ctx.stroke();
+           }
+       }
+       if(isDrawing) _rafId = requestAnimationFrame(drainBufferAndRender);
+    }
+
     function redraw(){ctx.clearRect(0,0,dwC.width,dwC.height);const pg=getPg(curPage);if(pg.strokes)pg.strokes.forEach(s=>drawStroke(s));}
     function drawStroke(s){if(s.type==='shape'){drawShFromSt(s);return;}if(s.type==='text'){drawTxFromSt(s);return;}if(!s.path||s.path.length<2)return;drawPath(s.path,s);}
     function drawPath(path,style){
       ctx.globalAlpha=style.alpha||1;ctx.globalCompositeOperation=style.composite||style.comp||'source-over';
       ctx.strokeStyle=style.color;ctx.lineCap='round';ctx.lineJoin='round';
-      ctx.beginPath();ctx.moveTo(path[0].x,path[0].y);
-      for(let i=1;i<path.length-1;i++){
-        ctx.lineWidth=style.size*(0.5+(path[i].pressure||0.5)*0.8);
-        ctx.quadraticCurveTo(path[i].x,path[i].y,(path[i].x+path[i+1].x)/2,(path[i].y+path[i+1].y)/2);
+      
+      if(path.length === 1) {
+         ctx.beginPath(); ctx.arc(path[0].x,path[0].y,(path[0].w||style.size)/2,0,Math.PI*2);
+         ctx.fillStyle=style.color; ctx.fill(); return;
       }
-      ctx.lineTo(path[path.length-1].x,path[path.length-1].y);ctx.stroke();
+
+      ctx.beginPath(); ctx.moveTo(path[0].x,path[0].y);
+      ctx.lineTo((path[0].x+path[1].x)/2, (path[0].y+path[1].y)/2);
+      ctx.lineWidth = path[1].w || style.size; ctx.stroke();
+
+      for(let i=1;i<path.length-1;i++){
+        ctx.beginPath();
+        const mid1x = (path[i-1].x + path[i].x)/2;  const mid1y = (path[i-1].y + path[i].y)/2;
+        const mid2x = (path[i].x + path[i+1].x)/2;  const mid2y = (path[i].y + path[i+1].y)/2;
+        ctx.moveTo(mid1x, mid1y);
+        ctx.quadraticCurveTo(path[i].x, path[i].y, mid2x, mid2y);
+        ctx.lineWidth = path[i+1].w || style.size*(0.5+(path[i+1].pressure||0.5)*0.8);
+        ctx.stroke();
+      }
+      
+      ctx.beginPath();
+      const last = path.length-1;
+      ctx.moveTo((path[last-1].x+path[last].x)/2, (path[last-1].y+path[last].y)/2);
+      ctx.lineTo(path[last].x, path[last].y);
+      ctx.lineWidth = path[last].w || style.size; ctx.stroke();
+      
       ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
     }
   </script>
