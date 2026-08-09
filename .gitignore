@@ -1,3 +1,19 @@
-node_modules
+# Dependencies
+node_modules/
+
+# OS Files
 .DS_Store
+Thumbs.db
+
+# Build & Release Output
 releases/
+dist/
+build/
+*.deb
+*.dmg
+
+# Temporary Patch / Scratch Files
+*.patch
+*.log
+.idea/
+.vscode/

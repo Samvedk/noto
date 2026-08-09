@@ -1,0 +1,14 @@
+{
+  "packs": [
+    {
+      "gradeName": "Class 11",
+      "gradeEmoji": "🎒",
+      "subjectName": "Physics",
+      "subjectEmoji": "⚛️",
+      "folder": "physics/",
+      "pages": [
+        "page1.png"
+      ]
+    }
+  ]
+}

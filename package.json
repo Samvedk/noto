@@ -4,7 +4,11 @@
   "description": "A premium digital notebook app built by Sam.",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "build:radxa": "electron-builder --linux --arm64",
+    "build:mac": "electron-builder --mac",
+    "start:b2b": "electron . --b2b",
+    "start:kiosk": "electron . --b2b --kiosk"
   },
   "repository": {
     "type": "git",
@@ -18,15 +22,21 @@
     "url": "https://github.com/Samvedk/Noto-/issues"
   },
   "homepage": "https://github.com/Samvedk/Noto-#readme",
-  "devDependencies": {
-    "@tauri-apps/cli": "^2.10.1",
-    "electron": "^41.0.3"
+  "build": {
+    "appId": "com.noto.b2b",
+    "productName": "Noto",
+    "files": ["main.js", "preload.js", "publicnotostudentpro1/**/*", "package.json"],
+    "linux": {
+      "target": "deb",
+      "arch": ["arm64"],
+      "category": "Education"
+    },
+    "mac": {
+      "target": "dmg"
+    }
   },
-  "dependencies": {
-    "@capacitor/android": "^8.3.0",
-    "@capacitor/app": "^8.1.0",
-    "@capacitor/cli": "^8.3.0",
-    "@capacitor/core": "^8.3.0",
-    "@capacitor/status-bar": "^8.0.2"
+  "devDependencies": {
+    "electron": "^41.0.3",
+    "electron-builder": "^26.0.0"
   }
 }

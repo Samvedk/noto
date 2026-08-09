@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <title>Noto — Pro Exam Center</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+  <style>
+    /* ── CORE STYLES (PARITY WITH page.html) ── */
+    :root {
+      --black: #0a0a0a; --white: #fafafa; --g50: #f9f9f9; --g100: #f2f2f2; --g200: #e5e5e5;
+      --g300: #d4d4d4; --g400: #a3a3a3; --g500: #737373; --g800: #262626;
+      --accent: #2980b9; --success: #10b981; --danger: #ef4444;
+      --page-bg: #fff; --ff: 'DM Sans', system-ui, sans-serif; --fd: 'DM Serif Display', serif;
+      --radius: 12px; --r16: 16px; --r99: 9999px; --sh: 0 4px 20px rgba(0,0,0,0.06);
+      --ease: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+      --tbh: 54px; --bbh: 50px;
+    }
+    [data-theme="dark"] { --black: #f5f5f5; --white: #0a0a0a; --g50: #171717; --g100: #262626; --g200: #404040; --g800: #e5e5e5; --accent: #3498db; --page-bg:#1c1c1c; }
+
+    * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+    html, body { width:100%; height:100%; overflow:hidden; background:var(--white); color:var(--black); font-family:var(--ff); touch-action:none; }
+    .app { width:100%; height:100%; display:flex; flex-direction:column; position:relative; }
+
+    /* DASHBOARD */
+    .screen { position:absolute; inset:0; opacity:0; pointer-events:none; transition:all 0.3s ease; background:var(--white); display:none; }
+    .screen.active { opacity:1; pointer-events:all; display:flex; flex-direction:column; }
+    #dashScreen { padding:40px 24px 100px; overflow-y:auto; display:none; }
+    #dashScreen.active { display:block; }
+    .header { max-width:800px; margin:0 auto 40px; }
+    .title { font-family:var(--fd); font-size:42px; font-weight:400; margin-bottom:8px; }
+    .subtitle { font-size:15px; color:var(--g500); font-weight:300; }
+    .btn-new { display:inline-flex; align-items:center; gap:8px; padding:12px 24px; background:var(--black); color:var(--white); border-radius:30px; border:none; font-weight:500; font-size:14px; cursor:pointer; transition:var(--ease); margin-top:20px; }
+    .btn-new:hover { transform:scale(1.02); box-shadow:0 8px 24px rgba(0,0,0,0.15); }
+    .exam-card { background:var(--g50); border:1px solid var(--g200); padding:20px 24px; border-radius:16px; display:flex; align-items:center; justify-content:space-between; transition:var(--ease); cursor:pointer; margin-bottom:12px; position:relative; overflow:hidden; }
+    .exam-card::before { content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--g300); transition:var(--ease); }
+    .exam-card:hover { border-color:var(--g300); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.06); }
+    .exam-card.graded::before { background:var(--success); }
+    .exam-card.pending::before { background:var(--accent); }
+    .ec-info h3 { font-family:var(--fd); font-size:18px; margin-bottom:4px; }
+    .ec-info p { font-size:12px; color:var(--g500); }
+    .ec-meta { display:flex; gap:8px; margin-top:8px; }
+    .ec-meta-pill { font-size:10px; font-weight:600; padding:3px 10px; border-radius:20px; background:var(--g100); color:var(--g500); display:inline-flex; align-items:center; gap:4px; }
+    .ec-status { font-size:10px; font-weight:700; text-transform:uppercase; padding:5px 12px; border-radius:20px; letter-spacing:0.05em; }
+    .ec-status.done { background:rgba(16,185,129,0.12); color:var(--success); }
+    .ec-status.pending-s { background:rgba(41,128,185,0.12); color:var(--accent); }
+
+    /* SETUP MODAL */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center; z-index:1000; opacity:0; pointer-events:none; transition:var(--ease); }
+    .modal-overlay.active { opacity:1; pointer-events:all; }
+    .modal { width:90%; max-width:500px; background:var(--white); border-radius:20px; padding:32px; box-shadow:0 20px 60px rgba(0,0,0,0.2); }
+    .f-input { width:100%; padding:12px 16px; border-radius:var(--radius); border:1.5px solid var(--g200); font-family:var(--ff); font-size:14px; background:var(--g50); outline:none; }
+    .f-label { display:block; font-size:11px; font-weight:600; color:var(--g500); text-transform:uppercase; margin-bottom:6px; letter-spacing:0.05em; }
+    .f-group { margin-bottom:16px; }
+    .f-input:focus { border-color:var(--black); background:var(--white); transition:var(--ease); }
+
+    /* TIMER URGENCY */
+    .timer-badge.urgent { background:#ef4444; animation:timerPulse 1s ease-in-out infinite; }
+    @keyframes timerPulse { 0%,100%{transform:scale(1);} 50%{transform:scale(1.06);} }
+
+    /* ── NATIVE UI BLOCKS (page.html) ── */
+    .tb { flex-shrink:0; height:var(--tbh); display:flex; align-items:center; justify-content:space-between; padding:0 12px; background:var(--white); border-bottom:1px solid var(--g200); z-index:400; gap:8px; }
+    .tb-l, .tb-r { display:flex; align-items:center; gap:6px; }
+    .tb-c { flex:1; display:flex; align-items:center; justify-content:center; }
+    .pgc { display:flex; align-items:center; gap:5px; background:var(--g100); border-radius:var(--r99); padding:4px 10px; }
+    .pgc-btn { width:22px; height:22px; border:none; background:var(--white); border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .pgc-n { font-size:11px; font-weight:600; min-width:46px; text-align:center; }
+    .timer-badge { background:var(--black); color:white; padding:4px 12px; border-radius:var(--r99); font-size:11px; font-weight:700; font-variant-numeric: tabular-nums; }
+    
+    .ca { flex:1; overflow:hidden; display:flex; align-items:center; justify-content:center; position:relative; background:var(--g100); }
+    .zc { position:absolute; transform-origin:0 0; will-change:transform; }
+    .ps { position:relative; background:var(--page-bg); box-shadow:0 4px 40px rgba(0,0,0,0.13); border-radius:2px; overflow:hidden; }
+    #bgC { display:block; position:absolute; top:0; left:0; pointer-events:none; }
+    #dwC { display:block; position:relative; z-index:2; touch-action:none; }
+    #actC { position:absolute; top:0; left:0; pointer-events:none; z-index:3; }
+    .ds-layer { position:absolute; inset:0; pointer-events:none; z-index:5; }
+    .tx-layer { position:absolute; inset:0; pointer-events:none; z-index:6; }
+
+    /* FOCUS MODE STYLES */
+    body.focus .tb { transform:translateY(-100%); opacity:0; pointer-events:none; }
+    body.focus .bb { transform:translateY(100%); opacity:0; pointer-events:none; }
+    body.focus .ftb { opacity:0; pointer-events:none; }
+    .focus-hint { position:fixed; bottom:14px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,.6); backdrop-filter:blur(8px); color:#fff; font-size:11px; padding:8px 18px; border-radius:var(--r99); z-index:9999; opacity:0; pointer-events:none; transition:opacity .3s; white-space:nowrap; border:1px solid rgba(255,255,255,.12); }
+    body.focus .focus-hint { opacity:1; }
+    .ftb { position:absolute; left:8px; top:25%; transform:translateY(-50%); z-index:150; display:flex; flex-direction:column; align-items:center; }
+    .ftb-card { background:var(--white); border:1.5px solid var(--g200); border-radius:22px; padding:6px 4px; display:flex; flex-direction:column; align-items:center; gap:2px; box-shadow:0 8px 32px rgba(0,0,0,0.13),0 2px 8px rgba(0,0,0,0.06); transition:max-height .35s cubic-bezier(0.4, 0, 0.2, 1), padding .25s, opacity .25s; overflow:hidden; max-height:600px; }
+    .ftb.collapsed .ftb-card { max-height:44px; padding:4px; }
+    .ftb-toggle { width:36px; height:36px; border:none; background:transparent; border-radius:10px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:var(--ease); flex-shrink:0; }
+    .ftb-toggle:hover { background:var(--g100); }
+    .ftb-toggle svg { width:14px; height:14px; stroke:var(--g500); fill:none; stroke-width:2.2; stroke-linecap:round; stroke-linejoin:round; transition:transform .3s; }
+    .ftb.collapsed .ftb-toggle svg { transform:rotate(180deg); }
+    .ftb-tools { display:flex; flex-direction:column; gap:2px; align-items:center; overflow:hidden; transition:max-height .35s cubic-bezier(0.4, 0, 0.2, 1), opacity .25s; max-height:500px; opacity:1; }
+    .ftb.collapsed .ftb-tools { max-height:0; opacity:0; pointer-events:none; }
+    
+    .t-btn { width:36px; height:36px; border-radius:10px; border:none; background:transparent; display:flex; align-items:center; justify-content:center; cursor:pointer; position:relative; transition:var(--ease); }
+    .t-btn:hover { background:var(--g100); }
+    .t-btn.on { background:var(--black); }
+    .t-btn svg { width:16px; height:16px; stroke:var(--g500); fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; position:relative; z-index:2; transition:stroke .2s; }
+    .t-btn:hover svg { stroke:var(--black); }
+    .t-btn.on svg { stroke:var(--white); }
+    .t-sep { width:20px; height:1px; background:var(--g200); margin:2px auto; }
+    .t-btn .tool-active-dot { position:absolute; top:3px; right:3px; width:5px; height:5px; border-radius:50%; background:#0a84ff; opacity:0; transition:opacity .2s; }
+    .t-btn.on .tool-active-dot { opacity:1; }
+
+    /* RADIAL MENU */
+    .radial-bg { position:fixed; inset:0; z-index:8998; display:none; }
+    .radial-bg.show { display:block; }
+    .radial-menu { position:fixed; z-index:8999; pointer-events:none; opacity:0; transition:opacity .18s ease; }
+    .radial-menu.show { opacity:1; pointer-events:all; }
+    .radial-item { position:absolute; transform:translate(-50%,-50%) scale(0.7); border-radius:50%; cursor:pointer; transition:transform .22s cubic-bezier(0.34,1.56,0.64,1), box-shadow .18s, border-color .15s; display:flex; align-items:center; justify-content:center; will-change:transform; }
+    .radial-menu.show .radial-item { transform:translate(-50%,-50%) scale(1); }
+    .radial-item.size-item { width:34px; height:34px; background:var(--white); border:1.5px solid var(--g200); box-shadow:0 2px 10px rgba(0,0,0,0.10); }
+    .radial-item.size-item:hover, .radial-item.size-item.active { border-color:var(--black); background:var(--g50); box-shadow:0 4px 18px rgba(0,0,0,0.15); }
+    .radial-item.size-item.active { transform:translate(-50%,-50%) scale(1.12); }
+    .radial-item.color-item { width:28px; height:28px; border:3px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,0.18); }
+    .radial-item.color-item:hover { box-shadow:0 4px 16px rgba(0,0,0,0.25); transform:translate(-50%,-50%) scale(1.18); }
+    .radial-item.color-item.active { border-color:var(--black); transform:translate(-50%,-50%) scale(1.22); box-shadow:0 4px 16px rgba(0,0,0,0.28); }
+    .radial-center { position:absolute; width:46px; height:46px; background:var(--white); border:2px solid var(--g300); border-radius:50%; display:flex; align-items:center; justify-content:center; transform:translate(-50%,-50%); box-shadow:0 4px 18px rgba(0,0,0,0.12); cursor:pointer; transition:all .2s; z-index:1; }
+    .radial-center:hover { background:var(--g100); }
+    .radial-center svg { width:16px; height:16px; stroke:var(--g500); fill:none; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; }
+
+    /* RULER */
+    #rulerOverlay { position:absolute; top:0; left:0; right:0; pointer-events:none; z-index:8; display:none; }
+    #rulerOverlay.show { display:block; pointer-events:all; cursor:ew-resize; }
+    .ruler-h-canvas { display:block; width:100%; height:28px; }
+    #rulerVOverlay { position:absolute; top:0; left:0; bottom:0; width:28px; pointer-events:none; z-index:8; display:none; }
+    #rulerVOverlay.show { display:block; pointer-events:all; cursor:ns-resize; }
+    .ruler-v-canvas { display:block; height:100%; width:28px; }
+    
+    .sp { position:absolute; left:62px; top:50%; transform:translateY(-50%); z-index:140; background:var(--white); border:1.5px solid var(--g200); border-radius:var(--r16); padding:13px; box-shadow:var(--sh); width:170px; display:none; }
+    .sp.show { display:block; animation:pIn 0.18s ease; }
+    @keyframes pIn{from{opacity:0;transform:translateY(-50%) scale(.95)}to{opacity:1;transform:translateY(-50%) scale(1)}}
+    .sp-lbl { font-size:9px; font-weight:700; text-transform:uppercase; color:var(--g400); margin-bottom:8px; letter-spacing:0.1em; }
+    .cl-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:5px; }
+    .cl-sw { width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
+    .cl-sw.on { border-color:var(--black); transform:scale(1.1); }
+    .sz-row { display:flex; gap:6px; margin:10px 0; }
+    .sz-opt { width:30px; height:30px; border-radius:50%; border:1.5px solid var(--g200); background:var(--white); display:flex; align-items:center; justify-content:center; cursor:pointer; }
+    .sz-opt.on { border-color:var(--black); background:var(--g100); }
+
+    .pptb { position:absolute; pointer-events:all; border:2px solid var(--accent); border-radius:3px; background:rgba(255,255,255,.97); box-shadow:0 3px 20px rgba(41,128,185,.22); display:flex; flex-direction:column; min-width:130px; }
+    .pptb-bar { height:24px; background:var(--accent); display:flex; align-items:center; justify-content:space-between; padding:0 8px; cursor:move; }
+    .pptb-btn { padding:2px 8px; border:none; border-radius:10px; font-size:9px; font-weight:700; cursor:pointer; }
+
+    .bb { flex-shrink:0; height:var(--bbh); background:var(--white); border-top:1px solid var(--g200); display:flex; align-items:center; justify-content:space-between; padding:0 14px; z-index:200; }
+    .bb-opt { display:flex; align-items:center; gap:6px; padding:6px 10px; border:1.5px solid var(--g200); border-radius:var(--r99); background:transparent; font-size:11px; font-weight:500; cursor:pointer; transition:var(--ease); color:var(--g500); }
+    .bb-opt:hover { border-color:var(--black); color:var(--black); }
+    .bb-opt.on { border-color:var(--black); color:var(--black); background:var(--g100); font-weight:700; }
+
+    .submit-wrap { position:fixed; bottom:80px; right:20px; z-index:500; }
+    .btn-submit { background:var(--danger); color:white; padding:12px 28px; border-radius:30px; border:none; font-weight:700; font-size:13px; box-shadow:0 8px 30px rgba(239,68,68,0.3); cursor:pointer; }
+    .btn-submit:hover { transform:scale(1.05); }
+
+    .sh-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:7px; }
+    .sh-opt { aspect-ratio:1; border-radius:8px; border:1.5px solid var(--g200); background:var(--g50); display:flex; flex-direction:column; align-items:center; justify-content:center; cursor:pointer; font-size:8px; font-weight:600; }
+    .sh-opt.on { border-color:var(--black); background:var(--g100); }
+    .sh-opt svg { width:18px; height:18px; stroke:currentColor; stroke-width:1.8; fill:none; }
+
+    .eval-overlay { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:var(--black); color:white; padding:10px 24px; border-radius:40px; display:flex; gap:20px; align-items:center; z-index:550; box-shadow:0 12px 40px rgba(0,0,0,0.5); }
+    .eval-stamp { position:absolute; font-size:60px; pointer-events:none; z-index:100; transform:translate(-50%, -50%); -webkit-text-stroke: 1px white; }
+
+    .hidden { display:none !important; }
+    .dots-dropdown { position:absolute; top:40px; right:0; background:var(--white); border:1px solid var(--g200); border-radius:12px; box-shadow:var(--sh); padding:8px; z-index:50; display:none; min-width:180px; }
+    .dots-dropdown.active { display:block; }
+    .drop-item { display:flex; align-items:center; gap:10px; padding:10px 14px; font-size:13px; border-radius:8px; cursor:pointer; transition:var(--ease); color:var(--g800); }
+    .drop-item:hover { background:var(--g100); }
+  </style>
+  <link rel="stylesheet" href="paper-glass.css">
+  <link rel="stylesheet" href="noto.css">
+  <style>
+    /* Prevent default active screen hiding when using pg-app */
+    #dashScreen.pg-app { display: none; }
+    #dashScreen.pg-app.active { display: block; }
+  </style>
+</head>
+<body class="paper-bg">
+
+<div class="app">
+  <!-- PAGE TRANSITION OVERLAY -->
+  <div class="pg-transition-overlay" id="transitionOverlay"></div>
+
+  <!-- DASHBOARD -->
+  <div id="dashScreen" class="pg-app active">
+    <div class="pg-app-body">
+      <main class="pg-app-main" style="padding: 48px;">
+        <header class="pg-topbar" style="margin-bottom: 48px;">
+          <div class="pg-topbar-left">
+            <h1 style="font-family: var(--font-display); font-size: 36px; margin-bottom: 8px;">Exam Center</h1>
+            <p style="color: var(--text-muted);">Secure digital evaluation for professional notebooks.</p>
+          </div>
+          <div class="pg-topbar-right" style="gap: 16px;">
+            <button class="pg-btn-secondary" onclick="location.href='index.html'">
+              <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" fill="none" stroke-width="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Exit
+            </button>
+            <button class="pg-btn-primary" onclick="showSetup()">Start New Exam</button>
+          </div>
+        </header>
+        <div class="pg-section-header">
+          <span class="pg-section-label">Exam History</span>
+        </div>
+        <div id="examList" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px;"></div>
+      </main>
+    </div>
+  </div>
+
+  <!-- SETUP MODAL -->
+  <div id="setupModal" class="pg-modal-backdrop">
+    <form class="pg-modal" onsubmit="startExam(event)">
+      <h2 class="pg-modal-title">Exam Registration</h2>
+      <p class="pg-modal-subtitle">Configure session details.</p>
+      
+      <div class="pg-input-group">
+        <label class="pg-input-label">Student Name</label>
+        <input type="text" id="sName" class="pg-input-field" required/>
+      </div>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+        <div class="pg-input-group">
+          <label class="pg-input-label">PRN Number</label>
+          <input type="text" id="sPrn" class="pg-input-field" required/>
+        </div>
+        <div class="pg-input-group">
+          <label class="pg-input-label">Total Marks</label>
+          <input type="number" id="sTotalMarks" class="pg-input-field" value="100" required/>
+        </div>
+      </div>
+      
+      <div class="pg-input-group">
+        <label class="pg-input-label">Subject Topic</label>
+        <input type="text" id="sTopic" class="pg-input-field" required/>
+      </div>
+      
+      <div class="pg-input-group">
+        <label class="pg-input-label">Duration (HH:MM)</label>
+        <div style="display:flex; gap:10px; align-items:center;">
+          <input type="number" id="tHH" class="pg-input-field" value="0" style="width:70px"/>
+          <span style="font-weight:700; color: var(--text-main);">:</span>
+          <input type="number" id="tMM" class="pg-input-field" value="60" style="width:70px"/>
+        </div>
+      </div>
+      
+      <div class="pg-modal-actions">
+        <button type="button" class="pg-btn-secondary" onclick="hideSetup()">Cancel</button>
+        <button type="submit" class="pg-btn-primary">Start Session</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- LIVE PRO EXAM ENVIRONMENT -->
+  <div id="liveExam" class="screen">
+    <header class="tb">
+      <div class="tb-l">
+        <button id="examBackBtn" class="bb-opt" onclick="exitToDashboard()"><svg viewBox="0 0 24 24" width="12" height="12" stroke="currentColor" fill="none" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg> Back</button>
+        <span id="liveTitle" style="font-size:12px; font-weight:700; margin-left:8px;">Calculus III</span>
+      </div>
+      <div class="tb-c">
+        <div class="pgc">
+          <button class="pgc-btn" id="prevBtn" onclick="prevPg()"><svg viewBox="0 0 24 24" width="10" height="10" stroke="black" fill="none" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg></button>
+          <span class="pgc-n" id="pgNum">1 / 10</span>
+          <button class="pgc-btn" id="nextBtn" onclick="nextPg()"><svg viewBox="0 0 24 24" width="10" height="10" stroke="black" fill="none" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg></button>
+        </div>
+        <div id="liveTimer" class="timer-badge" style="margin-left:12px;">01:00:00</div>
+      </div>
+      <div class="tb-r">
+        <button class="t-btn" style="width:32px; height:32px;" onclick="toggleFocus()" title="Enter Focus Mode"><svg viewBox="0 0 24 24"><path d="M3 8V5a2 2 0 0 1 2-2h3M21 8V5a2 2 0 0 0-2-2h-3M3 16v3a2 2 0 0 0 2 2h3M21 16v3a2 2 0 0 1-2 2h-3"/></svg></button>
+        <button class="t-btn" style="width:32px; height:32px;" onclick="resetZoom()" title="Reset Zoom"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg></button>
+        <button class="t-btn" style="width:32px; height:32px;" onclick="doUndo()" title="Undo stroke"><svg viewBox="0 0 24 24"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.5"/></svg></button>
+        <button class="t-btn" style="width:32px; height:32px;" onclick="doRedo()" title="Redo stroke"><svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-.49-4.5"/></svg></button>
+        <button class="t-btn" style="width:32px; height:32px;" onclick="clearPage()" title="Clear content"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg></button>
+      </div>
+    </header>
+
+    <div class="ca" id="ca">
+      <!-- FLOATING COLLAPSIBLE TOOLBAR -->
+      <div class="ftb" id="dtb">
+        <div class="ftb-card">
+          <button class="ftb-toggle" onclick="event.stopPropagation(); toggleFtb()" title="Collapse toolbar">
+            <svg viewBox="0 0 24 24"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+          <div class="ftb-tools">
+            <button class="t-btn on" id="tPen" data-tip="Pen" onclick="event.stopPropagation(); handleToolTap(event,'pen')"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg><span class="tool-active-dot"></span></button>
+            <button class="t-btn" id="tHL" data-tip="Highlighter" onclick="event.stopPropagation(); handleToolTap(event,'highlight')"><svg viewBox="0 0 24 24"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg><span class="tool-active-dot"></span></button>
+            <button class="t-btn" id="tEraser" data-tip="Eraser" onclick="event.stopPropagation(); handleToolTap(event,'eraser')"><svg viewBox="0 0 24 24"><path d="m20 20-8.5-8.5M4 20h16M7 17 3 13l9-9 7 7"/></svg><span class="tool-active-dot"></span></button>
+            <div class="t-sep"></div>
+            <button class="t-btn" id="tShape" data-tip="Shapes" onclick="event.stopPropagation(); toggleShapeP()"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><circle cx="17.5" cy="6.5" r="3.5"/><polygon points="12,21 3,14 21,14"/></svg></button>
+            <button class="t-btn" id="tText" data-tip="Text Box" onclick="event.stopPropagation(); activateText()"><svg viewBox="0 0 24 24"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg></button>
+            <div class="t-sep"></div>
+            <button class="t-btn" id="tRuler" data-tip="Ruler" onclick="event.stopPropagation(); toggleRuler()"><svg viewBox="0 0 24 24"><rect x="2" y="8" width="20" height="8" rx="1"/><line x1="6" y1="12" x2="6" y2="14"/><line x1="10" y1="12" x2="10" y2="15"/><line x1="14" y1="12" x2="14" y2="14"/><line x1="18" y1="12" x2="18" y2="15"/></svg></button>
+            <div class="t-sep"></div>
+            <button class="t-btn" id="tOpts" onclick="event.stopPropagation(); togglePenP()"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M5.6 5.6l1.4 1.4M16.6 5.6l-1.4 1.4M5.6 18.4l1.4-1.4M16.6 18.4l-1.4-1.4M2 12h2M20 12h2M12 2v2M12 20v2"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SETTINGS PANELS -->
+      <div class="sp" id="penPanel"><div class="sp-lbl">Pen Size</div><div class="sz-row" id="szRow"></div><div class="sp-lbl">Colour</div><div class="cl-grid" id="clGrid"></div></div>
+      <div class="sp" id="eraserPanel"><div class="sp-lbl">Eraser Size</div><div class="sz-row" id="erRow"></div></div>
+      <div class="sp" id="shapePanel"><div class="sp-lbl">Select Shape</div><div class="sh-grid" id="shGrid"></div></div>
+
+      <div class="zc" id="zc">
+        <div class="ps" id="ps">
+          <canvas id="bgC"></canvas>
+          <canvas id="dwC"></canvas>
+          <canvas id="actC"></canvas>
+          <div class="ds-layer" id="dsLayer"></div>
+          <div class="tx-layer" id="txLayer"></div>
+          <div id="rulerOverlay"><canvas class="ruler-h-canvas" id="rulerHCanvas"></canvas></div>
+          <div id="rulerVOverlay"><canvas class="ruler-v-canvas" id="rulerVCanvas"></canvas></div>
+        </div>
+      </div>
+
+      <div id="finishBar" class="submit-wrap">
+        <button class="btn-submit" onclick="confirmEnd()">SUBMIT ANSWERSHEET ✓</button>
+      </div>
+    </div>
+    
+    <div class="focus-hint">✦ Double-tap stylus to exit focus</div>
+
+    <footer class="bb">
+      <div class="bb-l" style="display:flex; gap:8px; align-items:center;">
+        <button class="bb-opt" id="pgTypeLined" onclick="setPgType('lined')">Lined</button>
+        <button class="bb-opt" id="pgTypeBlank" onclick="setPgType('blank')">Blank</button>
+        <button class="bb-opt" id="pgTypeGraph" onclick="setPgType('graph')">Graph</button>
+        <button class="bb-opt" id="pgTypeDotted" onclick="setPgType('dotted')">Dotted</button>
+      </div>
+      <div class="bb-r"><button class="bb-opt" style="border-color:var(--black); color:var(--black); font-weight:600;" onclick="addPage()">+ Add Page</button></div>
+    </footer>
+  </div>
+
+  <!-- CHECKING MODE OVERLAY -->
+  <div id="evalBar" class="eval-overlay hidden">
+    <div style="font-size:10px; font-weight:800; color:rgba(255,255,255,0.4);">EVALUATING</div>
+    <div style="display:flex; gap:16px;">
+      <div class="t-btn" id="stCorrect" onclick="setStamp('correct')" style="font-size:24px;">✔</div>
+      <div class="t-btn" id="stWrong" onclick="setStamp('wrong')" style="font-size:24px;">✖</div>
+      <button class="t-btn" onclick="undoStamp()"><svg viewBox="0 0 24 24" stroke="white"><path d="M9 10L4 15l5 5M20 20a10 10 0 0 0-16-5"/></svg></button>
+    </div>
+    <button class="btn-submit" style="background:var(--success); padding:8px 18px;" onclick="showFinalEval()">Done Marking</button>
+  </div>
+
+  <!-- FINAL MODAL -->
+  <div id="evalModal" class="modal-overlay">
+    <div class="modal" style="max-width:440px;">
+      <h2 id="evalMarksLabel" style="font-family:var(--fd); font-size:24px; margin-bottom:12px; text-align:center;">Grade</h2>
+      <div class="f-group"><label class="f-label">Obtained Marks</label><input type="number" id="evalMarks" class="f-input" placeholder="85..."/></div>
+      <div class="f-group"><label class="f-label">Signature</label><div style="width:100%;height:150px;border:1px dashed #ccc;border-radius:8px;overflow:hidden;"><canvas id="sigCanvas" style="width:100%;height:100%"></canvas></div></div>
+      <button class="btn-new" style="width:100%" onclick="finalSubmit()">Publish Result ✓</button>
+    </div>
+  <!-- RADIAL SUB-MENU -->
+  <div class="radial-bg" id="radialBg" onclick="closeRadial()"></div>
+  <div class="radial-menu" id="radialMenu"></div>
+</div>
+
+<script src="js/renderer.js"></script>
+<script>
+  /* ── ENGINE STATE ── */
+  let activeExam = null, allExams = [], isChecking = false, isPreview = false;
+  let curPage = 1, totPages = 10, curPgType = 'lined';
+  const KEY_EXAMS = 'noto_exams_v3';
+
+  // Tools state (Parity with page.html)
+  let tool = 'pen', penCol = '#000', penSz = 3, txSize = 'medium', txCol = '#000', shType = 'rect', erSz = 16;
+  const PEN_SZS = [2, 4, 7, 12], ER_SZS = [8, 16, 28, 44], COLORS = ['#000000','#e74c3c','#2980b9','#27ae60','#8e44ad','#f39c12','#7f8c8d'];
+  const SHAPES = [{id:'rect',l:'Rect',svg:'<rect x="3" y="5" width="18" height="14" rx="1"/>'},{id:'circle',l:'Circle',svg:'<circle cx="12" cy="12" r="9"/>'},{id:'line',l:'Line',svg:'<line x1="4" y1="20" x2="20" y2="4"/>'}];
+  const TX_SZS = {small:15, medium:22, large:32};
+
+  async function loadHistory() { allExams = await notoDb.get(KEY_EXAMS, []); renderList(); }
+  function renderList() {
+    const list = document.getElementById('examList'); list.innerHTML = '';
+    if(!allExams.length) { list.innerHTML = `<div style="text-align:center; padding:80px 20px; color:var(--g400);"><div style="font-size:48px; margin-bottom:16px; opacity:0.4;">📝</div><div style="font-size:14px; font-weight:500;">No exams recorded yet.</div><div style="font-size:12px; margin-top:4px;">Tap "Start New Exam" to begin.</div></div>`; return; }
+    allExams.sort((a,b) => b.id - a.id).forEach(ex => {
+      const card = document.createElement('div'); card.className = 'pg-card ' + (ex.isChecked ? 'graded' : (ex.isSubmitted ? 'pending' : ''));
+      card.style.cursor = 'pointer';
+      card.onclick = () => { if(ex.isSubmitted && !ex.isChecked) enterCheckMode(ex.id); else previewExam(ex.id); };
+      const dur = ex.duration ? `${Math.floor(ex.duration/3600)}h ${Math.floor((ex.duration%3600)/60)}m` : '—';
+      const pct = ex.isChecked ? Math.round((ex.marks/ex.totalMarks)*100) : null;
+      card.innerHTML = `
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:16px;">
+          <div>
+            <h3 style="font-size:16px; font-weight:600; margin-bottom:4px;">${ex.topic}</h3>
+            <div style="font-size:12px; color:var(--text-muted);">${ex.studentName} • PRN: ${ex.prn || '—'}</div>
+          </div>
+          <span class="pg-badge ${ex.isChecked?'success':'pending'}">${ex.isChecked?'Graded':'Pending'}</span>
+        </div>
+        <div style="display:flex; gap:16px; font-size:12px; color:var(--text-muted);">
+          <span>⏱ ${dur}</span>
+          <span>📄 ${ex.pages ? ex.pages.length : '—'}</span>
+          <span>📊 ${ex.totalMarks} marks</span>
+          ${pct !== null ? `<span style="color:var(--success); font-weight:600;">${pct}%</span>` : ''}
+        </div>
+      `;
+      list.appendChild(card);
+    });
+  }
+
+  function showSetup() { document.getElementById('setupModal').classList.add('visible'); }
+  function hideSetup() { document.getElementById('setupModal').classList.remove('visible'); }
+
+  function startExam(e) {
+    e.preventDefault();
+    const secs = (parseInt(document.getElementById('tHH').value)||0)*3600 + (parseInt(document.getElementById('tMM').value)||60)*60;
+    activeExam = { id:Date.now(), studentName:document.getElementById('sName').value, prn:document.getElementById('sPrn').value, topic:document.getElementById('sTopic').value, totalMarks:parseInt(document.getElementById('sTotalMarks').value)||100, duration:secs, remaining:secs, isSubmitted:false, isChecked:false, marks:0, pages:[] };
+    for(let i=0; i<10; i++) activeExam.pages.push({ strokes: [], stamps: [], type:'lined' });
+    hideSetup(); curPage = 1; totPages = activeExam.pages.length; renderExam(false);
+  }
+
+  /* ── THE APPLE PENCIL PERFECTED ENGINE ── */
+  let dwC, bgC, actC, ca, ctx, bgCtx, actCtx, memC, memCtx, cachedPsRect;
+  let isDrawing = false, currentPath = [], pendingPoints = [], rafId = null, redoSt = [], undoSt = [];
+  let shStart = null, preShSnap = null, _activePointerId = null;
+  let Z = 1.0, pX = 0, pY = 0, baseX = 0, baseY = 0, cScale = 1;
+  const PAGE_W = 794, PAGE_H = 1050; // A4 Ratio
+  
+  // Palm Rejection & Focus State
+  let activePointerType = null;
+  let lastPenTime = 0;
+  let _focusTapTime = 0, _focusTapX = 0, _focusTapY = 0;
+
+  function initCanvas() {
+    ca=document.getElementById('ca'); dwC=document.getElementById('dwC'); bgC=document.getElementById('bgC'); actC=document.getElementById('actC');
+    if(!ca || !dwC) return;
+    ctx=dwC.getContext('2d'); bgCtx=bgC.getContext('2d'); actCtx=actC.getContext('2d');
+    
+    // REUSE MEMORY CANVAS TO PREVENT LEAKS
+    if(!memC) { memC=document.createElement('canvas'); memCtx=memC.getContext('2d'); }
+    
+    const r = ca.getBoundingClientRect();
+    if(r.width === 0) { setTimeout(initCanvas, 50); return; } // Wait for visibility
+    
+    const sc = Math.min(r.width*0.94/PAGE_W, r.height*0.94/PAGE_H);
+    const dW = Math.round(PAGE_W*sc), dH = Math.round(PAGE_H*sc);
+    const dpr = window.devicePixelRatio || 1;
+    
+    console.log(`Canvas Ready: ${dW}x${dH} (sc:${sc.toFixed(3)})`);
+    const ps = document.getElementById('ps'); ps.style.width=dW+'px'; ps.style.height=dH+'px';
+    [dwC,bgC,actC,memC].forEach(c=>{ c.width=dW*dpr; c.height=dH*dpr; c.style.width=dW+'px'; c.style.height=dH+'px'; });
+    [ctx,bgCtx,actCtx,memCtx].forEach(cx=>cx.setTransform(dpr,0,0,dpr,0,0));
+    
+    cScale = sc; baseX = (r.width-dW)/2; baseY = (r.height-dH)/2;
+    applyZoom(); drawBg(); redraw();
+    if (typeof renderRulers === 'function' && rulerActive) renderRulers();
+  }
+
+  function applyZoom(){ const zc=document.getElementById('zc'); zc.style.left=(baseX+pX)+'px'; zc.style.top=(baseY+pY)+'px'; zc.style.transform='scale('+Z+')'; }
+  function sc2cv(cx, cy) { 
+    const r = cachedPsRect || document.getElementById('ps').getBoundingClientRect(); 
+    return { 
+      x: (cx - r.left) / Z, 
+      y: (cy - r.top) / Z 
+    }; 
+  }
+
+  function drawBg() {
+    const w=bgC.width / (window.devicePixelRatio||1), h=bgC.height / (window.devicePixelRatio||1);
+    const t=activeExam.pages[curPage-1].type || 'lined';
+    bgCtx.clearRect(0,0,w,h); bgCtx.fillStyle='#fff'; bgCtx.fillRect(0,0,w,h);
+    if(t==='lined'){
+      const sp=Math.round(36*cScale), sy=Math.round(58*cScale);
+      bgCtx.strokeStyle='rgba(173,207,238,0.55)'; bgCtx.lineWidth=1;
+      for(let y=sy; y<h-16; y+=sp){ bgCtx.beginPath(); bgCtx.moveTo(18,y); bgCtx.lineTo(w-18,y); bgCtx.stroke(); }
+      bgCtx.strokeStyle='rgba(238,153,153,0.42)'; bgCtx.lineWidth=1.5;
+      bgCtx.beginPath(); bgCtx.moveTo(Math.round(78*cScale),0); bgCtx.lineTo(Math.round(78*cScale),h); bgCtx.stroke();
+    } else if(t==='graph'){
+      bgCtx.strokeStyle='rgba(173,207,238,0.42)'; bgCtx.lineWidth=0.7;
+      const step = Math.round(24*cScale);
+      for(let x=0; x<w; x+=step){ bgCtx.beginPath(); bgCtx.moveTo(x,0); bgCtx.lineTo(x,h); bgCtx.stroke(); }
+      for(let y=0; y<h; y+=step){ bgCtx.beginPath(); bgCtx.moveTo(0,y); bgCtx.lineTo(w,y); bgCtx.stroke(); }
+    } else if(t==='dotted'){
+      const sp=Math.round(24*cScale);
+      bgCtx.fillStyle='rgba(173,207,238,0.7)';
+      for(let x=sp/2; x<w; x+=sp){ for(let y=sp/2; y<h; y+=sp){ bgCtx.beginPath(); bgCtx.arc(x,y,1,0,Math.PI*2); bgCtx.fill(); } }
+    }
+  }
+
+  const tch=new Map(); let pinching=false, lastPD=null, lastPM=null;
+  function pd(p1,p2){return Math.sqrt((p1.clientX-p2.clientX)**2+(p1.clientY-p2.clientY)**2);}
+  function pm(p1,p2){return{clientX:(p1.clientX+p2.clientX)/2,clientY:(p1.clientY+p2.clientY)/2};}
+
+  function resetZoom() { Z=1; pX=0; pY=0; applyZoom(); }
+
+  function initZoomListeners() {
+    if(window._zoomBound) return;
+    ca.addEventListener('pointerdown', e => {
+      tch.set(e.pointerId, {clientX:e.clientX, clientY:e.clientY});
+      if(tch.size === 2) { pinching=true; isDrawing=false; const pts=[...tch.values()]; lastPD=pd(pts[0],pts[1]); lastPM=pm(pts[0],pts[1]); }
+    }, {passive:true});
+    ca.addEventListener('pointermove', e => {
+      if(!tch.has(e.pointerId)) return;
+      tch.set(e.pointerId, {clientX:e.clientX, clientY:e.clientY});
+      if(pinching && tch.size === 2) {
+        const pts=[...tch.values()]; const d=pd(pts[0],pts[1]), m=pm(pts[0],pts[1]);
+        if(lastPD && lastPM) {
+          const f=d/lastPD, nZ=Math.min(5, Math.max(0.5, Z*f));
+          const ar=ca.getBoundingClientRect();
+          const mx=m.clientX-ar.left, my=m.clientY-ar.top;
+          const cl=baseX+pX, ct=baseY+pY;
+          const ppx=(mx-cl)/Z, ppy=(my-ct)/Z;
+          pX=mx-baseX-ppx*nZ; pY=my-baseY-ppy*nZ;
+          pX+=m.clientX-lastPM.clientX; pY+=m.clientY-lastPM.clientY;
+          Z=nZ; lastPD=d; lastPM=m; applyZoom();
+        }
+      }
+    }, {passive:true});
+    const endTch=(e)=>{ tch.delete(e.pointerId); if(tch.size<2) { pinching=false; lastPD=null; lastPM=null; } };
+    ca.addEventListener('pointerup', endTch, {passive:true});
+    ca.addEventListener('pointercancel', endTch, {passive:true});
+
+    ca.addEventListener('wheel', e => {
+      e.preventDefault();
+      const ar=ca.getBoundingClientRect(), mx=e.clientX-ar.left, my=e.clientY-ar.top;
+      const nZ=Math.min(5, Math.max(0.5, Z*(e.deltaY>0?0.92:1.08)));
+      const cl=baseX+pX, ct=baseY+pY, ppx=(mx-cl)/Z, ppy=(my-ct)/Z;
+      pX=mx-baseX-ppx*nZ; pY=my-baseY-ppy*nZ; Z=nZ; applyZoom();
+    }, {passive:false});
+    window._zoomBound = true;
+  }
+
+  function onDown(e) {
+    if(isChecking){ placeStamp(e); return; }
+    if(isPreview || activeExam.isSubmitted) return;
+    
+    const tNow = Date.now();
+    
+    // ── Double-tap exits focus mode ──
+    if(document.body.classList.contains('focus')) {
+      const dx = Math.abs(e.clientX - _focusTapX);
+      const dy = Math.abs(e.clientY - _focusTapY);
+      if(tNow - _focusTapTime < 380 && dx < 44 && dy < 44) {
+        document.body.classList.remove('focus');
+        _focusTapTime = 0;
+        return; // Block drawing on the second tap
+      }
+      _focusTapTime = tNow; _focusTapX = e.clientX; _focusTapY = e.clientY;
+    }
+
+    // Strict Stylus Priority / Palm Rejection filtering
+    if (e.pointerType === 'pen') {
+        activePointerType = 'pen';
+        lastPenTime = tNow;
+    } else if (e.pointerType === 'touch') {
+        // If pen is active or was recently active, ignore touch entirely
+        if (activePointerType === 'pen' && (tNow - lastPenTime) < 5000) return;
+        // Ignore heavy contact area touches
+        if (e.width > 20 || e.height > 20) return;
+        if (!e.isPrimary) return;
+    }
+
+    if(_activePointerId !== null) return; 
+    _activePointerId = e.pointerId;
+    e.preventDefault(); e.stopPropagation();
+    dwC.setPointerCapture(e.pointerId);
+    
+    // CACHE RECT FOR LATENCY PERFORMANCE
+    cachedPsRect = document.getElementById('ps').getBoundingClientRect();
+    
+    const p = sc2cv(e.clientX, e.clientY);
+    if(tool === 'text'){ placeText(p); _activePointerId = null; return; }
+    isDrawing = true; redoSt = []; currentPath = [{x:p.x, y:p.y, pressure:e.pressure||0.5, time:Date.now()}];
+    if(tool==='shape') { shStart = p; preShSnap = ctx.getImageData(0,0,dwC.width,dwC.height); }
+    if(!rafId) rafId = requestAnimationFrame(renderLoop);
+  }
+
+  function onMove(e) {
+    if(!isDrawing || e.pointerId !== _activePointerId) return;
+    if(e.pointerType === 'pen') lastPenTime = Date.now();
+    
+    const p = sc2cv(e.clientX, e.clientY);
+    if(tool==='shape' && shStart){ ctx.putImageData(preShSnap,0,0); drawShPrev(shStart, p); return; }
+    pendingPoints.push({x:p.x, y:p.y, pressure:e.pressure||0.5, time:Date.now()});
+  }
+
+  function onUp(e) {
+    if(!isDrawing || e.pointerId !== _activePointerId) return;
+    // Process any remaining points in the queue
+    while(pendingPoints.length > 0) {
+      const pt = pendingPoints.shift(); currentPath.push(pt); 
+    }
+    isDrawing = false; _activePointerId = null;
+    actCtx.clearRect(0,0,actC.width*2,actC.height*2);
+    const pg = activeExam.pages[curPage-1];
+    if(tool==='shape' && shStart){ const p = sc2cv(e.clientX,e.clientY); const s = drawShPrev(shStart, p); if(s) pg.strokes.push(s); shStart=null; }
+    else if(currentPath.length > 1){ 
+      const sSize = tool==='eraser' ? erSz : penSz;
+      pg.strokes.push({ tool, color:penCol, size:sSize, alpha: tool==='highlight'?0.28:1, comp: tool==='highlight'?'multiply':'source-over', path: currentPath.map(pt=>({x:pt.x, y:pt.y, w:pt.w?pt.w*(sSize/penSz):sSize})) }); 
+    }
+    currentPath = []; redoSt = []; redraw(); 
+  }
+
+  function renderLoop() {
+    if (!isDrawing) { rafId = null; return; }
+    while(pendingPoints.length > 0) {
+      const pt = pendingPoints.shift(); currentPath.push(pt); 
+      const len = currentPath.length;
+      if(len > 2){
+         const p1=currentPath[len-2], p2=pt;
+         const dist=Math.hypot(p2.x-p1.x, p2.y-p1.y), tf=Math.max(1, p2.time-p1.time);
+         pt.w = penSz * (1.2 - Math.min(1, (dist/tf)/5.0)*0.7);
+      } else pt.w = penSz;
+    }
+    
+    actCtx.clearRect(0,0,PAGE_W*2,PAGE_H*2);
+    if(tool === 'highlight') { actCtx.globalAlpha = 0.28; actCtx.globalCompositeOperation = 'multiply'; }
+    else if(tool === 'eraser') { actCtx.globalAlpha = 0.4; actCtx.globalCompositeOperation = 'source-over'; actCtx.strokeStyle = '#ddd'; }
+    else { actCtx.globalAlpha = 1; actCtx.globalCompositeOperation = 'source-over'; actCtx.strokeStyle = penCol; }
+    
+    actCtx.lineCap = 'round'; actCtx.lineJoin = 'round';
+    const activeSize = tool==='eraser' ? erSz : penSz;
+    
+    if(currentPath.length > 1) {
+      actCtx.beginPath(); actCtx.moveTo(currentPath[0].x, currentPath[0].y);
+      for(let j=1; j<currentPath.length-1; j++) {
+        actCtx.quadraticCurveTo(currentPath[j].x, currentPath[j].y, (currentPath[j].x+currentPath[j+1].x)/2, (currentPath[j].y+currentPath[j+1].y)/2);
+        actCtx.lineWidth = currentPath[j+1].w || activeSize;
+      }
+      actCtx.stroke();
+    }
+    rafId = requestAnimationFrame(renderLoop);
+  }
+
+  function redraw() {
+    ctx.clearRect(0,0,dwC.width,dwC.height);
+    activeExam.pages[curPage-1].strokes.forEach(s => {
+      if(s.type==='shape') drawShFromSt(s);
+      else if(s.type==='text') drawTxFromSt(s);
+      else drawPath(ctx, s);
+    });
+    const pg = activeExam.pages[curPage-1];
+    const ly = document.getElementById('dsLayer'); ly.innerHTML = '';
+    if(pg.stamps) pg.stamps.forEach(st => {
+      const d = document.createElement('div'); d.className='eval-stamp'; d.innerHTML=st.type==='correct'?'✔':'✖';
+      const psRect = document.getElementById('ps').getBoundingClientRect();
+      d.style.left=(st.x)+'px'; d.style.top=(st.y)+'px'; d.style.color=st.type==='correct'?'var(--success)':'var(--danger)'; ly.appendChild(d);
+    });
+  }
+
+  function drawPath(targetCtx, s) {
+    const isEraser = (s.tool === 'eraser');
+    const isHL = (s.tool === 'highlight');
+    if(isHL) {
+      memCtx.clearRect(0,0,memC.width,memC.height);
+      memCtx.globalAlpha=1; memCtx.globalCompositeOperation='source-over';
+      renderPathExact(memCtx, s);
+      targetCtx.save(); targetCtx.resetTransform(); targetCtx.globalAlpha=0.28; targetCtx.globalCompositeOperation='multiply'; targetCtx.drawImage(memC,0,0); targetCtx.restore();
+    } else {
+      targetCtx.globalAlpha=1; targetCtx.globalCompositeOperation = isEraser ? 'destination-out' : 'source-over';
+      renderPathExact(targetCtx, s);
+    }
+  }
+  function renderPathExact(cx, s) {
+    cx.strokeStyle = s.tool==='eraser'?'#fff':s.color; cx.lineCap='round'; cx.lineJoin='round';
+    if(!s.path || !s.path.length) return;
+    if(s.path.length < 3) {
+      cx.beginPath(); cx.moveTo(s.path[0].x, s.path[0].y);
+      for(let i=1; i<s.path.length; i++){ cx.lineTo(s.path[i].x, s.path[i].y); cx.lineWidth = s.path[i].w || s.size || 3; cx.stroke(); }
+      return;
+    }
+    cx.beginPath(); cx.moveTo(s.path[0].x, s.path[0].y);
+    for(let i=1; i<s.path.length-1; i++){
+      cx.quadraticCurveTo(s.path[i].x, s.path[i].y, (s.path[i].x+s.path[i+1].x)/2, (s.path[i].y+s.path[i+1].y)/2);
+      cx.lineWidth = s.path[i+1].w || s.size || 3;
+      cx.stroke(); cx.beginPath(); cx.moveTo((s.path[i].x+s.path[i+1].x)/2, (s.path[i].y+s.path[i+1].y)/2);
+    }
+    cx.lineTo(s.path[s.path.length-1].x, s.path[s.path.length-1].y); cx.stroke();
+  }
+
+  function drawShPrev(s,e){
+    const x1=s.x, y1=s.y, x2=e.x, y2=e.y, w=x2-x1, h=y2-y1;
+    ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=penCol; ctx.lineWidth=penSz; ctx.beginPath();
+    if(shType==='rect') ctx.rect(x1, y1, w, h);
+    else if(shType==='square'){ const si=Math.min(Math.abs(w),Math.abs(h)); ctx.rect(x1, y1, Math.sign(w)*si, Math.sign(h)*si); }
+    else if(shType==='circle') ctx.ellipse(x1+w/2, y1+h/2, Math.abs(w)/2, Math.abs(h)/2, 0, 0, Math.PI*2);
+    else if(shType==='triangle'){ ctx.moveTo(x1+w/2, y1); ctx.lineTo(x2, y2); ctx.lineTo(x1, y2); ctx.closePath(); }
+    else if(shType==='line') { ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); }
+    else if(shType==='arrow'){ const hl=Math.min(22,Math.hypot(w,h)*.3),a=Math.atan2(h,w); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x2-hl*Math.cos(a-Math.PI/6),y2-hl*Math.sin(a-Math.PI/6)); ctx.moveTo(x2,y2); ctx.lineTo(x2-hl*Math.cos(a+Math.PI/6),y2-hl*Math.sin(a+Math.PI/6)); }
+    ctx.stroke(); return {type:'shape', shape:shType, x1, y1, x2, y2, color:penCol, size:penSz};
+  }
+  function drawShFromSt(s){
+    const x1=s.x1, y1=s.y1, x2=s.x2, y2=s.y2, w=x2-x1, h=y2-y1;
+    ctx.globalAlpha=1; ctx.globalCompositeOperation='source-over'; ctx.strokeStyle=s.color; ctx.lineWidth=s.size; ctx.beginPath();
+    if(s.shape==='rect') ctx.rect(x1, y1, w, h);
+    else if(s.shape==='square'){ const si=Math.min(Math.abs(w),Math.abs(h)); ctx.rect(x1, y1, Math.sign(w)*si, Math.sign(h)*si); }
+    else if(s.shape==='circle') ctx.ellipse(x1+w/2, y1+h/2, Math.abs(w)/2, Math.abs(h)/2, 0, 0, Math.PI*2);
+    else if(s.shape==='triangle'){ ctx.moveTo(x1+w/2, y1); ctx.lineTo(x2, y2); ctx.lineTo(x1, y2); ctx.closePath(); }
+    else if(s.shape==='line') { ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); }
+    else if(s.shape==='arrow'){ const hl=Math.min(22,Math.hypot(w,h)*.3),a=Math.atan2(h,w); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.lineTo(x2-hl*Math.cos(a-Math.PI/6),y2-hl*Math.sin(a-Math.PI/6)); ctx.moveTo(x2,y2); ctx.lineTo(x2-hl*Math.cos(a+Math.PI/6),y2-hl*Math.sin(a+Math.PI/12)); }
+    ctx.stroke();
+  }
+
+  /* ── EXAM LOGIC ── */
+  let timerInterval = null;
+  function renderExam(isPrev) {
+    isPreview = isPrev; document.getElementById('dashScreen').classList.remove('active'); document.getElementById('liveExam').classList.add('active');
+    document.getElementById('liveTitle').textContent = activeExam.topic;
+    updCounter(); 
+    document.getElementById('liveExam').style.display = 'flex';
+    const backBtn = document.getElementById('examBackBtn');
+    if(!isPreview && !isChecking && !activeExam.isSubmitted) { 
+      backBtn.style.setProperty('display', 'none', 'important'); 
+      if(timerInterval) clearInterval(timerInterval); 
+      timerInterval = setInterval(updateTimer, 1000); 
+    } else { 
+      backBtn.style.setProperty('display', 'flex', 'important'); 
+      clearInterval(timerInterval); 
+      if(activeExam.isSubmitted) document.getElementById('liveTimer').textContent = "LOCKED"; 
+    }
+    document.getElementById('finishBar').style.display = (isPreview || isChecking || activeExam.isSubmitted) ? 'none' : 'block';
+    
+    setTimeout(() => {
+      initCanvas();
+      updateTimerUI(); buildToolPanels();
+      initZoomListeners();
+      if(!window._rulerBound) {
+        initRulerDragEvents();
+        window._rulerBound = true;
+      }
+    }, 50);
+
+    if(!window._ptrBound) {
+      dwC = document.getElementById('dwC');
+      dwC.addEventListener('pointerdown', onDown); 
+      window.addEventListener('pointermove', onMove); 
+      window.addEventListener('pointerup', onUp);
+      window._ptrBound = true;
+    }
+  }
+  function updateTimer() { activeExam.remaining--; if(activeExam.remaining <= 0){ clearInterval(timerInterval); endExamForce(); } updateTimerUI(); }
+  function updateTimerUI() {
+    const h=Math.floor(activeExam.remaining/3600), m=Math.floor((activeExam.remaining%3600)/60), s=activeExam.remaining%60;
+    const el = document.getElementById('liveTimer');
+    el.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+    el.classList.toggle('urgent', activeExam.remaining <= 300); // red pulse under 5 min
+  }
+  async function confirmEnd() { 
+    const ok = await notoConfirm("Submit answersheet? You cannot edit after this.");
+    if (ok) endExamForce(); 
+  }
+  async function endExamForce() { activeExam.isSubmitted=true; allExams.push(activeExam); await notoDb.set(KEY_EXAMS, allExams); location.reload(); }
+  
+  function nextPg(){ if(curPage < totPages){ curPage++; onPgChange(); } }
+  function prevPg(){ if(curPage > 1){ curPage--; onPgChange(); } }
+  function onPgChange(){
+    redraw(); drawBg(); updCounter();
+    // Sync page-type button highlights
+    const t = activeExam.pages[curPage-1].type || 'lined';
+    ['Lined','Blank','Graph','Dotted'].forEach(n => {
+      const el = document.getElementById('pgType'+n);
+      if(el) el.classList.toggle('on', t === n.toLowerCase());
+    });
+  }
+  function updCounter(){ document.getElementById('pgNum').textContent = `${curPage} / ${totPages}`; }
+  function addPage(){ if(totPages < 20){ totPages++; activeExam.pages.push({strokes:[], stamps:[], type:curPgType}); updCounter(); } }
+  function setPgType(t){
+    activeExam.pages[curPage-1].type = t; curPgType = t; drawBg();
+    ['Lined','Blank','Graph','Dotted'].forEach(n => {
+      const el = document.getElementById('pgType'+n);
+      if(el) el.classList.toggle('on', t === n.toLowerCase());
+    });
+  }
+  function exitToDashboard(){ location.reload(); }
+
+  function setTool(t){
+    tool = t;
+    const idMap = { pen:'tPen', highlight:'tHL', eraser:'tEraser', shape:'tShape', text:'tText', lasso:'tLasso' };
+    document.querySelectorAll('.t-btn').forEach(b => b.classList.remove('on'));
+    const active = document.getElementById(idMap[t]);
+    if(active) active.classList.add('on');
+    ['penPanel','eraserPanel','shapePanel'].forEach(id => document.getElementById(id).classList.remove('show'));
+  }
+  function togglePenP(){ const p=document.getElementById('penPanel'); p.classList.toggle('show'); }
+  function toggleEraserP(){ setTool('eraser'); document.getElementById('eraserPanel').classList.toggle('show'); }
+  function toggleShapeP(){ setTool('shape'); document.getElementById('shapePanel').classList.toggle('show'); }
+  function toggleFocus(){ document.body.classList.toggle('focus'); }
+
+  function buildToolPanels(){
+    const sr=document.getElementById('szRow'); sr.innerHTML=''; PEN_SZS.forEach(s=>{ const o=document.createElement('div'); o.className='sz-opt'+(s===penSz?' on':''); o.innerHTML='<div style="width:'+(s*2)+'px;height:'+(s*2)+'px;background:#000;border-radius:50%"></div>'; o.onclick=(ev)=>{ev.stopPropagation(); penSz=s; buildToolPanels();}; sr.appendChild(o); });
+    const cg=document.getElementById('clGrid'); cg.innerHTML=''; COLORS.forEach(c=>{ const s=document.createElement('div'); s.className='cl-sw'+(c===penCol?' on':''); s.style.background=c; s.onclick=(ev)=>{ev.stopPropagation(); penCol=c; buildToolPanels();}; cg.appendChild(s); });
+    const er=document.getElementById('erRow'); er.innerHTML=''; ER_SZS.forEach(s=>{ const o=document.createElement('div'); o.className='sz-opt'+(s===erSz?' on':''); o.innerHTML='<div style="width:'+(s/2)+'px;height:'+(s/2)+'px;background:#aaa;border-radius:50%"></div>'; o.onclick=(ev)=>{ev.stopPropagation(); erSz=s; buildToolPanels();}; er.appendChild(o); });
+    const sg=document.getElementById('shGrid'); sg.innerHTML=''; SHAPES.concat([{id:'square',l:'Sq'},{id:'triangle',l:'Tri'},{id:'arrow',l:'Arr'}]).forEach(sh=>{ const o=document.createElement('div'); o.className='sh-opt'+(sh.id===shType?' on':''); o.innerHTML=(sh.svg?'<svg viewBox="0 0 24 24">'+sh.svg+'</svg>':'<span style="font-size:10px">'+sh.l+'</span>'); o.onclick=(ev)=>{ev.stopPropagation(); shType=sh.id; buildToolPanels();}; sg.appendChild(o); });
+  }
+
+  /* ── TEXT & UNDO ── */
+  function activateText(){ setTool('text'); }
+  function placeText(p) {
+    const box = document.createElement('div'); box.className='pptb'; box.style.left=p.x+'px'; box.style.top=p.y+'px';
+    const ta = document.createElement('textarea'); ta.style.width='100%'; ta.style.border='none'; ta.placeholder='Type...';
+    const b = document.createElement('button'); b.className='pptb-btn'; b.textContent='Place'; b.onclick=()=>{ 
+      if(ta.value) { activeExam.pages[curPage-1].strokes.push({type:'text', text:ta.value, x:p.x, y:p.y, color:penCol}); redoSt = []; }
+      box.remove(); redraw(); 
+    };
+    box.appendChild(ta); box.appendChild(b); document.getElementById('txLayer').appendChild(box); ta.focus();
+  }
+  function drawTxFromSt(s){ ctx.font='20px var(--ff)'; ctx.fillStyle=s.color; ctx.fillText(s.text, s.x, s.y+20); }
+  function doUndo(){ const pg=activeExam.pages[curPage-1]; if(!pg.strokes.length)return; redoSt.push({stroke:pg.strokes.pop(),pg:curPage}); redraw(); }
+  function doRedo(){ if(!redoSt.length)return; const i=redoSt.pop(); activeExam.pages[i.pg-1].strokes.push(i.stroke); if(i.pg===curPage)redraw(); }
+  async function clearPage(){ 
+    const ok = await notoConfirm("Clear current page?");
+    if (ok) { activeExam.pages[curPage-1].strokes=[]; redoSt=[]; redraw(); } 
+  }
+
+  /* ── EVAL ── */
+  let currentStamp = 'correct';
+  function enterCheckMode(id) { activeExam=allExams.find(x=>x.id===id); isChecking=true; curPage=1; totPages=activeExam.pages.length; renderExam(false); document.getElementById('evalBar').classList.remove('hidden'); }
+  function setStamp(s) { currentStamp=s; document.getElementById('stCorrect').classList.toggle('on', s==='correct'); document.getElementById('stWrong').classList.toggle('on', s==='wrong'); }
+  function placeStamp(e) { const p=sc2cv(e.clientX, e.clientY); if(!activeExam.pages[curPage-1].stamps) activeExam.pages[curPage-1].stamps=[]; activeExam.pages[curPage-1].stamps.push({x:p.x, y:p.y, type:currentStamp}); redraw(); }
+  function undoStamp() { activeExam.pages[curPage-1].stamps.pop(); redraw(); }
+  function showFinalEval() { document.getElementById('evalModal').classList.add('active'); initSig(); document.getElementById('evalMarksLabel').textContent=`Grade (Out of ${activeExam.totalMarks})`; }
+  let sigCtx=null, sigD=false; function initSig(){ const c=document.getElementById('sigCanvas'); sigCtx=c.getContext('2d'); sigCtx.lineWidth=2; c.onpointerdown=(e)=>{sigD=true;sigCtx.moveTo(e.offsetX,e.offsetY);sigCtx.beginPath();}; c.onpointermove=(e)=>{if(sigD){sigCtx.lineTo(e.offsetX,e.offsetY);sigCtx.stroke();}}; window.onpointerup=()=>sigD=false; }
+  async function finalSubmit(){ activeExam.isChecked=true; activeExam.marks=document.getElementById('evalMarks').value||0; const idx=allExams.findIndex(x=>x.id===activeExam.id); allExams[idx]=activeExam; await notoDb.set(KEY_EXAMS, allExams); location.reload(); }
+  function previewExam(id) { activeExam=allExams.find(x=>x.id===id); curPage=1; totPages=activeExam.pages.length; renderExam(true); }
+  async function deleteExam(id) { 
+    const ok = await notoConfirm("Delete?");
+    if (ok) { allExams=allExams.filter(x=>x.id!==id); await notoDb.set(KEY_EXAMS, allExams); renderList(); } 
+  }
+
+  // Floating Collapsible Toolbar
+  function toggleFtb() {
+    if (window._isFtbJustDragged) { window._isFtbJustDragged = false; return; }
+    const t = document.getElementById('dtb');
+    t.classList.toggle('collapsed');
+  }
+
+  // ── DRAGGABLE FLOATING TOOLBAR (LONG PRESS) ──
+  const ftbToggleBtn = document.querySelector('.ftb-toggle');
+  const ftbContainer = document.getElementById('dtb');
+  let ftbDragTimer = null;
+  let isFtbDragging = false;
+  let ftbStartX = 0, ftbStartY = 0, ftbStartLeft = 0, ftbStartTop = 0;
+
+  if(ftbToggleBtn && ftbContainer) {
+    ftbToggleBtn.addEventListener('pointerdown', (e) => {
+      if(e.button !== 0 && e.pointerType === 'mouse') return;
+      ftbStartX = e.clientX;
+      ftbStartY = e.clientY;
+      ftbDragTimer = setTimeout(() => {
+        isFtbDragging = true;
+        ftbContainer.style.transition = 'none';
+        const rect = ftbContainer.getBoundingClientRect();
+        ftbStartLeft = rect.left;
+        ftbStartTop = rect.top;
+        ftbContainer.style.transform = 'none';
+        ftbContainer.style.left = ftbStartLeft + 'px';
+        ftbContainer.style.top = ftbStartTop + 'px';
+        ftbContainer.style.boxShadow = '0 12px 48px rgba(0,0,0,0.2)';
+      }, 2000); // 2 seconds
+    });
+
+    window.addEventListener('pointermove', (e) => {
+      if(isFtbDragging) {
+        const dx = e.clientX - ftbStartX;
+        const dy = e.clientY - ftbStartY;
+        ftbContainer.style.left = (ftbStartLeft + dx) + 'px';
+        ftbContainer.style.top = (ftbStartTop + dy) + 'px';
+      } else if(ftbDragTimer) {
+        if(Math.hypot(e.clientX - ftbStartX, e.clientY - ftbStartY) > 10) {
+           clearTimeout(ftbDragTimer);
+           ftbDragTimer = null;
+        }
+      }
+    });
+
+    window.addEventListener('pointerup', (e) => {
+      if(ftbDragTimer) { clearTimeout(ftbDragTimer); ftbDragTimer = null; }
+      if(isFtbDragging) {
+        isFtbDragging = false;
+        ftbContainer.style.boxShadow = '';
+        window._isFtbJustDragged = true;
+        setTimeout(()=> window._isFtbJustDragged=false, 200);
+      }
+    });
+  }
+
+  // Radial Sub-Menu
+  let lastToolTapTime = 0;
+  let lastToolTapType = '';
+  function handleToolTap(e, t) {
+    const now = Date.now();
+    if (lastToolTapType === t && (now - lastToolTapTime) < 350) {
+      showRadialMenu(e, t);
+    } else {
+      setTool(t);
+    }
+    lastToolTapTime = now;
+    lastToolTapType = t;
+  }
+  
+  function showRadialMenu(e, t) {
+    if (e) e.stopPropagation();
+    const menu = document.getElementById('radialMenu');
+    const bg = document.getElementById('radialBg');
+    menu.innerHTML = '';
+    
+    const rect = e.currentTarget.getBoundingClientRect();
+    const mx = rect.left + rect.width / 2;
+    const my = rect.top + rect.height / 2;
+    menu.style.left = mx + 'px';
+    menu.style.top = my + 'px';
+    
+    // Center icon
+    const center = document.createElement('div');
+    center.className = 'radial-center';
+    let svgHtml = '';
+    if (t === 'pen') svgHtml = `<svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>`;
+    else if (t === 'highlight') svgHtml = `<svg viewBox="0 0 24 24"><path d="m9 11-6 6v3h3l6-6"/><path d="m22 12-4.6 4.6a2 2 0 0 1-2.8 0l-5.2-5.2a2 2 0 0 1 0-2.8L14 4"/></svg>`;
+    else if (t === 'eraser') svgHtml = `<svg viewBox="0 0 24 24"><path d="m20 20-8.5-8.5M4 20h16M7 17 3 13l9-9 7 7"/></svg>`;
+    
+    center.innerHTML = svgHtml;
+    center.onclick = closeRadial;
+    menu.appendChild(center);
+    
+    let items = [];
+    if (t === 'eraser') {
+      ER_SZS.forEach((s) => {
+        items.push({
+          type: 'size',
+          value: s,
+          html: `<span style="font-size:9px;font-weight:700">${s}</span>`,
+          active: erSz === s,
+          action: () => { erSz = s; buildToolPanels(); }
+        });
+      });
+    } else {
+      // Pen tools: sizes
+      PEN_SZS.forEach(s => {
+        items.push({
+          type: 'size',
+          value: s,
+          html: `<span style="font-size:9px;font-weight:700">${s}</span>`,
+          active: penSz === s,
+          action: () => { penSz = s; buildToolPanels(); }
+        });
+      });
+      // Pen tools: colors
+      COLORS.forEach(c => {
+        items.push({
+          type: 'color',
+          value: c,
+          active: penCol === c,
+          action: () => { penCol = c; buildToolPanels(); }
+        });
+      });
+    }
+    
+    const radius = 68;
+    items.forEach((item, idx) => {
+      const angle = (idx / items.length) * 2 * Math.PI - Math.PI / 2;
+      const x = Math.round(Math.cos(angle) * radius);
+      const y = Math.round(Math.sin(angle) * radius);
+      
+      const o = document.createElement('div');
+      if (item.type === 'size') {
+        o.className = 'radial-item size-item' + (item.active ? ' active' : '');
+        o.innerHTML = item.html;
+      } else {
+        o.className = 'radial-item color-item' + (item.active ? ' active' : '');
+        o.style.backgroundColor = item.value;
+      }
+      o.style.left = x + 'px';
+      o.style.top = y + 'px';
+      o.onclick = () => {
+        item.action();
+        closeRadial();
+      };
+      menu.appendChild(o);
+    });
+    
+    bg.classList.add('show');
+    menu.classList.add('show');
+  }
+
+  function closeRadial() {
+    document.getElementById('radialBg').classList.remove('show');
+    document.getElementById('radialMenu').classList.remove('show');
+  }
+
+  // Ruler tool logic
+  let rulerActive = false;
+  let isDraggingRulerH = false;
+  let isDraggingRulerV = false;
+  let rulerHY = 150;
+  let rulerVX = 150;
+  let rulerDragStart = 0;
+
+  function toggleRuler() {
+    rulerActive = !rulerActive;
+    document.getElementById('tRuler').classList.toggle('on', rulerActive);
+    const hEl = document.getElementById('rulerOverlay');
+    const vEl = document.getElementById('rulerVOverlay');
+    if (rulerActive) {
+      hEl.classList.add('show');
+      vEl.classList.add('show');
+      hEl.style.top = `${rulerHY}px`;
+      vEl.style.left = `${rulerVX}px`;
+      renderRulers();
+    } else {
+      hEl.classList.remove('show');
+      vEl.classList.remove('show');
+    }
+  }
+
+  function renderRulers() {
+    const hc = document.getElementById('rulerHCanvas');
+    const vc = document.getElementById('rulerVCanvas');
+    if (!hc || !vc) return;
+
+    const ps = document.getElementById('ps');
+    const pw = ps.clientWidth;
+    const ph = ps.clientHeight;
+    
+    const scale = window.devicePixelRatio || 1;
+    hc.width = pw * scale;
+    hc.height = 28 * scale;
+    hc.style.width = '100%';
+    hc.style.height = '28px';
+
+    vc.width = 28 * scale;
+    vc.height = ph * scale;
+    vc.style.width = '28px';
+    vc.style.height = '100%';
+
+    const hctx = hc.getContext('2d');
+    const vctx = vc.getContext('2d');
+    hctx.scale(scale, scale);
+    vctx.scale(scale, scale);
+
+    // Render Horizontal Ruler
+    hctx.clearRect(0,0,pw,28);
+    hctx.fillStyle = 'rgba(248, 250, 252, 0.94)';
+    hctx.fillRect(0,0,pw,28);
+    hctx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
+    hctx.lineWidth = 1;
+    hctx.beginPath();
+    hctx.moveTo(0, 27.5); hctx.lineTo(pw, 27.5);
+    hctx.stroke();
+
+    hctx.fillStyle = '#475569';
+    hctx.strokeStyle = '#475569';
+    hctx.font = '8px monospace';
+    for (let x = 0; x < pw; x += 5) {
+      let tickH = 3;
+      if (x % 50 === 0) {
+        tickH = 10;
+        hctx.fillText(x, x + 2, 10);
+      } else if (x % 10 === 0) {
+        tickH = 6;
+      }
+      hctx.beginPath();
+      hctx.moveTo(x, 28 - tickH);
+      hctx.lineTo(x, 28);
+      hctx.stroke();
+    }
+
+    // Render Vertical Ruler
+    vctx.clearRect(0,0,28,ph);
+    vctx.fillStyle = 'rgba(248, 250, 252, 0.94)';
+    vctx.fillRect(0,0,28,ph);
+    vctx.strokeStyle = 'rgba(148, 163, 184, 0.6)';
+    vctx.lineWidth = 1;
+    vctx.beginPath();
+    vctx.moveTo(27.5, 0); vctx.lineTo(27.5, ph);
+    vctx.stroke();
+
+    vctx.fillStyle = '#475569';
+    vctx.strokeStyle = '#475569';
+    vctx.font = '8px monospace';
+    for (let y = 0; y < ph; y += 5) {
+      let tickW = 3;
+      if (y % 50 === 0) {
+        tickW = 10;
+        vctx.save();
+        vctx.translate(10, y + 2);
+        vctx.rotate(Math.PI / 2);
+        vctx.fillText(y, 0, 0);
+        vctx.restore();
+      } else if (y % 10 === 0) {
+        tickW = 6;
+      }
+      vctx.beginPath();
+      vctx.moveTo(28 - tickW, y);
+      vctx.lineTo(28, y);
+      vctx.stroke();
+    }
+  }
+
+  function initRulerDragEvents() {
+    const hEl = document.getElementById('rulerOverlay');
+    const vEl = document.getElementById('rulerVOverlay');
+    const ps = document.getElementById('ps');
+
+    hEl.addEventListener('pointerdown', e => {
+      isDraggingRulerH = true;
+      rulerDragStart = e.clientY - hEl.offsetTop;
+      hEl.setPointerCapture(e.pointerId);
+    });
+
+    hEl.addEventListener('pointermove', e => {
+      if (!isDraggingRulerH) return;
+      const newY = e.clientY - rulerDragStart;
+      rulerHY = Math.max(0, Math.min(ps.clientHeight - 28, newY));
+      hEl.style.top = `${rulerHY}px`;
+    });
+
+    hEl.addEventListener('pointerup', e => {
+      isDraggingRulerH = false;
+    });
+
+    vEl.addEventListener('pointerdown', e => {
+      isDraggingRulerV = true;
+      rulerDragStart = e.clientX - vEl.offsetLeft;
+      vEl.setPointerCapture(e.pointerId);
+    });
+
+    vEl.addEventListener('pointermove', e => {
+      if (!isDraggingRulerV) return;
+      const newX = e.clientX - rulerDragStart;
+      rulerVX = Math.max(0, Math.min(ps.clientWidth - 28, newX));
+      vEl.style.left = `${rulerVX}px`;
+    });
+
+    vEl.addEventListener('pointerup', e => {
+      isDraggingRulerV = false;
+    });
+  }
+
+  loadHistory();
+  (function initTransition() {
+    const o = document.getElementById('transitionOverlay');
+    if (o) {
+      o.style.cssText = 'transition:none; transform:translateX(0%); pointer-events:none;';
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          o.style.cssText = 'transition:transform 0.44s cubic-bezier(0.7,0,0.3,1); transform:translateX(-100%); pointer-events:none;';
+        });
+      });
+    }
+  })();
+</script>
+</body>
+</html>
