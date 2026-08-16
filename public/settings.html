@@ -439,6 +439,30 @@
 
           <div class="pg-card pg-settings-card">
             <div class="pg-section-header" style="padding: 20px 24px 0;">
+              <span class="pg-section-label">Backup & Restore</span>
+            </div>
+            <div class="pg-row">
+              <div class="pg-row-l">
+                <div class="pg-row-label">Export Device Backup</div>
+                <div class="pg-row-desc">Export a complete .notobackup / JSON archive of all notebooks and study materials</div>
+              </div>
+              <div class="pg-row-r">
+                <button class="pg-btn-secondary" onclick="notoExportAllData()">Export Backup</button>
+              </div>
+            </div>
+            <div class="pg-row">
+              <div class="pg-row-l">
+                <div class="pg-row-label">Restore from Backup</div>
+                <div class="pg-row-desc">Import and restore all notebooks from a previous .notobackup / JSON file</div>
+              </div>
+              <div class="pg-row-r">
+                <button class="pg-btn-secondary" onclick="notoImportData()">Restore Backup</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="pg-card pg-settings-card">
+            <div class="pg-section-header" style="padding: 20px 24px 0;">
               <span class="pg-section-label">Storage</span>
             </div>
             <div class="pg-row">
@@ -447,10 +471,6 @@
                 <div class="pg-stor-bar"><div class="pg-stor-fill" id="storFill" style="width:0%"></div></div>
                 <div class="pg-stor-label" id="storLabel">Calculating...</div>
               </div>
-            </div>
-            <div class="pg-row">
-              <div class="pg-row-l"><div class="pg-row-label">Export All Data</div><div class="pg-row-desc">Download a full JSON backup of all notebooks</div></div>
-              <div class="pg-row-r"><button class="pg-btn-secondary" onclick="doExport()">Export JSON</button></div>
             </div>
             <div class="pg-row">
               <div class="pg-row-l"><div class="pg-row-label">Factory Reset</div><div class="pg-row-desc">Delete all data and restore default settings</div></div>
