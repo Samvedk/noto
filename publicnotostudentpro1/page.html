@@ -92,16 +92,17 @@
     /* ── PAPER GRAIN TEXTURE OVERLAY ──
        A subtle SVG noise filter layered on top of the canvas gives
        the page a tactile paper feel without affecting stroke rendering. */
+    /* ── LIGHTWEIGHT PAPER TEXTURE OVERLAY ──
+       Uses zero GPU SVG turbulence filter computation to prevent thermal throttling */
     #paperGrain{
       position:absolute;top:0;left:0;width:100%;height:100%;
       pointer-events:none;z-index:5;
-      opacity:0.045;
-      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='1'/%3E%3C/svg%3E");
-      background-size:200px 200px;
+      opacity:0.025;
+      background-image: radial-gradient(rgba(0,0,0,0.12) 1px, transparent 1px);
+      background-size: 14px 14px;
       border-radius:2px;
-      mix-blend-mode:multiply;
     }
-    [data-theme="dark"] #paperGrain { opacity:0.08; mix-blend-mode:screen; }
+    [data-theme="dark"] #paperGrain { opacity:0.04; background-image: radial-gradient(rgba(255,255,255,0.15) 1px, transparent 1px); }
     #dwC.er-mode{cursor:none;}
     .ds-layer{position:absolute;inset:0;pointer-events:none;z-index:5;}
     .ds-stamp{position:absolute;font-family:var(--ff);font-size:11px;color:rgba(0,0,0,.38);padding:3px 8px;border:1px dashed rgba(0,0,0,.18);border-radius:4px;cursor:move;pointer-events:all;user-select:none;background:rgba(255,255,255,.75);white-space:nowrap;}
@@ -283,6 +284,24 @@
       height: auto;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .smp-skeleton {
+      width: 100%;
+      height: 380px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, rgba(0,0,0,0.04) 25%, rgba(0,0,0,0.08) 50%, rgba(0,0,0,0.04) 75%);
+      background-size: 200% 100%;
+      animation: smpShimmer 1.4s infinite;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    @keyframes smpShimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
     .smp-nav {
       padding: 12px;
@@ -946,6 +965,17 @@
       applyZoom(); drawBg(); redraw();
     }
     window.addEventListener('resize',initCanvas);
+
+    // ── WebKit GPU Context Loss Auto-Recovery ─────────────────────
+    [dwC, actC, bgC].forEach(c => {
+      if (!c) return;
+      c.addEventListener('webglcontextlost', e => { e.preventDefault(); }, false);
+      c.addEventListener('contextlost', e => { e.preventDefault(); }, false);
+      c.addEventListener('contextrestored', () => {
+        console.log('[NOTO] WebKit GPU Canvas context restored.');
+        initCanvas();
+      }, false);
+    });
   </script>
 
   <!-- ── ZOOM & PAN ── -->
@@ -1048,25 +1078,32 @@
   <script>
     const PT={lined:'Lined',graph:'Graph',blank:'Blank',dotted:'Dotted',cornell:'Cornell',index:'Index',title:'Title Page'};
     function drawBg(){
-      const w=bgC.width,h=bgC.height,pg=getPg(curPage),t=pg.type||'lined';
+      const w = Math.round(PAGE_W*cScale), h = Math.round(PAGE_H*cScale), pg=getPg(curPage), t=pg.type||'lined';
       const lineSp = pg.lineSpacing || 36;
-      bgCtx.clearRect(0,0,w,h); bgCtx.fillStyle='#fff'; bgCtx.fillRect(0,0,w,h);
+      const isDark = document.body.getAttribute('data-theme') === 'dark';
+      bgCtx.clearRect(0,0,w,h);
+      bgCtx.fillStyle = isDark ? '#1c1c1c' : '#ffffff';
+      bgCtx.fillRect(0,0,w,h);
+
       if(t==='lined'){
         const sp=Math.round(lineSp*cScale),sy=Math.round(58*cScale);
-        bgCtx.strokeStyle='rgba(173,207,238,0.55)';bgCtx.lineWidth=1;
+        bgCtx.strokeStyle = isDark ? 'rgba(255,255,255,0.14)' : 'rgba(173,207,238,0.55)';
+        bgCtx.lineWidth=1;
         for(let y=sy;y<h-16;y+=sp){bgCtx.beginPath();bgCtx.moveTo(18,y);bgCtx.lineTo(w-18,y);bgCtx.stroke();}
         const mx=Math.round(78*cScale);
-        bgCtx.strokeStyle='rgba(238,153,153,0.42)';bgCtx.lineWidth=1.5;bgCtx.beginPath();bgCtx.moveTo(mx,0);bgCtx.lineTo(mx,h);bgCtx.stroke();
+        bgCtx.strokeStyle = isDark ? 'rgba(238,110,110,0.5)' : 'rgba(238,153,153,0.42)';
+        bgCtx.lineWidth=1.5;bgCtx.beginPath();bgCtx.moveTo(mx,0);bgCtx.lineTo(mx,h);bgCtx.stroke();
       }
       else if(t==='graph'){
         const sp=Math.round(24*cScale);
-        bgCtx.strokeStyle='rgba(173,207,238,0.42)';bgCtx.lineWidth=0.7;
+        bgCtx.strokeStyle = isDark ? 'rgba(255,255,255,0.10)' : 'rgba(173,207,238,0.42)';
+        bgCtx.lineWidth=0.7;
         for(let x=0;x<w;x+=sp){bgCtx.beginPath();bgCtx.moveTo(x,0);bgCtx.lineTo(x,h);bgCtx.stroke();}
         for(let y=0;y<h;y+=sp){bgCtx.beginPath();bgCtx.moveTo(0,y);bgCtx.lineTo(w,y);bgCtx.stroke();}
       }
       else if(t==='dotted'){
         const sp=Math.round(24*cScale);
-        bgCtx.fillStyle='rgba(140,175,210,0.52)';
+        bgCtx.fillStyle = isDark ? 'rgba(255,255,255,0.25)' : 'rgba(140,175,210,0.52)';
         for(let x=sp;x<w;x+=sp)for(let y=sp;y<h;y+=sp){bgCtx.beginPath();bgCtx.arc(x,y,1.4,0,Math.PI*2);bgCtx.fill();}
       }
       else if(t==='cornell'){
@@ -1345,7 +1382,7 @@
 
       if(tool==='text'){placeTxBox(e);return;}
       if(tool==='eraser'){isDrawing=true; eraseAt(getPos(e)); return;}
-      if(tool==='shape'){isShDraw=true; shStart=getPos(e); preShSnap=ctx.getImageData(0,0,dwC.width,dwC.height); redoSt=[]; return;}
+      if(tool==='shape'){isShDraw=true; shStart=getPos(e); redoSt=[]; return;}
       if(tool==='lasso'){isDrawing=true; currentPath=[getPos(e)]; return;}
 
       isDrawing=true; redoSt=[];
@@ -1374,7 +1411,7 @@
       e.preventDefault();
 
       if(tool==='eraser'&&isDrawing){eraseAt(getPos(e));return;}
-      if(tool==='shape'&&isShDraw&&shStart){const p=getPos(e);ctx.putImageData(preShSnap,0,0);drawShPrev(shStart,p);return;}
+      if(tool==='shape'&&isShDraw&&shStart){const p=getPos(e);actCtx.clearRect(0,0,PAGE_W*cScale,PAGE_H*cScale);drawShPrev(shStart,p,actCtx);return;}
       if(tool==='lasso'&&isDrawing){
         const p = getPos(e);
         currentPath.push(p); redraw();
@@ -1462,8 +1499,9 @@
       if(tool==='eraser'){isDrawing=false;return;}
       if(tool==='shape'&&isShDraw){
         isShDraw=false;if(!shStart)return;
-        const p=getPos(e);ctx.putImageData(preShSnap,0,0);
-        const s=drawShPrev(shStart,p);
+        const p=getPos(e);
+        actCtx.clearRect(0,0,PAGE_W*cScale,PAGE_H*cScale);
+        const s=drawShPrev(shStart,p,ctx);
         if(s){
            getPg(curPage).strokes.push(s);undoSt.push({pg:curPage});trigSave();
            const pt = getPg(curPage).type || 'lined';
@@ -1746,33 +1784,34 @@
 
   <!-- ── SHAPES ── -->
   <script>
-    function drawShPrev(s,e){
+    function drawShPrev(s,e,targetCtx){
+      if(!targetCtx) targetCtx = ctx;
       const x1=s.x,y1=s.y,x2=e.x,y2=e.y,w=x2-x1,h=y2-y1;
       if(Math.abs(w)<2&&Math.abs(h)<2)return null;
-      ctx.globalAlpha=1;ctx.globalCompositeOperation='source-over';
-      ctx.strokeStyle=penCol;ctx.lineWidth=penSz;ctx.lineCap='round';ctx.lineJoin='round';
-      if(shFill)ctx.fillStyle=penCol;
-      ctx.beginPath();
-      if(shType==='rect')ctx.rect(x1,y1,w,h);
-      else if(shType==='square'){const si=Math.min(Math.abs(w),Math.abs(h));ctx.rect(x1,y1,Math.sign(w)*si,Math.sign(h)*si);}
-      else if(shType==='circle')ctx.ellipse(x1+w/2,y1+h/2,Math.abs(w)/2,Math.abs(h)/2,0,0,Math.PI*2);
-      else if(shType==='triangle'){ctx.moveTo(x1+w/2,y1);ctx.lineTo(x2,y2);ctx.lineTo(x1,y2);ctx.closePath();}
-      else if(shType==='line'){ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);}
-      else if(shType==='arrow'){const hl=Math.min(22,Math.sqrt(w*w+h*h)*.3),a=Math.atan2(h,w);ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a-Math.PI/6),y2-hl*Math.sin(a-Math.PI/6));ctx.moveTo(x2,y2);ctx.lineTo(x2-hl*Math.cos(a+Math.PI/6),y2-hl*Math.sin(a+Math.PI/6));}
-      if(shFill&&shType!=='line'&&shType!=='arrow')ctx.fill();
-      ctx.stroke();
+      targetCtx.globalAlpha=1;targetCtx.globalCompositeOperation='source-over';
+      targetCtx.strokeStyle=penCol;targetCtx.lineWidth=penSz;targetCtx.lineCap='round';targetCtx.lineJoin='round';
+      if(shFill)targetCtx.fillStyle=penCol;
+      targetCtx.beginPath();
+      if(shType==='rect')targetCtx.rect(x1,y1,w,h);
+      else if(shType==='square'){const si=Math.min(Math.abs(w),Math.abs(h));targetCtx.rect(x1,y1,Math.sign(w)*si,Math.sign(h)*si);}
+      else if(shType==='circle')targetCtx.ellipse(x1+w/2,y1+h/2,Math.abs(w)/2,Math.abs(h)/2,0,0,Math.PI*2);
+      else if(shType==='triangle'){targetCtx.moveTo(x1+w/2,y1);targetCtx.lineTo(x2,y2);targetCtx.lineTo(x1,y2);targetCtx.closePath();}
+      else if(shType==='line'){targetCtx.moveTo(x1,y1);targetCtx.lineTo(x2,y2);}
+      else if(shType==='arrow'){const hl=Math.min(22,Math.sqrt(w*w+h*h)*.3),a=Math.atan2(h,w);targetCtx.moveTo(x1,y1);targetCtx.lineTo(x2,y2);targetCtx.lineTo(x2-hl*Math.cos(a-Math.PI/6),y2-hl*Math.sin(a-Math.PI/6));targetCtx.moveTo(x2,y2);targetCtx.lineTo(x2-hl*Math.cos(a+Math.PI/6),y2-hl*Math.sin(a+Math.PI/6));}
+      if(shFill&&shType!=='line'&&shType!=='arrow')targetCtx.fill();
+      targetCtx.stroke();
 
       // Feature: Show Shape Dimensions in real-time
-      ctx.font = '500 13px -apple-system, BlinkMacSystemFont, sans-serif';
-      ctx.fillStyle = penCol === '#000000' || penCol === '#1a1a2e' ? '#444' : penCol;
+      targetCtx.font = '500 13px -apple-system, BlinkMacSystemFont, sans-serif';
+      targetCtx.fillStyle = (penCol === '#000000' || penCol === '#1a1a2e') && document.body.getAttribute('data-theme') !== 'dark' ? '#444' : penCol;
       const dimX = Math.round(Math.abs(w));
       const dimY = Math.round(Math.abs(h));
       if(shType!=='line' && shType!=='arrow') {
-          ctx.fillText(`${dimX} × ${dimY} px`, Math.max(x1, x2) + 12, y2);
+          targetCtx.fillText(`${dimX} × ${dimY} px`, Math.max(x1, x2) + 12, y2);
       } else {
           // Length for lines/arrows
           const length = Math.round(Math.hypot(w, h));
-          ctx.fillText(`${length} px`, x2 + 12, y2 + 12);
+          targetCtx.fillText(`${length} px`, x2 + 12, y2 + 12);
       }
 
       return{type:'shape',shape:shType,x1,y1,x2,y2,color:penCol,size:penSz,filled:shFill};
@@ -3116,23 +3155,24 @@
     });
   </script>
 
-  <!-- ── B2B STUDY MATERIAL PANEL ── -->
+  <!-- ── B2B STUDY MATERIAL PANEL (LAZY LOADED) ── -->
   <script>
-    let _material = { pages: [] };
-    let _matPage  = 0;
+    let _materialMeta = { pageCount: 0 };
+    let _matPage      = 0;
+    let _matPageCache = {};
 
     async function initMaterial() {
       try {
         const subjectId = notoGetCurrentSubject();
         if (!subjectId) return;
-        _material = await notoLoadMaterial(subjectId);
+        _materialMeta = await notoLoadMaterialMeta(subjectId);
         const btn = document.getElementById('btnStudyMat');
         if (btn) {
-          const hasPages = _material && _material.pages && _material.pages.length > 0;
+          const hasPages = _materialMeta && _materialMeta.pageCount > 0;
           btn.style.display = hasPages ? '' : 'none';
         }
       } catch (e) {
-        console.error('Failed to load study material:', e);
+        console.error('Failed to load study material meta:', e);
       }
     }
 
@@ -3147,26 +3187,62 @@
       if (btn) btn.classList.toggle('on', isOpen);
 
       if (isOpen) {
-        // Close bookmarks panel if open
         document.getElementById('bmpanel').classList.remove('open');
-        if (_material && _material.pages && _material.pages.length > 0) {
+        if (_materialMeta && _materialMeta.pageCount > 0) {
           renderMatPage();
         }
       }
     }
 
-    function renderMatPage() {
+    async function renderMatPage() {
+      const viewer    = document.querySelector('.smp-viewer');
       const img       = document.getElementById('smpImg');
       const indicator = document.getElementById('smpPage');
       const prevBtn   = document.getElementById('smpPrevBtn');
       const nextBtn   = document.getElementById('smpNextBtn');
       if (!img || !indicator) return;
 
-      const page = _material.pages[_matPage];
-      if (page) img.src = page.data;
-      indicator.textContent = (_matPage + 1) + ' / ' + _material.pages.length;
+      const subjectId = notoGetCurrentSubject();
+      const pageCount = _materialMeta.pageCount || 0;
+      indicator.textContent = (_matPage + 1) + ' / ' + pageCount;
       if (prevBtn) prevBtn.disabled = _matPage <= 0;
-      if (nextBtn) nextBtn.disabled = _matPage >= _material.pages.length - 1;
+      if (nextBtn) nextBtn.disabled = _matPage >= pageCount - 1;
+
+      // Check in-memory page cache
+      if (_matPageCache[_matPage]) {
+        img.style.display = 'block';
+        img.src = _matPageCache[_matPage].data;
+        const skel = document.getElementById('smpSkeleton');
+        if (skel) skel.remove();
+      } else {
+        // Show skeleton shimmer loading state
+        img.style.display = 'none';
+        let skel = document.getElementById('smpSkeleton');
+        if (!skel && viewer) {
+          skel = document.createElement('div');
+          skel.id = 'smpSkeleton';
+          skel.className = 'smp-skeleton';
+          skel.textContent = 'Loading page ' + (_matPage + 1) + '...';
+          viewer.appendChild(skel);
+        }
+
+        // Fetch single page on demand
+        const page = await notoLoadMaterialPage(subjectId, _matPage);
+        if (page) {
+          _matPageCache[_matPage] = page;
+          img.src = page.data;
+          img.style.display = 'block';
+        }
+        const activeSkel = document.getElementById('smpSkeleton');
+        if (activeSkel) activeSkel.remove();
+      }
+
+      // Pre-fetch next page in background for seamless navigation
+      if (_matPage + 1 < pageCount && !_matPageCache[_matPage + 1]) {
+        notoLoadMaterialPage(subjectId, _matPage + 1).then(p => {
+          if (p) _matPageCache[_matPage + 1] = p;
+        });
+      }
     }
 
     function smpPrev() {
@@ -3174,7 +3250,7 @@
     }
 
     function smpNext() {
-      if (_material && _material.pages && _matPage < _material.pages.length - 1) {
+      if (_materialMeta && _matPage < _materialMeta.pageCount - 1) {
         _matPage++; renderMatPage();
       }
     }

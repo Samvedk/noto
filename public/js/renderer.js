@@ -882,19 +882,62 @@ function notoId() { return 'noto_' + Math.random().toString(36).substr(2, 9); }
   }
 })();
 
-// ── B2B Custom Study Material ─────────────────────────────────
-async function notoLoadMaterial(subjectId) {
-  return await notoDb.get('noto_material_' + subjectId, { pages: [] });
+// ── B2B Custom Study Material (Lazy Loaded) ─────────────────────
+async function notoLoadMaterialMeta(subjectId) {
+  const meta = await notoDb.get('noto_material_meta_' + subjectId, null);
+  if (meta) return meta;
+  const full = await notoDb.get('noto_material_' + subjectId, null);
+  if (full && full.pages) {
+    return { subjectId, pageCount: full.pages.length, legacy: true };
+  }
+  return { subjectId, pageCount: 0 };
 }
+
+async function notoLoadMaterialPage(subjectId, pageIdx) {
+  const page = await notoDb.get(`noto_material_page_${subjectId}_${pageIdx}`, null);
+  if (page) return page;
+  const full = await notoDb.get('noto_material_' + subjectId, null);
+  if (full && full.pages && full.pages[pageIdx]) {
+    return full.pages[pageIdx];
+  }
+  return null;
+}
+
+async function notoLoadMaterial(subjectId) {
+  const meta = await notoLoadMaterialMeta(subjectId);
+  if (meta.legacy) {
+    return await notoDb.get('noto_material_' + subjectId, { pages: [] });
+  }
+  const pages = [];
+  for (let i = 0; i < meta.pageCount; i++) {
+    const p = await notoLoadMaterialPage(subjectId, i);
+    if (p) pages.push(p);
+  }
+  return { pages };
+}
+
 async function notoSaveMaterial(subjectId, material) {
+  if (!material || !material.pages) return;
+  const pageCount = material.pages.length;
+  await notoDb.set('noto_material_meta_' + subjectId, { subjectId, pageCount, lastUpdated: Date.now() });
+  for (let i = 0; i < pageCount; i++) {
+    await notoDb.set(`noto_material_page_${subjectId}_${i}`, material.pages[i]);
+  }
   await notoDb.set('noto_material_' + subjectId, material);
 }
+
 async function notoDeleteMaterial(subjectId) {
+  const meta = await notoLoadMaterialMeta(subjectId);
+  for (let i = 0; i < meta.pageCount; i++) {
+    await notoDb.remove(`noto_material_page_${subjectId}_${i}`);
+  }
+  await notoDb.remove('noto_material_meta_' + subjectId);
   await notoDb.remove('noto_material_' + subjectId);
 }
+
 async function notoHasMaterial(subjectId) {
-  const m = await notoLoadMaterial(subjectId);
-  return m && m.pages && m.pages.length > 0;
+  const meta = await notoLoadMaterialMeta(subjectId);
+  return meta && meta.pageCount > 0;
 }
 
 // ── B2B Admin PIN System ──────────────────────────────────────
