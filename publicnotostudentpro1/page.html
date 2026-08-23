@@ -943,7 +943,7 @@
       const r=ca.getBoundingClientRect();
       const sc=Math.min(r.width*.94/PAGE_W, r.height*.94/PAGE_H, 2.0);
       const dW=Math.round(PAGE_W*sc), dH=Math.round(PAGE_H*sc);
-      const dpr = window.devicePixelRatio || 1;
+      const dpr = Math.max(window.devicePixelRatio || 1, 2);
       ps.style.width=dW+'px'; ps.style.height=dH+'px';
       dwC.width=dW*dpr; dwC.height=dH*dpr; bgC.width=dW*dpr; bgC.height=dH*dpr;
       actC.width=dW*dpr; actC.height=dH*dpr; memC.width=dW*dpr; memC.height=dH*dpr;
@@ -1313,7 +1313,7 @@
 
     function getPos(e){ return sc2cv(e.clientX, e.clientY); }
 
-    // Process a raw pointer event into a path point with Notability-style ink dynamics
+    // Process a raw pointer event into a path point with natural tactile pen dynamics
     function _processPoint(p, pressure, time, s) {
         const len = currentPath.length;
         const pt = { x: p.x, y: p.y, pressure: pressure, time: time };
@@ -1325,21 +1325,20 @@
         const velocity = dist / dt; // Speed in px/ms
         pt.velocity = velocity;
 
-        // ── Notability Nonlinear Ink Drag Model ──
+        // ── FreeNote / Real Pen Tactile Dynamics ──
         let targetW = s.size;
         if (pressure > 0 && pressure !== 0.5) {
-            // Apple Pencil pressure model
-            targetW = s.size * (0.35 + pressure * 0.95);
+            // Natural stylus pressure response with tactile floor
+            targetW = s.size * (0.80 + Math.pow(pressure, 1.4) * 0.40);
         } else {
-            // Velocity-dependent ink flow: fast = thin/sharp, slow = rich/thick
-            const vNormalized = velocity / (velocity + 1.6);
-            const flowFactor = 1.35 - (vNormalized * 0.70); // Ranges 0.65 to 1.35
-            targetW = s.size * flowFactor;
+            // Subtle velocity tapering: high speed flick tapers gracefully, slow stroke is rich
+            const vFactor = Math.min(1, velocity / 3.5);
+            targetW = s.size * (1.02 - vFactor * 0.12);
         }
 
-        // ── Centripetal EMA Smoothing (Filter hand jitter) ──
-        const prevW = len > 0 ? currentPath[len - 1].w : s.size;
-        const alpha = (velocity > 2.5) ? 0.45 : 0.28; // Adaptive smoothing based on speed
+        // Smooth width transition to avoid sudden step-artifacts
+        const prevW = len > 0 ? currentPath[len - 1].w : targetW;
+        const alpha = 0.55;
         pt.w = prevW * (1 - alpha) + targetW * alpha;
         return pt;
     }
@@ -1654,7 +1653,7 @@
     }
     
     function drawPath(path, style) {
-      if(path.length === 0) return;
+      if(!path || path.length === 0) return;
       
       let rCtx = ctx;
       let isOverlay = false;
@@ -1665,46 +1664,63 @@
           memCtx.clearRect(0,0,memC.width,memC.height);
       }
       
+      rCtx.save();
       rCtx.strokeStyle = style.color;
       rCtx.fillStyle = style.color;
       rCtx.lineCap = 'round';
       rCtx.lineJoin = 'round';
       
-      if(style.comp === 'multiply') {
-          rCtx.lineWidth = style.size;
-          rCtx.beginPath();
-          rCtx.moveTo(path[0].x, path[0].y);
-          for(let i=1; i<path.length-1; i++) {
-              const mid2x = (path[i].x + path[i+1].x)/2, mid2y = (path[i].y + path[i+1].y)/2;
-              rCtx.quadraticCurveTo(path[i].x, path[i].y, mid2x, mid2y);
-          }
-          if(path.length>1) rCtx.lineTo(path[path.length-1].x, path[path.length-1].y);
-          rCtx.stroke();
-      } else {
-          if(path.length === 1) {
-             rCtx.beginPath(); rCtx.arc(path[0].x, path[0].y, (path[0].w||style.size)/2, 0, Math.PI*2); rCtx.fill(); 
-          } else {
-             rCtx.beginPath(); rCtx.moveTo(path[0].x, path[0].y);
-             rCtx.lineTo((path[0].x + path[1].x)/2, (path[0].y + path[1].y)/2);
-             rCtx.lineWidth = path[1].w || style.size; rCtx.stroke();
+      const baseW = style.size || 3;
 
-             for(let i=1; i<path.length-1; i++){
-               rCtx.beginPath();
-               const mid1x = (path[i-1].x + path[i].x)/2, mid1y = (path[i-1].y + path[i].y)/2;
-               const mid2x = (path[i].x + path[i+1].x)/2,  mid2y = (path[i].y + path[i+1].y)/2;
-               rCtx.moveTo(mid1x, mid1y);
-               rCtx.quadraticCurveTo(path[i].x, path[i].y, mid2x, mid2y);
-               rCtx.lineWidth = path[i+1].w || style.size;
-               rCtx.stroke();
-             }
-             
-             rCtx.beginPath();
-             const last = path.length-1;
-             rCtx.moveTo((path[last-1].x + path[last].x)/2, (path[last-1].y + path[last].y)/2);
-             rCtx.lineTo(path[last].x, path[last].y);
-             rCtx.lineWidth = path[last].w || style.size; rCtx.stroke();
+      if(path.length === 1) {
+          rCtx.beginPath();
+          rCtx.arc(path[0].x, path[0].y, (path[0].w || baseW)/2, 0, Math.PI*2);
+          rCtx.fill();
+      } else {
+          let hasVariance = false;
+          for (let i = 0; i < path.length; i++) {
+              if (path[i].w && Math.abs(path[i].w - baseW) > 0.5) {
+                  hasVariance = true;
+                  break;
+              }
+          }
+
+          if (!hasVariance || style.comp === 'multiply') {
+              rCtx.lineWidth = baseW;
+              rCtx.beginPath();
+              rCtx.moveTo(path[0].x, path[0].y);
+              for(let i=1; i<path.length-1; i++) {
+                  const mid2x = (path[i].x + path[i+1].x)/2, mid2y = (path[i].y + path[i+1].y)/2;
+                  rCtx.quadraticCurveTo(path[i].x, path[i].y, mid2x, mid2y);
+              }
+              rCtx.lineTo(path[path.length-1].x, path[path.length-1].y);
+              rCtx.stroke();
+          } else {
+              rCtx.beginPath();
+              rCtx.moveTo(path[0].x, path[0].y);
+              rCtx.lineTo((path[0].x + path[1].x)/2, (path[0].y + path[1].y)/2);
+              rCtx.lineWidth = path[1].w || baseW;
+              rCtx.stroke();
+
+              for(let i=1; i<path.length-1; i++){
+                const mid1x = (path[i-1].x + path[i].x)/2, mid1y = (path[i-1].y + path[i].y)/2;
+                const mid2x = (path[i].x + path[i+1].x)/2,  mid2y = (path[i].y + path[i+1].y)/2;
+                rCtx.beginPath();
+                rCtx.moveTo(mid1x, mid1y);
+                rCtx.quadraticCurveTo(path[i].x, path[i].y, mid2x, mid2y);
+                rCtx.lineWidth = (path[i].w + (path[i+1].w || baseW))/2;
+                rCtx.stroke();
+              }
+              
+              const last = path.length-1;
+              rCtx.beginPath();
+              rCtx.moveTo((path[last-1].x + path[last].x)/2, (path[last-1].y + path[last].y)/2);
+              rCtx.lineTo(path[last].x, path[last].y);
+              rCtx.lineWidth = path[last].w || baseW;
+              rCtx.stroke();
           }
       }
+      rCtx.restore();
       
       if(isOverlay) {
           ctx.save();
