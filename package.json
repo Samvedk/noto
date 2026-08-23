@@ -7,8 +7,7 @@
     "start": "electron .",
     "build:radxa": "electron-builder --linux --arm64",
     "build:mac": "electron-builder --mac",
-    "start:b2b": "electron . --b2b",
-    "start:kiosk": "electron . --b2b --kiosk"
+    "start:kiosk": "electron . --kiosk"
   },
   "repository": {
     "type": "git",
@@ -25,7 +24,7 @@
   "build": {
     "appId": "com.noto.b2b",
     "productName": "Noto",
-    "files": ["main.js", "preload.js", "publicnotostudentpro1/**/*", "package.json"],
+    "files": ["main.js", "preload.js", "public/**/*", "package.json"],
     "linux": {
       "target": "deb",
       "arch": ["arm64"],

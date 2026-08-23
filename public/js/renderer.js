@@ -768,20 +768,14 @@ async function notoFactoryReset() {
   try {
     await notoMigrateIfNeeded();
     
-    // Save mode from URL query to localStorage if present
-    const urlParams = new URLSearchParams(window.location.search);
-    const modeParam = urlParams.get('mode');
-    if (modeParam) {
-      localStorage.setItem('noto_mode', modeParam);
-    }
+    // Default to B2B mode unconditionally
+    localStorage.setItem('noto_mode', 'b2b');
     
     const s = await notoLoadSettings();
     notoApplyTheme(s.theme);
     
-    // Only import prebaked materials in B2B mode
-    if (localStorage.getItem('noto_mode') === 'b2b') {
-      await notoLoadPrebakedMaterials();
-    }
+    // Always import prebaked materials
+    await notoLoadPrebakedMaterials();
   } catch (e) { console.error('Startup failed:', e); }
 })();
 

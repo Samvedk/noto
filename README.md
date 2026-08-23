@@ -124,13 +124,12 @@ Noto/
 │   ├── notebook.html       # Notebook view & thumbnail grid
 │   ├── habits.html         # Student habit tracker & productivity dashboard
 │   ├── exam-center.html    # Timed exam simulator with digital signature pad
-│   ├── settings.html      # App configuration, Admin PIN management, Backup & Export
+│   ├── settings.html       # App configuration, Admin PIN management, Backup & Export
 │   ├── paper-glass.css     # Glassmorphic UI design system & iPad native resets
 │   ├── noto.css            # Base application typography & tokens
 │   └── js/
 │       ├── renderer.js     # Central brain: IndexedDB CRUD, Modal System, Backup Export/Import
 │       └── keyboard.js     # Virtual keyboard & shortcut handlers
-└── publicnotostudentpro1/  # B2B Worktree production mirror
 ```
 
 ---
@@ -147,26 +146,21 @@ Noto/
 cd public && python3 server.py
 
 # Access on iPad Safari via:
-# http://<YOUR_LOCAL_IP>:8090/index.html?mode=b2b
+# http://<YOUR_LOCAL_IP>:8090/index.html
 ```
 
-### 3. Run in Electron Desktop (General Purpose Mode)
+### 3. Run in Electron Desktop
 ```bash
 npm install
 npm start
 ```
 
-### 4. Run in Electron Desktop (B2B Coaching Mode)
-```bash
-npm run start:b2b
-```
-
-### 5. Run in Electron Kiosk Mode (Full Screen)
+### 4. Run in Electron Kiosk Mode (Full Screen)
 ```bash
 npm run start:kiosk
 ```
 
-### 6. Package for ARM64 Linux (Radxa CM3 / Raspberry Pi)
+### 5. Package for ARM64 Linux (Radxa CM3 / Raspberry Pi)
 ```bash
 npm run build:radxa
 # Generates production .deb installer package in dist/

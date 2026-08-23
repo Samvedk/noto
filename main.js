@@ -8,12 +8,11 @@ const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('path');
 const fs = require('fs');
 
-// ── Parse mode from arguments ─────────────────────────────────
-const mode = process.argv.includes('--b2b') ? 'b2b' : 'general';
+// ── Parse mode and kiosk configs ──────────────────────────────
 const isKiosk = process.argv.includes('--kiosk');
 
-// Set separate user data directories so they don't share IndexedDB/localStorage
-app.setPath('userData', path.join(app.getPath('appData'), 'Noto_' + mode));
+// Set single unified user data directory for Noto
+app.setPath('userData', path.join(app.getPath('appData'), 'Noto'));
 
 // ── Auto-sync export folder ───────────────────────────────────
 // This folder is what a phone's Files app sees via USB/MTP.
@@ -29,7 +28,7 @@ function createWindow() {
     autoHideMenuBar: true,
     fullscreen: isKiosk,
     kiosk: isKiosk,
-    title: mode === 'b2b' ? 'Noto — B2B Coaching Edition' : 'Noto — General Purpose Digital Notebook',
+    title: 'Noto — Digital Notebook & Study Material Manager',
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
@@ -37,8 +36,7 @@ function createWindow() {
     }
   });
 
-  // Pass mode as query parameter to the new UI folder
-  win.loadURL(`file://${path.join(__dirname, 'publicnotostudentpro1/index.html')}?mode=${mode}`);
+  win.loadURL(`file://${path.join(__dirname, 'public/index.html')}`);
 }
 
 // ── IPC Handlers ──────────────────────────────────────────────
