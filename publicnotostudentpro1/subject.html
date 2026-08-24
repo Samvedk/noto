@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Noto — Subjects</title>
+  <link rel="stylesheet" href="paper-glass.css">
+  <link rel="stylesheet" href="noto.css">
+  <style>
+    /* Hide old topbar */
+    .topbar { display: none !important; }
+    .main-content { padding: 0 !important; }
+
+    /* List overrides using new design system tokens */
+    .pg-subject-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .pg-list-item {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 16px 20px;
+      background: rgba(255, 255, 255, 0.4);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: var(--radius-md);
+      box-shadow: 0 4px 16px var(--shadow-color);
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: pgFadeInUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+    }
+    
+    .pg-list-item:hover {
+      background: rgba(255, 255, 255, 0.6);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px var(--shadow-color);
+    }
+    
+    .pg-list-item-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-sm);
+      background: rgba(255, 255, 255, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+    }
+    
+    .pg-list-item-content {
+      flex: 1;
+      min-width: 0;
+    }
+    
+    .pg-list-item-title {
+      font-family: var(--font-body);
+      font-weight: 500;
+      font-size: 16px;
+      color: var(--text-main);
+      margin-bottom: 4px;
+    }
+    
+    .pg-list-item-meta {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .pg-list-item-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .pg-list-item-stats {
+      font-size: 13px;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.3);
+      padding: 4px 12px;
+      border-radius: 20px;
+    }
+    
+    .pg-list-item-arrow {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    
+    .pg-list-item:hover .pg-list-item-arrow {
+      background: var(--text-main);
+    }
+    
+    .pg-list-item-arrow svg {
+      width: 14px;
+      height: 14px;
+      stroke: var(--text-main);
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: stroke 0.3s ease;
+    }
+    
+    .pg-list-item:hover .pg-list-item-arrow svg {
+      stroke: var(--bg-paper);
+    }
+
+    .pg-list-item-menu {
+      position: absolute;
+      top: 50%;
+      right: 16px;
+      transform: translateY(-50%);
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      opacity: 0;
+      transition: all 0.2s;
+    }
+    
+    .pg-list-item:hover .pg-list-item-menu {
+      opacity: 1;
+    }
+    
+    .pg-list-item-menu:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    
+    .pg-list-item-menu svg {
+      width: 20px;
+      height: 20px;
+      fill: var(--text-muted);
+    }
+    
+    .pg-list-add {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      padding: 16px;
+      border: 1px dashed rgba(0, 0, 0, 0.15);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      color: var(--text-muted);
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    
+    .pg-list-add:hover {
+      border-color: var(--text-main);
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.2);
+    }
+    
+    .pg-list-add svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+  </style>
+</head>
+<body class="paper-bg">
+
+  <!-- PAGE TRANSITION OVERLAY -->
+  <div class="pg-transition-overlay" id="transitionOverlay"></div>
+
+  <!-- ACTION MENU -->
+  <div class="pg-action-menu" id="actionMenu">
+    <button class="pg-action-item" id="menuRename">
+      <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Rename
+    </button>
+    <div class="pg-action-divider"></div>
+    <button class="pg-action-item danger" id="menuDelete">
+      <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>
+      Delete Subject
+    </button>
+  </div>
+
+  <!-- ADD / RENAME MODAL -->
+  <div class="pg-modal-backdrop" id="addModal">
+    <div class="pg-modal">
+      <h2 class="pg-modal-title" id="modalTitle">Add Subject 📚</h2>
+      <p class="pg-modal-subtitle" id="modalSubtitle">Add a subject to organize your notebooks inside this folder.</p>
+      
+      <div class="pg-input-group">
+        <label class="pg-input-label">Subject Name</label>
+        <input class="pg-input-field" id="subjectNameInput" type="text" placeholder="e.g. Physics, History, Music…" maxlength="40" data-osk="true" autocomplete="off" />
+      </div>
+      
+      <label class="pg-input-label">Pick an Emoji</label>
+      <div class="pg-emoji-row" id="emojiRow"></div>
+      
+      <div class="pg-modal-actions">
+        <button class="pg-btn-secondary" onclick="closeAddModal()">Cancel</button>
+        <button class="pg-btn-confirm" id="modalConfirmBtn" onclick="confirmSubject()">Create</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DELETE MODAL -->
+  <div class="pg-modal-backdrop" id="deleteModal">
+    <div class="pg-modal">
+      <h2 class="pg-modal-title">Delete Subject 🗑️</h2>
+      <p class="pg-modal-subtitle">This permanently removes the subject and all notebooks inside it. This cannot be undone.</p>
+      <p class="pg-delete-note">Type <strong>delete</strong> below to confirm.</p>
+      
+      <div class="pg-input-group">
+        <input class="pg-input-field" id="deleteConfirmInput" type="text" placeholder="Type delete to confirm…" data-osk="true" autocomplete="off" />
+      </div>
+      
+      <div class="pg-modal-actions">
+        <button class="pg-btn-secondary" onclick="closeDeleteModal()">Cancel</button>
+        <button class="pg-btn-danger" id="deleteConfirmBtn" onclick="confirmDelete()" disabled>Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pg-toast" id="toast"></div>
+
+  <!-- APP SHELL -->
+  <div class="pg-app">
+    <div class="pg-app-body">
+      
+      <!-- SIDEBAR -->
+      <nav class="pg-sidebar">
+        <div class="pg-sidebar-logo" onclick="notoNavigate('index.html')">
+          <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        </div>
+        
+        <button class="pg-nav-item active" onclick="notoNavigate('grade.html')">
+          <svg class="pg-nav-icon" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="pg-nav-label">Dashboard</span>
+        </button>
+        
+        <button class="pg-nav-item" onclick="notoNavigate('habits.html')">
+          <svg class="pg-nav-icon" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          <span class="pg-nav-label">Habits</span>
+        </button>
+        
+        <div class="pg-sidebar-divider"></div>
+        
+        <button class="pg-nav-item" onclick="notoNavigate('settings.html')">
+          <svg class="pg-nav-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          <span class="pg-nav-label">Settings</span>
+        </button>
+      </nav>
+
+      <main class="pg-app-main">
+        <header class="pg-topbar">
+          <div class="pg-topbar-left" style="display:flex; align-items:center; gap:16px;">
+            <button class="pg-btn-secondary" style="padding: 8px 16px;" onclick="notoNavigate('grade.html')">
+              <svg style="width:16px; height:16px; margin-right:6px; vertical-align:-3px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg> Back
+            </button>
+            <div class="pg-breadcrumb">
+              <span id="gradeName" class="pg-breadcrumb-item">Folder</span>
+              <span class="pg-breadcrumb-sep">/</span>
+              <span class="pg-breadcrumb-current">Subjects</span>
+            </div>
+          </div>
+          
+          <div class="pg-topbar-right">
+            <div class="pg-search-wrap">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" id="searchInput" class="pg-search-input" placeholder="Search subjects…" oninput="handleSearch()" data-osk="true">
+            </div>
+            <button class="pg-icon-btn" onclick="openAddModal()" title="Add Subject">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </button>
+            <button class="pg-icon-btn" onclick="notoNavigate('exam-center.html')" title="Exam Center">
+              <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+            </button>
+          </div>
+        </header>
+
+        <div class="pg-content">
+          <div class="pg-section-header">
+            <span class="pg-section-label">📚 Subjects</span>
+            <span class="pg-section-count" id="subjectCount">0 subjects</span>
+          </div>
+
+          <div class="pg-subject-list" id="subjectsList"></div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="js/renderer.js"></script>
+  <script src="js/keyboard.js"></script>
+
+  <script>
+    const currentGradeId = notoGetCurrentGrade();
+
+    let selectedEmoji = '📖';
+    let editMode      = false;
+    let contextTarget = null;
+    let searchQuery   = '';
+
+    const EMOJIS = ['📖','🔬','📐','✏️','🌍','🧮','🎨','🎵','💻','⚗️','🧬','📊','🏛️','📝','🔭'];
+
+    async function render() {
+      const grades   = await notoLoadGrades();
+      const grade    = grades.find(g => g.id === currentGradeId);
+      if (grade) document.getElementById('gradeName').textContent = grade.name;
+
+      const subjects  = await notoLoadSubjects(currentGradeId);
+      const container = document.getElementById('subjectsList');
+      const count     = document.getElementById('subjectCount');
+
+      count.textContent = subjects.length + (subjects.length === 1 ? ' subject' : ' subjects');
+      container.innerHTML = '';
+
+      const filtered = searchQuery
+        ? subjects.filter(s => s.name.toLowerCase().includes(searchQuery))
+        : subjects;
+
+      if (subjects.length === 0) {
+        container.innerHTML = `
+          <div class="pg-empty-state">
+            <div class="pg-empty-icon">📂</div>
+            <div class="pg-empty-title">No subjects yet</div>
+            <div class="pg-empty-text">Click the add button to create your first subject in this folder.</div>
+          </div>`;
+        return;
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div class="pg-empty-state"><div class="pg-empty-text">No subjects match your search.</div></div>`;
+        appendAddRow(container);
+        return;
+      }
+
+      filtered.forEach((subject, index) => {
+        const row       = document.createElement('div');
+        row.className   = 'pg-list-item';
+        row.dataset.id  = subject.id;
+        row.style.animationDelay = `${index * 0.05}s`;
+
+        row.innerHTML = `
+          <button class="pg-list-item-menu" data-id="${subject.id}" title="Options">
+            <svg viewBox="0 0 24 24">
+              <circle cx="12" cy="5"  r="1.5" />
+              <circle cx="12" cy="12" r="1.5" />
+              <circle cx="12" cy="19" r="1.5" />
+            </svg>
+          </button>
+
+          <div class="pg-list-item-icon">${subject.emoji}</div>
+
+          <div class="pg-list-item-content">
+            <div class="pg-list-item-title">${notoEsc(subject.name)}</div>
+            <div class="pg-list-item-meta">Last edited ${subject.lastEdited || 'never'}</div>
+          </div>
+
+          <div class="pg-list-item-right">
+            <span class="pg-list-item-stats">${subject.notebooks || 0} notebooks</span>
+            <div class="pg-list-item-arrow">
+              <svg viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </div>
+          </div>`;
+
+        row.addEventListener('click', e => {
+          if (e.target.closest('.pg-list-item-menu')) return;
+          notoSetCurrentSubject(subject.id);
+          notoNavigate('notebook.html');
+        });
+
+        row.querySelector('.pg-list-item-menu').addEventListener('click', e => {
+          e.stopPropagation();
+          openActionMenu(e, subject.id);
+        });
+
+        container.appendChild(row);
+      });
+
+      appendAddRow(container);
+    }
+
+    function appendAddRow(container) {
+      const addRow       = document.createElement('div');
+      addRow.className   = 'pg-list-add';
+      addRow.innerHTML   = `
+        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add Subject`;
+      addRow.addEventListener('click', openAddModal);
+      container.appendChild(addRow);
+    }
+
+    function handleSearch() {
+      searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+      render();
+    }
+
+    function buildEmojiPicker() {
+      const row = document.getElementById('emojiRow');
+      row.innerHTML = '';
+      EMOJIS.forEach(em => {
+        const opt       = document.createElement('button');
+        opt.className   = 'pg-emoji-opt' + (em === selectedEmoji ? ' selected' : '');
+        opt.textContent = em;
+        opt.type        = 'button';
+        opt.addEventListener('click', () => {
+          selectedEmoji = em;
+          document.querySelectorAll('.pg-emoji-opt').forEach(x => x.classList.remove('selected'));
+          opt.classList.add('selected');
+        });
+        row.appendChild(opt);
+      });
+    }
+
+    function openActionMenu(e, subjectId) {
+      contextTarget = subjectId;
+
+      document.querySelectorAll('.pg-list-item').forEach(r => r.classList.remove('menu-open'));
+      const row = document.querySelector(`.pg-list-item[data-id="${subjectId}"]`);
+      if (row) row.classList.add('menu-open');
+
+      const menu    = document.getElementById('actionMenu');
+      const btnRect = e.currentTarget.getBoundingClientRect();
+      const menuW   = 210, menuH = 110;
+      let left = btnRect.right  - menuW;
+      let top  = btnRect.bottom + 6;
+      if (left < 8)                         left = 8;
+      if (left + menuW > window.innerWidth) left = window.innerWidth  - menuW - 8;
+      if (top  + menuH > window.innerHeight)top  = btnRect.top - menuH - 6;
+      menu.style.left = left + 'px';
+      menu.style.top  = top  + 'px';
+      menu.classList.add('visible');
+
+      setTimeout(() => {
+        document.addEventListener('pointerdown', dismissActionMenu, { once: true });
+      }, 50);
+    }
+
+    function dismissActionMenu(e) {
+      if (document.getElementById('actionMenu').contains(e.target)) return;
+      closeActionMenu();
+    }
+
+    function closeActionMenu() {
+      document.getElementById('actionMenu').classList.remove('visible');
+      document.querySelectorAll('.pg-list-item').forEach(r => r.classList.remove('menu-open'));
+    }
+
+    document.getElementById('menuRename').addEventListener('click', () => {
+      closeActionMenu(); setTimeout(openRenameModal, 10);
+    });
+
+    document.getElementById('menuDelete').addEventListener('click', () => {
+      closeActionMenu(); setTimeout(openDeleteModal, 10);
+    });
+
+    function openAddModal() {
+      editMode = false; contextTarget = null;
+      selectedEmoji = '📖';
+      document.getElementById('modalTitle').textContent      = 'Add Subject 📚';
+      document.getElementById('modalSubtitle').textContent   = 'Add a subject to organize your notebooks inside this folder.';
+      document.getElementById('modalConfirmBtn').textContent = 'Create';
+      document.getElementById('subjectNameInput').value      = '';
+      buildEmojiPicker();
+      document.getElementById('addModal').classList.add('visible');
+      setTimeout(() => NotoKeyboard.show(document.getElementById('subjectNameInput')), 300);
+    }
+
+    function closeAddModal() {
+      document.getElementById('addModal').classList.remove('visible');
+      NotoKeyboard.hide();
+    }
+
+    async function openRenameModal() {
+      if (!contextTarget) return;
+      const subjects = await notoLoadSubjects(currentGradeId);
+      const s        = subjects.find(x => x.id === contextTarget);
+      if (!s) return;
+      editMode = true; selectedEmoji = s.emoji;
+      document.getElementById('modalTitle').textContent      = 'Rename Subject ✏️';
+      document.getElementById('modalSubtitle').textContent   = 'Update the name or emoji for this subject.';
+      document.getElementById('modalConfirmBtn').textContent = 'Save';
+      document.getElementById('subjectNameInput').value      = s.name;
+      buildEmojiPicker();
+      document.getElementById('addModal').classList.add('visible');
+      setTimeout(() => NotoKeyboard.show(document.getElementById('subjectNameInput')), 300);
+    }
+
+    async function confirmSubject() {
+      const name = document.getElementById('subjectNameInput').value.trim();
+      const t = document.getElementById('toast');
+      
+      if (!name) { 
+        t.textContent = 'Please enter a name ✏️';
+        t.className = 'pg-toast show';
+        setTimeout(() => t.className = 'pg-toast', 2500);
+        return; 
+      }
+
+      if (editMode && contextTarget) {
+        await notoUpdateSubject(currentGradeId, contextTarget, { name, emoji: selectedEmoji });
+        t.textContent = 'Subject renamed ✅';
+      } else {
+        await notoAddSubject(currentGradeId, name, selectedEmoji);
+        t.textContent = 'Subject created 📚';
+      }
+      
+      t.className = 'pg-toast show';
+      setTimeout(() => t.className = 'pg-toast', 2500);
+      
+      await render(); closeAddModal();
+    }
+
+    function openDeleteModal() {
+      document.getElementById('deleteConfirmInput').value  = '';
+      document.getElementById('deleteConfirmBtn').disabled = true;
+      document.getElementById('deleteModal').classList.add('visible');
+      setTimeout(() => NotoKeyboard.show(document.getElementById('deleteConfirmInput')), 300);
+    }
+
+    function closeDeleteModal() {
+      document.getElementById('deleteModal').classList.remove('visible');
+      NotoKeyboard.hide();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (!currentGradeId) { notoNavigate('grade.html'); return; }
+      
+      document.getElementById('deleteConfirmInput').addEventListener('input', function () {
+        document.getElementById('deleteConfirmBtn').disabled =
+          this.value.trim().toLowerCase() !== 'delete';
+      });
+      
+      (function initTransition() {
+        const o = document.getElementById('transitionOverlay');
+        o.style.cssText = 'transition:none; transform:translateX(0%); pointer-events:none;';
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            o.style.cssText = 'transition:transform 0.44s cubic-bezier(0.7,0,0.3,1); transform:translateX(-100%); pointer-events:none;';
+          });
+        });
+      })();
+
+      render();
+    });
+
+    async function confirmDelete() {
+      if (!contextTarget) return;
+      await notoDeleteSubject(currentGradeId, contextTarget);
+      render(); closeDeleteModal();
+      
+      const t = document.getElementById('toast');
+      t.textContent = 'Subject deleted 🗑️';
+      t.className = 'pg-toast show';
+      setTimeout(() => t.className = 'pg-toast', 2500);
+      
+      contextTarget = null;
+    }
+  </script>
+</body>
+</html>

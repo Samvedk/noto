@@ -1,0 +1,603 @@
+/*
+ * NOTO.CSS — Shared Design System v2.0
+ * Ultra-minimalist, Apple-quality, fully offline.
+ * Monolith Editorial Design Language.
+ */
+
+/* ─────────────────────────────────────────────────
+   0. PERFORMANCE BASELINE
+   GPU-promote interactive elements for 60fps.
+───────────────────────────────────────────────── */
+
+/* Promote the page transition overlay to its own GPU layer */
+.transition-overlay {
+  will-change: transform;
+  transform: translateZ(0); /* force composite layer */
+}
+
+/* Cards get contain for isolated paint */
+.grade-card, .dw-stat-card, .badge-card, .insight-card {
+  contain: layout style;
+}
+
+/* Scrollable areas use momentum scrolling + GPU compositing */
+.main-content {
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
+}
+
+/* Modals get their own composited layer */
+.modal {
+  will-change: transform, opacity;
+}
+
+/* Animate transform/opacity only — never width/height/top/left */
+.grade-card, .icon-btn, .home-btn, .btn-primary,
+.btn-secondary, .btn-confirm, .btn-danger,
+.emoji-opt, .check-box, .action-menu {
+  transform: translateZ(0); /* composite hint */
+}
+
+
+
+/* ─────────────────────────────────────────────────
+   1. RESET
+───────────────────────────────────────────────── */
+*, *::before, *::after {
+  margin: 0; padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ─────────────────────────────────────────────────
+   2. DESIGN TOKENS
+───────────────────────────────────────────────── */
+:root {
+  /* Colors */
+  --black:       #0a0a0a;
+  --white:       #fafafa;
+  --surface:     #ffffff;
+  --gray-50:     #f9f9f9;
+  --gray-100:    #f0f0f0;
+  --gray-200:    #e8e8e8;
+  --gray-300:    #d0d0d0;
+  --gray-400:    #b0b0b0;
+  --gray-500:    #888888;
+  --gray-700:    #444444;
+  --danger:      #c0392b;
+  --danger-bg:   rgba(192, 57, 43, 0.07);
+
+  /* Typography */
+  --font-display: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  --font-body:    'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+
+  /* Radii */
+  --r-sm:   8px;
+  --r-md:   14px;
+  --r-lg:   20px;
+  --r-xl:   28px;
+  --r-full: 9999px;
+
+  /* Shadows */
+  --shadow-xs:   0 1px 3px rgba(0,0,0,0.05);
+  --shadow-sm:   0 2px 8px rgba(0,0,0,0.06);
+  --shadow-md:   0 4px 20px rgba(0,0,0,0.09);
+  --shadow-lg:   0 8px 40px rgba(0,0,0,0.13);
+  --shadow-menu: 0 12px 40px rgba(0,0,0,0.16);
+
+  /* Spacing */
+  --topbar-h: 68px;
+
+  /* Animation */
+  --ease:     cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --dur:      0.28s;
+  --dur-slow: 0.44s;
+}
+
+/* ─────────────────────────────────────────────────
+   3. DARK THEME
+───────────────────────────────────────────────── */
+[data-theme="dark"] {
+  --black:    #f0f0f0;
+  --white:    #0a0a0a;
+  --surface:  #141414;
+  --gray-50:  #181818;
+  --gray-100: #1e1e1e;
+  --gray-200: #2c2c2c;
+  --gray-300: #3c3c3c;
+  --gray-400: #606060;
+  --gray-500: #909090;
+  --gray-700: #cccccc;
+  --danger-bg: rgba(192, 57, 43, 0.15);
+}
+
+/* ─────────────────────────────────────────────────
+   4. SEPIA THEME
+───────────────────────────────────────────────── */
+[data-theme="sepia"] {
+  --white:    #f5f0e8;
+  --gray-50:  #ede8df;
+  --gray-100: #e5dfd5;
+  --gray-200: #d5cfc5;
+  --gray-300: #c0b9ae;
+}
+
+/* ─────────────────────────────────────────────────
+   5. BASE
+───────────────────────────────────────────────── */
+html, body {
+  width: 100%; height: 100%;
+  overflow: hidden;
+  background: var(--white);
+  color: var(--black);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior: none;
+}
+
+/* ─────────────────────────────────────────────────
+   6. APP SHELL
+───────────────────────────────────────────────── */
+.app {
+  width: 100%; height: 100%;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────
+   7. TOP BAR
+───────────────────────────────────────────────── */
+.topbar {
+  flex-shrink: 0;
+  height: var(--topbar-h);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 28px;
+  background: var(--white);
+  border-bottom: 1px solid var(--gray-200);
+  z-index: 100;
+  /* Hardware-accelerated blur for depth */
+  backdrop-filter: saturate(180%) blur(0px);
+}
+.topbar-left  { display: flex; align-items: center; gap: 14px; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+
+/* ─────────────────────────────────────────────────
+   8. TOPBAR COMPONENTS
+───────────────────────────────────────────────── */
+.home-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 8px 16px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-full);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 12px; font-weight: 500;
+  color: var(--gray-500);
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  letter-spacing: 0.01em;
+}
+.home-btn:hover { border-color: var(--gray-400); color: var(--black); background: var(--gray-100); }
+.home-btn:active { transform: scale(0.97); }
+.home-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+
+.page-title {
+  font-family: var(--font-display);
+  font-size: 20px; font-weight: 400;
+  color: var(--black);
+  letter-spacing: -0.015em;
+}
+
+.icon-btn {
+  width: 38px; height: 38px;
+  border-radius: var(--r-full);
+  border: 1px solid var(--gray-200);
+  background: var(--white);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  position: relative;
+  overflow: hidden;
+}
+.icon-btn::after {
+  content: ''; position: absolute; inset: 0;
+  background: var(--black); opacity: 0;
+  border-radius: inherit;
+  transition: opacity 0.15s;
+}
+.icon-btn:active::after { opacity: 0.06; }
+.icon-btn:hover { border-color: var(--gray-400); background: var(--gray-100); transform: translateY(-1px); }
+.icon-btn svg { width: 16px; height: 16px; stroke: var(--gray-500); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; z-index: 1; }
+.icon-btn:hover svg { stroke: var(--black); }
+
+/* ─────────────────────────────────────────────────
+   9. SCROLLABLE CONTENT
+───────────────────────────────────────────────── */
+.main-content {
+  flex: 1; overflow-y: auto;
+  padding: 32px 36px 120px;
+  scroll-behavior: smooth;
+  /* iOS momentum scrolling */
+  -webkit-overflow-scrolling: touch;
+}
+.main-content::-webkit-scrollbar       { width: 3px; }
+.main-content::-webkit-scrollbar-track { background: transparent; }
+.main-content::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 2px; }
+
+/* ─────────────────────────────────────────────────
+   10. SECTION HEADER
+───────────────────────────────────────────────── */
+.section-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  margin-bottom: 20px;
+}
+.section-label {
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gray-400);
+}
+.section-count { font-size: 10px; color: var(--gray-400); }
+
+/* ─────────────────────────────────────────────────
+   11. CARDS GRID
+───────────────────────────────────────────────── */
+.grades-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+}
+
+/* ─────────────────────────────────────────────────
+   12. CARD
+───────────────────────────────────────────────── */
+.grade-card {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-lg);
+  padding: 22px 20px 18px;
+  cursor: pointer;
+  transition: border-color var(--dur) var(--ease),
+              box-shadow var(--dur) var(--ease),
+              transform var(--dur) var(--ease);
+  box-shadow: var(--shadow-xs);
+  overflow: visible;
+  animation: cardIn 0.36s var(--ease) backwards;
+  user-select: none;
+  -webkit-user-select: none;
+}
+.grade-card:nth-child(1){animation-delay:.04s}
+.grade-card:nth-child(2){animation-delay:.08s}
+.grade-card:nth-child(3){animation-delay:.12s}
+.grade-card:nth-child(4){animation-delay:.16s}
+.grade-card:nth-child(5){animation-delay:.20s}
+.grade-card:nth-child(6){animation-delay:.24s}
+.grade-card:nth-child(7){animation-delay:.28s}
+.grade-card:nth-child(8){animation-delay:.32s}
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+.grade-card:hover   { border-color: var(--gray-300); box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.grade-card:active  { transform: scale(0.99) translateY(0); box-shadow: var(--shadow-xs); }
+.grade-card.menu-open { border-color: var(--black); box-shadow: 0 0 0 2px var(--black); }
+
+/* ─────────────────────────────────────────────────
+   13. CARD INTERNALS
+───────────────────────────────────────────────── */
+.card-menu-btn {
+  position: absolute; top: 10px; right: 10px;
+  width: 30px; height: 30px;
+  border-radius: var(--r-full); border: none;
+  background: transparent;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: background var(--dur) var(--ease), opacity 0.2s;
+  opacity: 0; z-index: 10;
+}
+@media (hover: none) { .card-menu-btn { opacity: 1; } }
+.grade-card:hover .card-menu-btn,
+.grade-card.menu-open .card-menu-btn { opacity: 1; }
+.card-menu-btn:hover { background: var(--gray-100); }
+.card-menu-btn svg { width: 14px; height: 14px; stroke: var(--gray-500); fill: none; stroke-width: 2; stroke-linecap: round; }
+
+.card-emoji   { font-size: 32px; line-height: 1; margin-bottom: 12px; display: block; }
+.tag-extra    {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px;
+  background: var(--black); color: var(--white);
+  font-size: 9px; font-weight: 500; letter-spacing: 0.12em;
+  text-transform: uppercase; border-radius: var(--r-full);
+  margin-bottom: 10px;
+}
+.card-name    { font-family: var(--font-display); font-size: 18px; font-weight: 400; color: var(--black); letter-spacing: -0.01em; margin-bottom: 4px; line-height: 1.25; }
+.card-meta    { font-size: 11px; color: var(--gray-400); font-weight: 400; margin-bottom: 14px; }
+.card-footer  { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--gray-200); }
+.card-subjects { font-size: 11px; color: var(--gray-400); }
+.card-arrow   {
+  width: 26px; height: 26px; border-radius: var(--r-full);
+  background: var(--gray-100);
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--dur) var(--ease);
+}
+.grade-card:hover .card-arrow { background: var(--black); }
+.card-arrow svg { width: 11px; height: 11px; stroke: var(--gray-500); fill: none; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.2s; }
+.grade-card:hover .card-arrow svg { stroke: var(--white); }
+
+/* ─────────────────────────────────────────────────
+   14. ADD CARD
+───────────────────────────────────────────────── */
+.grade-card-add {
+  background: transparent;
+  border: 1.5px dashed var(--gray-300);
+  border-radius: var(--r-lg);
+  padding: 24px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px;
+  min-height: 160px;
+  cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  text-align: center;
+}
+.grade-card-add:hover { border-color: var(--black); background: var(--gray-50); }
+.grade-card-add:active { transform: scale(0.98); }
+.add-icon {
+  width: 40px; height: 40px;
+  border-radius: var(--r-full);
+  background: var(--gray-100);
+  display: flex; align-items: center; justify-content: center;
+  transition: background var(--dur) var(--ease);
+}
+.grade-card-add:hover .add-icon { background: var(--black); }
+.add-icon svg { width: 16px; height: 16px; stroke: var(--gray-500); fill: none; stroke-width: 2; stroke-linecap: round; transition: stroke 0.2s; }
+.grade-card-add:hover .add-icon svg { stroke: var(--white); }
+.add-label { font-size: 12px; font-weight: 400; color: var(--gray-500); transition: color 0.2s; }
+.grade-card-add:hover .add-label { color: var(--black); }
+
+/* ─────────────────────────────────────────────────
+   15. ACTION MENU (Context Menu)
+───────────────────────────────────────────────── */
+.action-menu {
+  position: fixed;
+  background: var(--surface);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-menu);
+  padding: 5px;
+  z-index: 2000;
+  min-width: 200px;
+  display: none;
+  animation: menuPop 0.16s var(--ease);
+  transform-origin: top right;
+}
+.action-menu.visible { display: block; }
+@keyframes menuPop {
+  from { opacity: 0; transform: scale(0.94); }
+  to   { opacity: 1; transform: scale(1); }
+}
+.action-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--r-sm);
+  font-size: 13px; font-weight: 400;
+  color: var(--black);
+  cursor: pointer;
+  transition: background 0.12s;
+  border: none; background: none;
+  width: 100%; text-align: left;
+  font-family: var(--font-body);
+}
+.action-item:hover  { background: var(--gray-100); }
+.action-item:active { background: var(--gray-200); }
+.action-item.danger       { color: var(--danger); }
+.action-item.danger:hover { background: var(--danger-bg); }
+.action-item svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.action-divider { height: 1px; background: var(--gray-200); margin: 4px 0; }
+
+/* ─────────────────────────────────────────────────
+   16. MODAL SYSTEM
+───────────────────────────────────────────────── */
+.modal-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(10, 10, 10, 0.5);
+  z-index: 500;
+  display: none; align-items: center; justify-content: center;
+  backdrop-filter: blur(6px) saturate(120%);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+}
+.modal-backdrop.visible { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: var(--r-xl);
+  padding: 32px;
+  width: 420px; max-width: 92vw;
+  box-shadow: 0 28px 72px rgba(0,0,0,0.22);
+  animation: modalIn 0.28s var(--ease);
+  border: 1px solid var(--gray-200);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.96) translateY(10px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-title    { font-family: var(--font-display); font-size: 20px; font-weight: 400; margin-bottom: 6px; color: var(--black); }
+.modal-subtitle { font-size: 13px; color: var(--gray-500); margin-bottom: 22px; line-height: 1.6; }
+
+/* ─────────────────────────────────────────────────
+   17. FORM INPUTS
+───────────────────────────────────────────────── */
+.input-group  { margin-bottom: 14px; }
+.input-label  { display: block; font-size: 10px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--gray-500); margin-bottom: 8px; }
+.input-field  {
+  width: 100%; padding: 12px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-md);
+  font-family: var(--font-body); font-size: 15px; font-weight: 400;
+  color: var(--black); background: var(--white);
+  outline: none;
+  transition: border-color 0.18s, box-shadow 0.18s;
+  caret-color: var(--black);
+}
+.input-field:focus        { border-color: var(--black); box-shadow: 0 0 0 3px rgba(10,10,10,0.06); }
+.input-field::placeholder { color: var(--gray-400); }
+
+/* ─────────────────────────────────────────────────
+   18. TOGGLE SWITCH
+───────────────────────────────────────────────── */
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 13px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-md);
+  margin-bottom: 22px; cursor: pointer;
+  transition: border-color 0.18s;
+}
+.toggle-row:hover { border-color: var(--gray-400); }
+.toggle-label { font-size: 13px; color: var(--black); }
+.toggle-sub   { font-size: 10px; color: var(--gray-400); margin-top: 2px; }
+.toggle-switch        { width: 42px; height: 22px; background: var(--gray-200); border-radius: var(--r-full); position: relative; transition: background 0.22s; flex-shrink: 0; }
+.toggle-switch.on     { background: var(--black); }
+.toggle-switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; background: var(--white); border-radius: 50%; transition: transform 0.22s var(--ease); box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+.toggle-switch.on::after { transform: translateX(20px); }
+
+/* ─────────────────────────────────────────────────
+   19. EMOJI PICKER
+───────────────────────────────────────────────── */
+.emoji-row { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 22px; }
+.emoji-opt {
+  width: 42px; height: 42px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--gray-200);
+  background: var(--gray-50);
+  font-size: 20px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: all 0.18s var(--ease);
+}
+.emoji-opt:hover, .emoji-opt.selected {
+  border-color: var(--black);
+  background: var(--gray-100);
+  transform: scale(1.1);
+}
+
+/* ─────────────────────────────────────────────────
+   20. MODAL BUTTONS
+───────────────────────────────────────────────── */
+.modal-actions  { display: flex; gap: 8px; justify-content: flex-end; margin-top: 6px; }
+.btn-secondary  {
+  padding: 10px 20px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-full);
+  background: var(--white);
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  color: var(--gray-700); cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  letter-spacing: 0.03em;
+}
+.btn-secondary:hover { border-color: var(--gray-400); background: var(--gray-100); }
+.btn-secondary:active { transform: scale(0.97); }
+.btn-confirm    {
+  padding: 10px 20px;
+  border: none; border-radius: var(--r-full);
+  background: var(--black);
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  color: var(--white); cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  letter-spacing: 0.03em;
+}
+.btn-confirm:hover { background: var(--gray-700); transform: translateY(-1px); }
+.btn-confirm:active { transform: scale(0.97) translateY(0); }
+.btn-danger     {
+  padding: 10px 20px;
+  border: none; border-radius: var(--r-full);
+  background: var(--danger);
+  font-family: var(--font-body); font-size: 12px; font-weight: 500;
+  color: white; cursor: pointer;
+  transition: all var(--dur) var(--ease);
+}
+.btn-danger:hover    { filter: brightness(1.1); transform: translateY(-1px); }
+.btn-danger:active   { transform: scale(0.97) translateY(0); }
+.btn-danger:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+
+/* ─────────────────────────────────────────────────
+   21. DELETE NOTE
+───────────────────────────────────────────────── */
+.delete-note        { font-size: 12px; color: var(--gray-500); margin-bottom: 12px; line-height: 1.6; }
+.delete-note strong { color: var(--danger); font-weight: 600; }
+
+/* ─────────────────────────────────────────────────
+   22. EMPTY STATE
+───────────────────────────────────────────────── */
+.empty-state      { display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 80px 20px; text-align: center; color: var(--gray-400); grid-column: 1/-1; }
+.empty-state-icon { font-size: 44px; margin-bottom: 16px; opacity: 0.6; }
+.empty-state-text { font-size: 13px; font-weight: 400; line-height: 1.8; max-width: 240px; }
+
+/* ─────────────────────────────────────────────────
+   23. TOAST
+───────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: 28px; left: 50%;
+  transform: translateX(-50%) translateY(16px);
+  background: var(--black); color: var(--white);
+  font-size: 12px; font-weight: 500;
+  padding: 11px 22px;
+  border-radius: var(--r-full);
+  z-index: 9999;
+  opacity: 0;
+  transition: all 0.26s var(--ease);
+  pointer-events: none;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ─────────────────────────────────────────────────
+   24. PAGE TRANSITION OVERLAY
+───────────────────────────────────────────────── */
+.transition-overlay {
+  position: fixed; inset: 0;
+  background: var(--black);
+  z-index: 99998;
+  transform: translateY(-200%);
+  transition: transform 0.44s cubic-bezier(0.7, 0, 0.3, 1);
+  pointer-events: none;
+  will-change: transform;
+}
+.transition-overlay.active {
+  transform: translateY(0%);
+  pointer-events: all;
+}
+
+/* ─────────────────────────────────────────────────
+   25. AUTOSAVE INDICATOR
+───────────────────────────────────────────────── */
+.save-indicator { display: flex; align-items: center; gap: 6px; }
+.sv-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--gray-300);
+  transition: background 0.3s;
+}
+.sv-dot.saving { background: #f59e0b; }
+.sv-dot.saved  { background: #22c55e; }
+.save-label { font-size: 10px; color: var(--gray-400); letter-spacing: 0.05em; }
+
+/* ─────────────────────────────────────────────────
+   26. FOCUS TIMER
+───────────────────────────────────────────────── */
+.focus-timer-btn {
+  display: flex; align-items: center; gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--gray-200);
+  border-radius: var(--r-full);
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: 11px; font-weight: 500;
+  color: var(--gray-500); cursor: pointer;
+  transition: all var(--dur) var(--ease);
+  letter-spacing: 0.04em;
+}
+.focus-timer-btn:hover { border-color: var(--gray-400); color: var(--black); }
+.focus-timer-btn.active { background: var(--black); color: var(--white); border-color: var(--black); }
+.focus-timer-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }

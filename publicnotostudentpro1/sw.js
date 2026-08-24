@@ -1,4 +1,4 @@
-const CACHE_NAME = 'noto-cache-v1';
+const CACHE_NAME = 'noto-cache-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const ASSETS = [
   './subject.html',
   './notebook.html',
   './page.html',
+  './exam-center.html',
   './settings.html',
   './js/renderer.js',
   './js/keyboard.js',

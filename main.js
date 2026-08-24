@@ -12,7 +12,7 @@ function createWindow() {
     }
   });
 
-  win.loadFile('public/index.html');
+  win.loadFile('publicnotostudentpro1/index.html');
 }
 
 app.whenReady().then(createWindow);

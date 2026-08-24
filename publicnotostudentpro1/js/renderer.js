@@ -205,13 +205,14 @@ async function notoDeleteSubject(gradeId, subjectId) {
 async function notoLoadNotebooks(sid) { return await notoDb.get(NOTO_KEYS.notebooks(sid), []); }
 async function notoSaveNotebooks(sid, n) { await notoDb.set(NOTO_KEYS.notebooks(sid), n); }
 
-async function notoAddNotebook(subjectId, gradeId, name, emoji, type) {
+async function notoAddNotebook(subjectId, gradeId, name, emoji, type, coverTheme) {
   const notebooks = await notoLoadNotebooks(subjectId);
   const notebook = {
     id: notoId(),
     name: name,
     emoji: emoji || '📓',
     type: type || 'theory',
+    coverTheme: coverTheme || 'midnight',
     pageCount: 1,
     lastEdited: notoToday(),
     created: notoTodayISO()
@@ -506,8 +507,8 @@ async function notoFactoryReset() {
 // ── Navigation & Lockdown ────────────────────────────────────
 let _notoExamActive = (localStorage.getItem('noto_exam_lockdown') === 'true');
 
-function notoSetExam(isActive) { 
-  _notoExamActive = isActive; 
+function notoSetExam(isActive) {
+  _notoExamActive = isActive;
   localStorage.setItem('noto_exam_lockdown', isActive ? 'true' : 'false');
 }
 function notoIsExamActive() { return _notoExamActive; }
