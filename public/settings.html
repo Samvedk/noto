@@ -350,6 +350,30 @@
 
         <div class="pg-content" style="max-width: 800px;">
           
+          <div class="pg-card pg-settings-card" style="border: 2px solid var(--text-main);">
+            <div class="pg-section-header" style="padding: 20px 24px 0;">
+              <span class="pg-section-label">Institute Admin (B2B Custom Study Material)</span>
+            </div>
+            <div class="pg-row">
+              <div class="pg-row-l">
+                <div class="pg-row-label">Admin PIN</div>
+                <div class="pg-row-desc" id="pinStatusDesc">Configure a passcode to lock study material editing.</div>
+              </div>
+              <div class="pg-row-r">
+                <button class="pg-btn-secondary" id="btnConfigurePin" onclick="openPinSetupModal()">Set PIN</button>
+              </div>
+            </div>
+            <div class="pg-row">
+              <div class="pg-row-l">
+                <div class="pg-row-label">Manage Study Material</div>
+                <div class="pg-row-desc">Upload or delete study materials for coaching classes.</div>
+              </div>
+              <div class="pg-row-r">
+                <button class="pg-btn-danger" style="background: var(--text-main); color: var(--bg-paper);" onclick="openMaterialManager()">Manage</button>
+              </div>
+            </div>
+          </div>
+
           <div class="pg-card pg-settings-card">
             <div class="pg-section-header" style="padding: 20px 24px 0;">
               <span class="pg-section-label">Display</span>
@@ -410,30 +434,6 @@
             <div class="pg-row">
               <div class="pg-row-l"><div class="pg-row-label">Default Text Size</div><div class="pg-row-desc">Starting font size for the text box tool</div></div>
               <div class="pg-row-r"><div class="pg-chips" id="textSizeChips"></div></div>
-            </div>
-          </div>
-
-          <div class="pg-card pg-settings-card">
-            <div class="pg-section-header" style="padding: 20px 24px 0;">
-              <span class="pg-section-label">Institute Admin</span>
-            </div>
-            <div class="pg-row">
-              <div class="pg-row-l">
-                <div class="pg-row-label">Admin PIN</div>
-                <div class="pg-row-desc" id="pinStatusDesc">Configure a passcode to lock study material editing.</div>
-              </div>
-              <div class="pg-row-r">
-                <button class="pg-btn-secondary" id="btnConfigurePin" onclick="openPinSetupModal()">Set PIN</button>
-              </div>
-            </div>
-            <div class="pg-row">
-              <div class="pg-row-l">
-                <div class="pg-row-label">Manage Study Material</div>
-                <div class="pg-row-desc">Upload or delete study materials for coaching classes.</div>
-              </div>
-              <div class="pg-row-r">
-                <button class="pg-btn-danger" style="background: var(--text-main); color: var(--bg-paper);" onclick="openMaterialManager()">Manage</button>
-              </div>
             </div>
           </div>
 

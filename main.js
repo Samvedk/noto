@@ -117,12 +117,12 @@ ipcMain.handle('noto:get-battery', async () => {
   }
 });
 
-// App info: returns version and mode for the settings page
+// App info: returns version and platform info for the settings page
 ipcMain.handle('noto:get-app-info', async () => {
   const pkg = require('./package.json');
   return {
     version: pkg.version || '1.0.0',
-    mode: mode,
+    mode: 'b2b',
     platform: process.platform,
     arch: process.arch,
     electron: process.versions.electron
