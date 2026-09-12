@@ -3225,11 +3225,14 @@
         _materialMeta = await notoLoadMaterialMeta(subjectId);
         const btn = document.getElementById('btnStudyMat');
         if (btn) {
-          const hasPages = _materialMeta && _materialMeta.pageCount > 0;
-          btn.style.display = hasPages ? '' : 'none';
+          // Always show the button so split-screen layout is accessible
+          btn.style.display = '';
         }
       } catch (e) {
         console.error('Failed to load study material meta:', e);
+        // Still show the button even on error
+        const btn = document.getElementById('btnStudyMat');
+        if (btn) btn.style.display = '';
       }
     }
 
