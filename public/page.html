@@ -219,9 +219,9 @@
       transform: translateX(0);
     }
     
-    /* ── STUDY MATERIAL PANEL ── */
+    /* ── STUDY MATERIAL PANEL & APPLE-STYLE SPLIT VIEW ── */
     :root {
-      --smp-width: 35%;
+      --smp-width: 50%;
     }
     .smp {
       position: absolute;
@@ -229,42 +229,84 @@
       left: 0;
       width: var(--smp-width);
       height: 100%;
-      background: var(--bg-paper);
-      border-right: 1.5px solid var(--border-color);
+      background: var(--bg-paper, #fff);
+      border-right: 1.5px solid var(--g200, #e0e0e0);
       z-index: 180;
       transform: translateX(-100%);
-      transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
-      overflow: visible; /* Changed from hidden to show resizer if needed, but wait, if it's visible, the image might leak out? No, viewer has overflow: hidden */
+      overflow: visible;
+      box-shadow: 4px 0 24px rgba(0,0,0,0.06);
     }
     .smp.open {
       transform: translateX(0);
     }
+    
+    /* Apple-style Split View Layout: Canvas partition shrinks and shifts */
+    body.split-active .app {
+      margin-left: var(--smp-width);
+      width: calc(100% - var(--smp-width));
+      transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    /* Disable transitions during live drag for instant 60fps tracking */
+    body.split-resizing .smp,
+    body.split-resizing .app {
+      transition: none !important;
+    }
+
+    /* Apple-style Split Divider Handle */
     .smp-resizer {
       position: absolute;
       top: 0;
-      right: -6px; /* center it on the border */
-      width: 12px;
+      right: -14px;
+      width: 28px;
       height: 100%;
       cursor: col-resize;
-      z-index: 190;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      touch-action: none;
+      user-select: none;
+      -webkit-user-select: none;
     }
-    .smp-resizer::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 4px;
-      transform: translateY(-50%);
-      width: 4px;
-      height: 48px;
-      border-radius: 2px;
-      background: var(--g300);
-      transition: background 0.2s;
+    .smp-resizer-pill {
+      width: 5px;
+      height: 56px;
+      border-radius: 9999px;
+      background: var(--g400, #b0b0b0);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.22);
+      transition: background 0.2s, transform 0.15s, width 0.15s;
+      pointer-events: none;
     }
-    .smp-resizer:hover::after,
-    .smp-resizer:active::after {
-      background: var(--text-main);
+    .smp-resizer:hover .smp-resizer-pill,
+    .smp-resizer:active .smp-resizer-pill,
+    body.split-resizing .smp-resizer-pill {
+      background: var(--black, #0a0a0a);
+      width: 7px;
+      transform: scaleY(1.06);
+    }
+
+    /* Tight-space responsive toolbar adjustments in split mode */
+    body.split-active .tb {
+      padding: 0 8px 0 6px;
+      gap: 4px;
+    }
+    body.split-active .tb-l {
+      gap: 4px;
+    }
+    body.split-active .tb-r {
+      gap: 3px;
+    }
+    body.split-active .nb-title {
+      max-width: 90px;
+    }
+    @media (max-width: 850px) {
+      body.split-active .tb-r button[title="Pomodoro Timer"],
+      body.split-active .tb-r button[title="Date Stamp"] {
+        display: none;
+      }
     }
     .smp-head {
       padding: 16px 14px 12px;
@@ -369,15 +411,6 @@
       color: var(--text-main);
       min-width: 50px;
       text-align: center;
-    }
-
-    .ca.mat-open {
-      padding-left: var(--smp-width);
-    }
-    @media (max-width: 800px) {
-      :root {
-        --smp-width: 300px;
-      }
     }
 
     .bmp-head{padding:16px 14px 12px;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between;}
@@ -747,12 +780,14 @@
     </div>
     </div>
 
-    <!-- STUDY MATERIAL PANEL -->
+    <!-- STUDY MATERIAL PANEL (Apple-inspired Split Screen) -->
     <div class="smp" id="smp">
-      <div class="smp-resizer" id="smpResizer"></div>
+      <div class="smp-resizer" id="smpResizer" title="Drag to adjust split · Double-tap for 50/50">
+        <div class="smp-resizer-pill"></div>
+      </div>
       <div class="smp-head">
         <span class="smp-title">📚 Study Material</span>
-        <button class="smp-close" onclick="toggleMaterialPanel()">✕</button>
+        <button class="smp-close" onclick="toggleMaterialPanel()" title="Close Split View">✕</button>
       </div>
       <div class="smp-viewer">
         <img id="smpImg" src="" alt="Study Material" />
@@ -1003,8 +1038,8 @@
       if (!dW || !dH) return;
       baseX = (r.width - dW) / 2;
       baseY = (r.height - dH) / 2;
-      zc.style.left = baseX + 'px';
-      zc.style.top = baseY + 'px';
+      zc.style.left = (baseX + pX) + 'px';
+      zc.style.top = (baseY + pY) + 'px';
     }
 
     // ── WebKit GPU Context Loss Auto-Recovery ─────────────────────
@@ -3236,17 +3271,37 @@
       }
     }
 
-    // ── Resizer Logic ──
+    // ── Resizer Logic (Apple Split View Style) ──
     document.addEventListener('DOMContentLoaded', () => {
       const resizer = document.getElementById('smpResizer');
       if (!resizer) return;
       let isResizing = false;
+      let lastTapTime = 0;
 
       function startResize(e) {
+        // Double-tap or double-click to snap directly to 50/50 half split
+        const now = Date.now();
+        if (now - lastTapTime < 350) {
+          snapToRatio(50);
+          lastTapTime = 0;
+          e.preventDefault();
+          return;
+        }
+        lastTapTime = now;
+
         isResizing = true;
+        document.body.classList.add('split-resizing');
         document.body.style.cursor = 'col-resize';
-        // Prevent iframes or text from interfering
         document.body.style.userSelect = 'none';
+        e.preventDefault();
+      }
+
+      function snapToRatio(pct) {
+        document.documentElement.style.setProperty('--smp-width', pct + '%');
+        notoToast(`Split View: ${pct}% / ${100 - pct}%`);
+        setTimeout(() => {
+          if (typeof initCanvas === 'function') initCanvas();
+        }, 60);
       }
 
       function doResize(e) {
@@ -3258,42 +3313,56 @@
           clientX = e.clientX;
         }
         
-        // Boundaries: min 200px, max 80% of window width
-        let newWidth = Math.max(200, Math.min(clientX, window.innerWidth * 0.8));
-        document.documentElement.style.setProperty('--smp-width', newWidth + 'px');
+        const winW = window.innerWidth;
+        let pct = (clientX / winW) * 100;
+
+        // Apple-style magnetic snap near 50%, 33.3%, 66.7%
+        if (Math.abs(pct - 50) < 3.5) {
+          pct = 50;
+        } else if (Math.abs(pct - 33.3) < 2.5) {
+          pct = 33.3;
+        } else if (Math.abs(pct - 66.7) < 2.5) {
+          pct = 66.7;
+        } else {
+          // Clamped boundaries: min 20%, max 80%
+          pct = Math.max(20, Math.min(pct, 80));
+        }
+
+        document.documentElement.style.setProperty('--smp-width', pct.toFixed(1) + '%');
         
-        // Immediately recenter canvas without recreating webgl buffers
+        // Immediately recenter canvas inside its partition live during drag
         if (typeof recenterCanvas === 'function') recenterCanvas();
       }
 
       function stopResize(e) {
         if (isResizing) {
           isResizing = false;
+          document.body.classList.remove('split-resizing');
           document.body.style.cursor = '';
           document.body.style.userSelect = '';
-          // Fully re-scale the canvas page to fit the new available width
+          // Fully re-scale the canvas page to fit the new partition width crisply
           if (typeof initCanvas === 'function') initCanvas();
         }
       }
 
       resizer.addEventListener('mousedown', startResize);
-      resizer.addEventListener('touchstart', startResize, {passive: true});
+      resizer.addEventListener('touchstart', startResize, {passive: false});
 
       window.addEventListener('mousemove', doResize);
-      window.addEventListener('touchmove', doResize, {passive: true});
+      window.addEventListener('touchmove', doResize, {passive: false});
 
       window.addEventListener('mouseup', stopResize);
       window.addEventListener('touchend', stopResize);
     });
 
     function toggleMaterialPanel() {
-      const smp   = document.getElementById('smp');
-      const ca    = document.getElementById('ca');
-      const btn   = document.getElementById('btnStudyMat');
+      const smp = document.getElementById('smp');
+      const ca  = document.getElementById('ca');
+      const btn = document.getElementById('btnStudyMat');
       if (!smp || !ca) return;
 
       const isOpen = smp.classList.toggle('open');
-      ca.classList.toggle('mat-open', isOpen);
+      document.body.classList.toggle('split-active', isOpen);
       if (btn) btn.classList.toggle('on', isOpen);
 
       if (isOpen) {
@@ -3303,8 +3372,10 @@
         }
       }
 
-      // Re-fit the canvas page into the remaining space after the CSS transition ends (~350ms)
-      setTimeout(() => initCanvas(), 380);
+      // Smoothly re-fit the canvas page into the partition
+      setTimeout(() => {
+        if (typeof initCanvas === 'function') initCanvas();
+      }, 320);
     }
 
     async function renderMatPage() {
