@@ -3268,6 +3268,8 @@
           isResizing = false;
           document.body.style.cursor = '';
           document.body.style.userSelect = '';
+          // Fully re-scale the canvas page to fit the new available width
+          if (typeof initCanvas === 'function') initCanvas();
         }
       }
 
@@ -3297,6 +3299,9 @@
           renderMatPage();
         }
       }
+
+      // Re-fit the canvas page into the remaining space after the CSS transition ends (~350ms)
+      setTimeout(() => initCanvas(), 380);
     }
 
     async function renderMatPage() {
