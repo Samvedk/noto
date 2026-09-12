@@ -220,11 +220,14 @@
     }
     
     /* ── STUDY MATERIAL PANEL ── */
+    :root {
+      --smp-width: 35%;
+    }
     .smp {
       position: absolute;
       top: 0;
       left: 0;
-      width: 35%;
+      width: var(--smp-width);
       height: 100%;
       background: var(--bg-paper);
       border-right: 1.5px solid var(--border-color);
@@ -233,10 +236,35 @@
       transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: visible; /* Changed from hidden to show resizer if needed, but wait, if it's visible, the image might leak out? No, viewer has overflow: hidden */
     }
     .smp.open {
       transform: translateX(0);
+    }
+    .smp-resizer {
+      position: absolute;
+      top: 0;
+      right: -6px; /* center it on the border */
+      width: 12px;
+      height: 100%;
+      cursor: col-resize;
+      z-index: 190;
+    }
+    .smp-resizer::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 4px;
+      transform: translateY(-50%);
+      width: 4px;
+      height: 48px;
+      border-radius: 2px;
+      background: var(--g300);
+      transition: background 0.2s;
+    }
+    .smp-resizer:hover::after,
+    .smp-resizer:active::after {
+      background: var(--text-main);
     }
     .smp-head {
       padding: 16px 14px 12px;
@@ -344,11 +372,12 @@
     }
 
     .ca.mat-open {
-      padding-left: 35%;
+      padding-left: var(--smp-width);
     }
     @media (max-width: 800px) {
-      .smp { width: 300px; }
-      .ca.mat-open { padding-left: 300px; }
+      :root {
+        --smp-width: 300px;
+      }
     }
 
     .bmp-head{padding:16px 14px 12px;border-bottom:1px solid var(--g200);display:flex;align-items:center;justify-content:space-between;}
@@ -720,6 +749,7 @@
 
     <!-- STUDY MATERIAL PANEL -->
     <div class="smp" id="smp">
+      <div class="smp-resizer" id="smpResizer"></div>
       <div class="smp-head">
         <span class="smp-title">📚 Study Material</span>
         <button class="smp-close" onclick="toggleMaterialPanel()">✕</button>
@@ -965,6 +995,17 @@
       applyZoom(); drawBg(); redraw();
     }
     window.addEventListener('resize',initCanvas);
+
+    function recenterCanvas() {
+      const r = ca.getBoundingClientRect();
+      const dW = parseInt(ps.style.width);
+      const dH = parseInt(ps.style.height);
+      if (!dW || !dH) return;
+      baseX = (r.width - dW) / 2;
+      baseY = (r.height - dH) / 2;
+      zc.style.left = baseX + 'px';
+      zc.style.top = baseY + 'px';
+    }
 
     // ── WebKit GPU Context Loss Auto-Recovery ─────────────────────
     [dwC, actC, bgC].forEach(c => {
@@ -3191,6 +3232,54 @@
         console.error('Failed to load study material meta:', e);
       }
     }
+
+    // ── Resizer Logic ──
+    document.addEventListener('DOMContentLoaded', () => {
+      const resizer = document.getElementById('smpResizer');
+      if (!resizer) return;
+      let isResizing = false;
+
+      function startResize(e) {
+        isResizing = true;
+        document.body.style.cursor = 'col-resize';
+        // Prevent iframes or text from interfering
+        document.body.style.userSelect = 'none';
+      }
+
+      function doResize(e) {
+        if (!isResizing) return;
+        let clientX;
+        if (e.touches && e.touches.length > 0) {
+          clientX = e.touches[0].clientX;
+        } else {
+          clientX = e.clientX;
+        }
+        
+        // Boundaries: min 200px, max 80% of window width
+        let newWidth = Math.max(200, Math.min(clientX, window.innerWidth * 0.8));
+        document.documentElement.style.setProperty('--smp-width', newWidth + 'px');
+        
+        // Immediately recenter canvas without recreating webgl buffers
+        if (typeof recenterCanvas === 'function') recenterCanvas();
+      }
+
+      function stopResize(e) {
+        if (isResizing) {
+          isResizing = false;
+          document.body.style.cursor = '';
+          document.body.style.userSelect = '';
+        }
+      }
+
+      resizer.addEventListener('mousedown', startResize);
+      resizer.addEventListener('touchstart', startResize, {passive: true});
+
+      window.addEventListener('mousemove', doResize);
+      window.addEventListener('touchmove', doResize, {passive: true});
+
+      window.addEventListener('mouseup', stopResize);
+      window.addEventListener('touchend', stopResize);
+    });
 
     function toggleMaterialPanel() {
       const smp   = document.getElementById('smp');
